@@ -1,0 +1,30 @@
+# OS Oracle — Code Owners
+# These owners will be automatically requested for review on PRs.
+# Syntax: <pattern> <owner1> [<owner2> ...]
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*                          @tituspaine
+
+# Core data files — require maintainer sign-off
+src/data/                  @tituspaine
+src/data/kali-deep.ts      @tituspaine
+src/data/hacking.ts        @tituspaine
+src/data/playbooks-extra.ts @tituspaine
+src/data/walkthroughs.ts   @tituspaine
+
+# CLI source
+src/cli/                   @tituspaine
+
+# Security policy
+SECURITY.md                @tituspaine
+DISCLAIMER.md              @tituspaine
+CODE_OF_CONDUCT.md         @tituspaine
+
+# GitHub configuration
+.github/                   @tituspaine
+.github/workflows/         @tituspaine
+
+# Documentation
+docs/                      @tituspaine
+*.md                       @tituspaine

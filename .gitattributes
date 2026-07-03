@@ -1,0 +1,36 @@
+# OS Oracle — Git attributes
+# Normalise line endings to LF on commit (Windows contributors get CRLF checkout).
+
+* text=auto eol=lf
+
+# Force LF for shell scripts and source code
+*.sh    text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.toml  text eol=lf
+
+# Binary files — never mangle
+*.ico   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.svg   text eol=lf
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.pdf   binary
+*.zip   binary
+
+# Mark generated files so diffs are collapsed by default
+src/routeTree.gen.ts linguist-generated=true
+bun.lock             linguist-generated=true

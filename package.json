@@ -1,1 +1,41 @@
-{"name":"os-oracle","version":"1.0.0","description":"Global Ethical Hacking Knowledge Platform - Terminal Edition","license":"MIT","author":"Titus Paine","homepage":"https://github.com/tituspaine/os-oracle","repository":{"type":"git","url":"https://github.com/tituspaine/os-oracle.git"},"keywords":["hacking","security","ethical-hacking","penetration-testing","kali","cli","terminal","offline"],"type":"module","bin":{"os-oracle":"./dist/cli.js"},"scripts":{"dev":"node src/cli/index.js","build":"node scripts/build.js","generate:data":"node scripts/generate-data.js","start":"node dist/cli.js"},"dependencies":{"chalk":"^5.3.0","commander":"^11.1.0","fuse.js":"^7.4.2"},"engines":{"node":">=18.0.0"}}
+{
+  "name": "os-oracle",
+  "version": "1.0.0",
+  "description": "Global Ethical Hacking Knowledge Platform - Terminal Edition",
+  "license": "MIT",
+  "author": "Titus Paine",
+  "homepage": "https://github.com/tituspaine/os-oracle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tituspaine/os-oracle.git"
+  },
+  "keywords": [
+    "hacking",
+    "security",
+    "ethical-hacking",
+    "penetration-testing",
+    "kali",
+    "cli",
+    "terminal",
+    "offline"
+  ],
+  "type": "module",
+  "bin": {
+    "os-oracle": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "node src/cli/index.js",
+    "build": "node scripts/build.js",
+    "lint": "eslint src",
+    "generate:data": "node scripts/generate-data.js",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "fuse.js": "^7.4.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
