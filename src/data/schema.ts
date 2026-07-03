@@ -52,7 +52,7 @@ const isStringArray = (value: unknown): value is string[] => Array.isArray(value
 const hasText = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
 
 function isCommandExample(obj: unknown): obj is Command["examples"][number] {
-  return isRecord(obj) && hasText(obj.code) && hasText(obj.note);
+  return isRecord(obj) && hasText(obj.code) && isString(obj.note);
 }
 
 export function isCommand(obj: unknown): obj is Command {

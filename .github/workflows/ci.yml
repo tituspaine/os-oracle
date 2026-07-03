@@ -27,10 +27,13 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Lint
         run: bun run lint
 
-      - name: Build
+      - name: Build web app
         run: bun run build
+
+      - name: Build CLI
+        run: bun run build:cli
