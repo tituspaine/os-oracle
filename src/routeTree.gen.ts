@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KaliIndexRouteImport } from './routes/kali.index'
 import { Route as KaliSlugRouteImport } from './routes/kali.$slug'
@@ -18,6 +19,11 @@ import { Route as DistroSlugRouteImport } from './routes/distro.$slug'
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,6 +49,7 @@ const DistroSlugRoute = DistroSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/kali/$slug': typeof KaliSlugRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/kali/$slug': typeof KaliSlugRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/kali/$slug': typeof KaliSlugRoute
@@ -65,14 +74,28 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/search' | '/distro/$slug' | '/kali/$slug' | '/kali/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/search'
+    | '/distro/$slug'
+    | '/kali/$slug'
+    | '/kali/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/search' | '/distro/$slug' | '/kali/$slug' | '/kali'
-  id: '__root__' | '/' | '/search' | '/distro/$slug' | '/kali/$slug' | '/kali/'
+  to: '/' | '/about' | '/search' | '/distro/$slug' | '/kali/$slug' | '/kali'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/search'
+    | '/distro/$slug'
+    | '/kali/$slug'
+    | '/kali/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   SearchRoute: typeof SearchRoute
   DistroSlugRoute: typeof DistroSlugRoute
   KaliSlugRoute: typeof KaliSlugRoute
@@ -86,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -121,6 +151,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   SearchRoute: SearchRoute,
   DistroSlugRoute: DistroSlugRoute,
   KaliSlugRoute: KaliSlugRoute,
