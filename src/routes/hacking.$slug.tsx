@@ -42,7 +42,7 @@ const SEVERITY_COLOR: Record<string, string> = {
 
 function PlaybookPage() {
   const { pb } = Route.useLoaderData();
-  const tools = pb.toolSlugs.map((s: string) => kaliToolBySlug(s)).filter(Boolean);
+  const tools = pb.toolSlugs.map((s: string) => kaliToolBySlug(s)).filter((x): x is NonNullable<typeof x> => Boolean(x));
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -81,7 +81,7 @@ function PlaybookPage() {
         <section className="mb-6">
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tools used</h2>
           <div className="flex flex-wrap gap-2">
-            {tools.map((t) => t ? (
+            {tools.map((t) => (
               <Link
                 key={t.slug}
                 to="/kali/$slug"
@@ -91,7 +91,7 @@ function PlaybookPage() {
                 <span className="mono text-primary">{t.name}</span>
                 <span className="ml-2 text-xs text-muted-foreground">{t.category}</span>
               </Link>
-            ) : null)}
+            ))}
           </div>
         </section>
       )}

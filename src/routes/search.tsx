@@ -123,6 +123,17 @@ function SearchPage() {
       return [...seen.values()].sort((a, b) => a.score - b.score);
     };
 
+    function hitKey(h: Hit): string {
+      switch (h.kind) {
+        case "playbook": return "p:" + h.slug;
+        case "tool": return "t:" + h.slug;
+        case "distro": return "d:" + h.slug;
+        case "toolcommand": return "tc:" + h.toolSlug + ":" + h.name;
+        case "command": return "dc:" + h.distroSlug + ":" + h.name;
+        case "error": return "e:" + h.distroSlug + ":" + h.message;
+      }
+    }
+
     return {
       playbooks: collect(indexes.playbooks, (x, s) => ({ kind: "playbook", slug: x.slug, name: x.name, snippet: x.snippet, category: x.category, severity: x.severity, score: s })),
       tools: collect(indexes.tools, (x, s) => ({ kind: "tool", slug: x.slug, name: x.name, snippet: x.snippet, category: x.category, score: s })),
