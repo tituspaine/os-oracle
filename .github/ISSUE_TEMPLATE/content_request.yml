@@ -1,0 +1,58 @@
+name: Content request
+description: Propose a new tool, distro command set, playbook, walkthrough, or error entry.
+labels: [content]
+body:
+  - type: dropdown
+    id: content_type
+    attributes:
+      label: Content type
+      options:
+        - Kali tool / command expansion
+        - Linux distro commands
+        - Playbook
+        - Walkthrough
+        - Error database entry
+        - Search synonym / taxonomy improvement
+    validations:
+      required: true
+  - type: input
+    id: slug
+    attributes:
+      label: Target slug or title
+      description: Existing slug if expanding content, or a proposed title for new content.
+      placeholder: nmap / ubuntu / sql-injection / "OpenVAS authenticated scan guide"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should be added?
+      description: Describe the commands, scenarios, examples, errors, or references that are missing.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Public sources
+      description: Man pages, official docs, tool READMEs, CVEs, or other public references.
+      placeholder: |
+        - https://nmap.org/book/man.html
+        - https://www.kali.org/tools/nmap/
+    validations:
+      required: true
+  - type: textarea
+    id: ethics
+    attributes:
+      label: Ethics and lab framing
+      description: Explain how this content stays educational, defensive, and authorised-testing only.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: This request does not ask for malware, credential theft, DDoS tooling, or unauthorised access guidance.
+          required: true
+        - label: I can help review or contribute the content if maintainers point me to the right file.
+          required: false

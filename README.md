@@ -21,6 +21,9 @@ An offline, static, client-side reference for:
 No backend. No AI. No cloud. Everything is static TypeScript data + client-side
 [Fuse.js](https://fusejs.io/).
 
+See [`SCALING.md`](./SCALING.md) for the long-term roadmap covering content growth, contributor
+operations, validation, CLI planning, and future platform architecture.
+
 ## Screenshots
 
 Placeholders live in [`docs/screenshots/`](./docs/screenshots) — add real captures before publishing.
@@ -42,12 +45,12 @@ npm run dev
 
 ## Scripts
 
-| Script          | What it does                          |
-| --------------- | ------------------------------------- |
-| `bun dev`       | Start Vite dev server on `:8080`      |
-| `bun run build` | Production build                      |
-| `bun run lint`  | ESLint the codebase                   |
-| `bun run format`| Prettier-format the codebase          |
+| Script           | What it does                     |
+| ---------------- | -------------------------------- |
+| `bun dev`        | Start Vite dev server on `:8080` |
+| `bun run build`  | Production build                 |
+| `bun run lint`   | ESLint the codebase              |
+| `bun run format` | Prettier-format the codebase     |
 
 ## Tech stack
 
@@ -59,16 +62,16 @@ npm run dev
 
 ## Where the content lives
 
-| File                              | What's inside                                        |
-| --------------------------------- | ---------------------------------------------------- |
-| `src/data/types.ts`               | Shared types (`Command`, `KnownError`, `Distro`…)    |
-| `src/data/common-commands.ts`     | Cross-distro core Linux commands                      |
-| `src/data/distros.ts`             | Per-distro metadata + distro-specific commands       |
-| `src/data/kali-{shallow,deep,extra,extra2,extra3}.ts` | Kali tool catalog                    |
-| `src/data/hacking.ts`             | Core exploitation playbooks                          |
-| `src/data/playbooks-extra.ts`     | Business-logic, cloud, AD, mobile, IoT playbooks     |
-| `src/data/walkthroughs.ts`        | Narrated play-by-play scenarios                      |
-| `src/data/search-synonyms.ts`     | Intent map + query expansion                         |
+| File                                                  | What's inside                                     |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `src/data/types.ts`                                   | Shared types (`Command`, `KnownError`, `Distro`…) |
+| `src/data/common-commands.ts`                         | Cross-distro core Linux commands                  |
+| `src/data/distros.ts`                                 | Per-distro metadata + distro-specific commands    |
+| `src/data/kali-{shallow,deep,extra,extra2,extra3}.ts` | Kali tool catalog                                 |
+| `src/data/hacking.ts`                                 | Core exploitation playbooks                       |
+| `src/data/playbooks-extra.ts`                         | Business-logic, cloud, AD, mobile, IoT playbooks  |
+| `src/data/walkthroughs.ts`                            | Narrated play-by-play scenarios                   |
+| `src/data/search-synonyms.ts`                         | Intent map + query expansion                      |
 
 ## Contributing
 
