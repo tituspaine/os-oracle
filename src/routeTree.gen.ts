@@ -18,6 +18,7 @@ import { Route as HackingIndexRouteImport } from './routes/hacking.index'
 import { Route as KaliSlugRouteImport } from './routes/kali.$slug'
 import { Route as HackingSlugRouteImport } from './routes/hacking.$slug'
 import { Route as DistroSlugRouteImport } from './routes/distro.$slug'
+import { Route as HackingSlugWalkthroughRouteImport } from './routes/hacking.$slug.walkthrough'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -64,6 +65,11 @@ const DistroSlugRoute = DistroSlugRouteImport.update({
   path: '/distro/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HackingSlugWalkthroughRoute = HackingSlugWalkthroughRouteImport.update({
+  id: '/walkthrough',
+  path: '/walkthrough',
+  getParentRoute: () => HackingSlugRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,10 +77,11 @@ export interface FileRoutesByFullPath {
   '/ethics': typeof EthicsRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
-  '/hacking/$slug': typeof HackingSlugRoute
+  '/hacking/$slug': typeof HackingSlugRouteWithChildren
   '/kali/$slug': typeof KaliSlugRoute
   '/hacking/': typeof HackingIndexRoute
   '/kali/': typeof KaliIndexRoute
+  '/hacking/$slug/walkthrough': typeof HackingSlugWalkthroughRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,10 +89,11 @@ export interface FileRoutesByTo {
   '/ethics': typeof EthicsRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
-  '/hacking/$slug': typeof HackingSlugRoute
+  '/hacking/$slug': typeof HackingSlugRouteWithChildren
   '/kali/$slug': typeof KaliSlugRoute
   '/hacking': typeof HackingIndexRoute
   '/kali': typeof KaliIndexRoute
+  '/hacking/$slug/walkthrough': typeof HackingSlugWalkthroughRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,10 +102,11 @@ export interface FileRoutesById {
   '/ethics': typeof EthicsRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
-  '/hacking/$slug': typeof HackingSlugRoute
+  '/hacking/$slug': typeof HackingSlugRouteWithChildren
   '/kali/$slug': typeof KaliSlugRoute
   '/hacking/': typeof HackingIndexRoute
   '/kali/': typeof KaliIndexRoute
+  '/hacking/$slug/walkthrough': typeof HackingSlugWalkthroughRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/kali/$slug'
     | '/hacking/'
     | '/kali/'
+    | '/hacking/$slug/walkthrough'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/kali/$slug'
     | '/hacking'
     | '/kali'
+    | '/hacking/$slug/walkthrough'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/kali/$slug'
     | '/hacking/'
     | '/kali/'
+    | '/hacking/$slug/walkthrough'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -141,7 +153,7 @@ export interface RootRouteChildren {
   EthicsRoute: typeof EthicsRoute
   SearchRoute: typeof SearchRoute
   DistroSlugRoute: typeof DistroSlugRoute
-  HackingSlugRoute: typeof HackingSlugRoute
+  HackingSlugRoute: typeof HackingSlugRouteWithChildren
   KaliSlugRoute: typeof KaliSlugRoute
   HackingIndexRoute: typeof HackingIndexRoute
   KaliIndexRoute: typeof KaliIndexRoute
@@ -212,8 +224,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DistroSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hacking/$slug/walkthrough': {
+      id: '/hacking/$slug/walkthrough'
+      path: '/walkthrough'
+      fullPath: '/hacking/$slug/walkthrough'
+      preLoaderRoute: typeof HackingSlugWalkthroughRouteImport
+      parentRoute: typeof HackingSlugRoute
+    }
   }
 }
+
+interface HackingSlugRouteChildren {
+  HackingSlugWalkthroughRoute: typeof HackingSlugWalkthroughRoute
+}
+
+const HackingSlugRouteChildren: HackingSlugRouteChildren = {
+  HackingSlugWalkthroughRoute: HackingSlugWalkthroughRoute,
+}
+
+const HackingSlugRouteWithChildren = HackingSlugRoute._addFileChildren(
+  HackingSlugRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -221,7 +252,7 @@ const rootRouteChildren: RootRouteChildren = {
   EthicsRoute: EthicsRoute,
   SearchRoute: SearchRoute,
   DistroSlugRoute: DistroSlugRoute,
-  HackingSlugRoute: HackingSlugRoute,
+  HackingSlugRoute: HackingSlugRouteWithChildren,
   KaliSlugRoute: KaliSlugRoute,
   HackingIndexRoute: HackingIndexRoute,
   KaliIndexRoute: KaliIndexRoute,

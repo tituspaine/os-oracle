@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { walkthroughBySlug, playbookBySlug, kaliToolBySlug } from "@/data";
-import type { Walkthrough, WalkthroughStep } from "@/data/walkthroughs";
+import { walkthroughBySlug, playbookBySlug, kaliToolBySlug, type KaliTool } from "@/data";
+import type { Walkthrough, WalkthroughStep } from "@/data";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/code-block";
 import {
@@ -61,9 +61,9 @@ const DIFF_COLOR: Record<string, string> = {
 function WalkthroughPage() {
   const { wt } = Route.useLoaderData();
   const parent = playbookBySlug(wt.slug);
-  const tools = (wt.toolSlugs ?? [])
-    .map((s) => kaliToolBySlug(s))
-    .filter((t): t is NonNullable<typeof t> => !!t);
+  const tools: KaliTool[] = (wt.toolSlugs ?? [])
+    .map((s: string) => kaliToolBySlug(s))
+    .filter((t: KaliTool | undefined): t is KaliTool => !!t);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -104,7 +104,7 @@ function WalkthroughPage() {
             Tools you'll use
           </h2>
           <div className="flex flex-wrap gap-2">
-            {tools.map((t) => (
+            {tools.map((t: KaliTool) => (
               <Link
                 key={t.slug}
                 to="/kali/$slug"
