@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { DISTROS } from "@/data";
+import { DISTROS, KALI_TOOLS, PLAYBOOKS } from "@/data";
 import { Badge } from "@/components/ui/badge";
+import { Skull, Terminal, Package } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -45,10 +46,24 @@ function Index() {
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <Badge variant="outline">{DISTROS.length} distributions</Badge>
-          <Link to="/kali" className="rounded-full border border-primary/60 px-3 py-1 text-primary hover:bg-primary/10">
-            Explore Kali tools →
-          </Link>
+          <Badge variant="outline">{KALI_TOOLS.length} Kali tools</Badge>
+          <Badge variant="outline">{PLAYBOOKS.length} hacking playbooks</Badge>
         </div>
+      </section>
+
+      <section className="mb-10 grid gap-3 sm:grid-cols-3">
+        <Link to="/kali" className="rounded-lg border border-border bg-card p-4 hover:border-primary/60">
+          <div className="flex items-center gap-2 font-semibold"><Terminal className="h-4 w-4 text-primary" />Kali tools</div>
+          <p className="mt-1 text-sm text-muted-foreground">Every tool, categorised, with commands and errors.</p>
+        </Link>
+        <Link to="/hacking" className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 hover:border-destructive">
+          <div className="flex items-center gap-2 font-semibold text-destructive"><Skull className="h-4 w-4" />Hacking playbooks</div>
+          <p className="mt-1 text-sm text-muted-foreground">Top vulnerabilities & exploits with step-by-step commands and error handling.</p>
+        </Link>
+        <Link to="/search" className="rounded-lg border border-border bg-card p-4 hover:border-primary/60">
+          <div className="flex items-center gap-2 font-semibold"><Package className="h-4 w-4 text-primary" />Intent search</div>
+          <p className="mt-1 text-sm text-muted-foreground">Describe what you want — "crack wifi", "escalate privileges" — get the right tool.</p>
+        </Link>
       </section>
 
       {Object.entries(grouped).map(([family, list]) => (

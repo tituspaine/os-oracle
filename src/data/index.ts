@@ -5,6 +5,9 @@ import type { KaliTool } from "./types";
 
 export { DISTROS, distroBySlug };
 export type * from "./types";
+export { PLAYBOOKS, PLAYBOOK_CATEGORIES, playbookBySlug } from "./hacking";
+export type { Playbook, PlaybookCategory, PlaybookStep } from "./hacking";
+export { SYNONYMS, expandQuery, nearestIntents } from "./search-synonyms";
 
 export const KALI_TOOLS: KaliTool[] = [...KALI_DEEP_TOOLS, ...KALI_SHALLOW_TOOLS].sort(
   (a, b) => a.name.localeCompare(b.name),

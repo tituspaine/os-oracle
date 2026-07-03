@@ -75,15 +75,6 @@ function ToolPage() {
         </section>
       )}
 
-      {tool.depth === "shallow" && (
-        <section className="mt-8 rounded-lg border border-border bg-card p-4 text-sm">
-          <p className="text-muted-foreground">
-            This tool is listed in the shallow catalog. For full flags and behavior, consult{" "}
-            <a href={tool.homepage} target="_blank" rel="noreferrer" className="text-primary hover:underline">its homepage</a>{" "}
-            or run <code className="mono">man {tool.invocation.split(" ")[0]}</code> on Kali.
-          </p>
-        </section>
-      )}
     </div>
   );
 }
