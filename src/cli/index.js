@@ -7,11 +7,17 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { startTui } from './tui/app.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load data
-const dataDir = path.join(__dirname, '../data');
+const dataDirCandidates = [
+  path.join(__dirname, '../data'),
+  path.join(__dirname, './data'),
+  path.join(process.cwd(), 'src/data'),
+];
+const dataDir = dataDirCandidates.find((candidate) => fs.existsSync(path.join(candidate, 'commands.json'))) || dataDirCandidates[0];
 let commands = [];
 let playbooks = [];
 let errors = [];
@@ -74,6 +80,27 @@ program
   .name('os-oracle')
   .description('Global Ethical Hacking Reference Platform - Terminal Edition')
   .version('1.0.0');
+
+program
+  .command('tui')
+  .description('Launch interactive keyboard-driven terminal UI')
+  .action(async () => {
+    if (!process.stdin.isTTY || !process.stdout.isTTY) {
+      console.log(chalk.yellow('Interactive TUI requires a terminal (TTY).'));
+      process.exit(1);
+    }
+    await startTui({
+      commands,
+      playbooks,
+      errors,
+      distros,
+      walkthroughs,
+      configDir,
+      getBookmarks,
+      saveBookmarks,
+      addToHistory,
+    });
+  });
 
 // SEARCH
 program
@@ -302,5 +329,19 @@ program
 program.parse(process.argv);
 
 if (!process.argv.slice(2).length) {
-  program.outputHelp();
+  if (process.stdin.isTTY && process.stdout.isTTY) {
+    await startTui({
+      commands,
+      playbooks,
+      errors,
+      distros,
+      walkthroughs,
+      configDir,
+      getBookmarks,
+      saveBookmarks,
+      addToHistory,
+    });
+  } else {
+    program.outputHelp();
+  }
 }
