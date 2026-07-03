@@ -115,7 +115,7 @@ function SearchPage() {
       for (const term of terms) {
         for (const r of fuse.search(term, { limit: 30 })) {
           const hit = mapper(r.item, r.score ?? 1);
-          const key = hit.kind + ":" + ("slug" in hit ? hit.slug : ("toolSlug" in hit ? hit.toolSlug + hit.name : ("distroSlug" in hit ? hit.distroSlug + ("name" in hit ? hit.name : (hit as { message: string }).message) : hit.name)));
+          const key = hitKey(hit);
           const existing = seen.get(key);
           if (!existing || hit.score < existing.score) seen.set(key, hit);
         }
