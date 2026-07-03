@@ -1,6 +1,27 @@
 {
-  "name": "tanstack_start_ts",
-  "private": true,
+  "name": "os-oracle",
+  "version": "1.0.0",
+  "description": "Offline-first Linux distro & Kali tool command reference CLI",
+  "author": "tituspaine",
+  "license": "MIT",
+  "homepage": "https://tituspaine.github.io/os-oracle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tituspaine/os-oracle.git"
+  },
+  "keywords": [
+    "kali",
+    "linux",
+    "cli",
+    "security",
+    "penetration-testing",
+    "hacking",
+    "distro",
+    "offline"
+  ],
+  "bin": {
+    "os-oracle": "./dist/cli/index.js"
+  },
   "sideEffects": false,
   "type": "module",
   "scripts": {
@@ -9,7 +30,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "generate:data": "tsx scripts/generate-data.ts",
+    "build:cli": "tsc -p tsconfig.cli.json && chmod +x dist/cli/index.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -68,7 +91,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "^2.6.4",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -81,6 +103,8 @@
     "globals": "^15.15.0",
     "nitro": "3.0.260603-beta",
     "prettier": "^3.7.3",
+    "tsx": "^4.19.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
