@@ -1,10 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { playbookBySlug, kaliToolBySlug, type KaliTool } from "@/data";
+import { playbookBySlug, kaliToolBySlug, hasWalkthrough, type KaliTool } from "@/data";
 import type { Playbook, PlaybookStep } from "@/data";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/code-block";
 import { ErrorList } from "@/components/error-list";
-import { ArrowLeft, ShieldAlert, Eye, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Eye, ShieldCheck, BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/hacking/$slug")({
   loader: ({ params }): { pb: Playbook } => {
@@ -68,6 +68,17 @@ function PlaybookPage() {
           <ShieldAlert className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
           <p className="text-foreground/90">{pb.legalNote}</p>
         </div>
+
+        {hasWalkthrough(pb.slug) && (
+          <Link
+            to="/hacking/$slug/walkthrough"
+            params={{ slug: pb.slug }}
+            className="mt-4 inline-flex items-center gap-2 rounded-md border border-primary/50 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
+          >
+            <BookOpen className="h-4 w-4" />
+            Open the full play-by-play walkthrough →
+          </Link>
+        )}
       </header>
 
       {pb.prerequisites.length > 0 && (

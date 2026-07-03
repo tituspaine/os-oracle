@@ -2,17 +2,19 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { DISTROS, KALI_TOOLS, PLAYBOOKS, expandQuery, nearestIntents } from "@/data";
+import { DISTROS, KALI_TOOLS, PLAYBOOKS, WALKTHROUGHS, expandQuery, nearestIntents } from "@/data";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, BookOpen } from "lucide-react";
 
 type Hit =
   | { kind: "playbook"; slug: string; name: string; snippet: string; category: string; severity: string; score: number }
+  | { kind: "walkthrough"; slug: string; name: string; snippet: string; difficulty: string; score: number }
   | { kind: "distro"; slug: string; name: string; snippet: string; score: number }
   | { kind: "tool"; slug: string; name: string; snippet: string; category: string; score: number }
   | { kind: "command"; distroSlug: string; distroName: string; name: string; syntax: string; description: string; score: number }
   | { kind: "toolcommand"; toolSlug: string; toolName: string; name: string; syntax: string; description: string; score: number }
+  | { kind: "toolerror"; toolSlug: string; toolName: string; message: string; fix: string; score: number }
   | { kind: "error"; distroSlug: string; distroName: string; message: string; fix: string; score: number };
 
 export const Route = createFileRoute("/search")({
@@ -47,7 +49,27 @@ function SearchPage() {
       snippet: p.summary,
       category: p.category,
       severity: p.severity,
-      body: [p.title, p.summary, p.category, ...(p.cve ?? []), ...(p.mitreAttack ?? []), ...p.steps.map((s) => s.title + " " + s.detail)].join(" "),
+      body: [
+        p.title,
+        p.summary,
+        p.category,
+        ...(p.cve ?? []),
+        ...(p.mitreAttack ?? []),
+        ...p.steps.map((s) => `${s.title} ${s.detail}`),
+      ].join(" "),
+    }));
+    const walkthroughs = WALKTHROUGHS.map((w) => ({
+      _kind: "walkthrough" as const,
+      slug: w.slug,
+      name: w.title,
+      snippet: w.scenario,
+      difficulty: w.difficulty,
+      body: [
+        w.title,
+        w.scenario,
+        w.labSetup,
+        ...w.steps.map((s) => `${s.title} ${s.narration} ${s.command ?? ""}`),
+      ].join(" "),
     }));
     const distros = DISTROS.map((d) => ({
       _kind: "distro" as const,
@@ -83,7 +105,17 @@ function SearchPage() {
         name: c.name,
         syntax: c.syntax,
         description: c.description,
-        body: [c.name, c.syntax, c.description, t.name].join(" "),
+        body: [c.name, c.syntax, c.description, t.name, c.category].join(" "),
+      })),
+    );
+    const toolErrors = KALI_TOOLS.flatMap((t) =>
+      (t.errors ?? []).map((e) => ({
+        _kind: "toolerror" as const,
+        toolSlug: t.slug,
+        toolName: t.name,
+        message: e.message,
+        fix: e.fix,
+        body: [e.message, e.cause, e.fix, t.name].join(" "),
       })),
     );
     const errors = DISTROS.flatMap((d) =>
@@ -98,12 +130,14 @@ function SearchPage() {
     );
     const baseOpts = { threshold: 0.35, ignoreLocation: true, includeScore: true };
     return {
-      playbooks: new Fuse(playbooks, { ...baseOpts, keys: ["name", "body"] }),
-      distros: new Fuse(distros, { ...baseOpts, keys: ["name", "body"] }),
-      tools: new Fuse(tools, { ...baseOpts, keys: ["name", "body"] }),
-      distroCommands: new Fuse(distroCommands, { ...baseOpts, keys: ["name", "syntax", "body"] }),
-      toolCommands: new Fuse(toolCommands, { ...baseOpts, keys: ["name", "syntax", "body"] }),
-      errors: new Fuse(errors, { ...baseOpts, keys: ["message", "body"] }),
+      playbooks: new Fuse(playbooks, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "body"] }),
+      walkthroughs: new Fuse(walkthroughs, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "body"] }),
+      distros: new Fuse(distros, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "body"] }),
+      tools: new Fuse(tools, { ...baseOpts, keys: [{ name: "name", weight: 3 }, "body"] }),
+      distroCommands: new Fuse(distroCommands, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "syntax", "body"] }),
+      toolCommands: new Fuse(toolCommands, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "syntax", "body"] }),
+      toolErrors: new Fuse(toolErrors, { ...baseOpts, keys: [{ name: "message", weight: 2 }, "body"] }),
+      errors: new Fuse(errors, { ...baseOpts, keys: [{ name: "message", weight: 2 }, "body"] }),
     };
   }, []);
 
@@ -126,20 +160,24 @@ function SearchPage() {
     function hitKey(h: Hit): string {
       switch (h.kind) {
         case "playbook": return "p:" + h.slug;
+        case "walkthrough": return "w:" + h.slug;
         case "tool": return "t:" + h.slug;
         case "distro": return "d:" + h.slug;
         case "toolcommand": return "tc:" + h.toolSlug + ":" + h.name;
         case "command": return "dc:" + h.distroSlug + ":" + h.name;
+        case "toolerror": return "te:" + h.toolSlug + ":" + h.message;
         case "error": return "e:" + h.distroSlug + ":" + h.message;
       }
     }
 
     return {
       playbooks: collect(indexes.playbooks, (x, s) => ({ kind: "playbook", slug: x.slug, name: x.name, snippet: x.snippet, category: x.category, severity: x.severity, score: s })),
+      walkthroughs: collect(indexes.walkthroughs, (x, s) => ({ kind: "walkthrough", slug: x.slug, name: x.name, snippet: x.snippet, difficulty: x.difficulty, score: s })),
       tools: collect(indexes.tools, (x, s) => ({ kind: "tool", slug: x.slug, name: x.name, snippet: x.snippet, category: x.category, score: s })),
       distros: collect(indexes.distros, (x, s) => ({ kind: "distro", slug: x.slug, name: x.name, snippet: x.snippet, score: s })),
       toolCommands: collect(indexes.toolCommands, (x, s) => ({ kind: "toolcommand", toolSlug: x.toolSlug, toolName: x.toolName, name: x.name, syntax: x.syntax, description: x.description, score: s })),
       distroCommands: collect(indexes.distroCommands, (x, s) => ({ kind: "command", distroSlug: x.distroSlug, distroName: x.distroName, name: x.name, syntax: x.syntax, description: x.description, score: s })),
+      toolErrors: collect(indexes.toolErrors, (x, s) => ({ kind: "toolerror", toolSlug: x.toolSlug, toolName: x.toolName, message: x.message, fix: x.fix, score: s })),
       errors: collect(indexes.errors, (x, s) => ({ kind: "error", distroSlug: x.distroSlug, distroName: x.distroName, message: x.message, fix: x.fix, score: s })),
     };
   }, [q, indexes]);
@@ -203,6 +241,18 @@ function SearchPage() {
             ))}
           </Group>
 
+          <Group title="Play-by-play walkthroughs" count={grouped.walkthroughs.length}>
+            {grouped.walkthroughs.slice(0, 10).map((r, i) => r.kind === "walkthrough" && (
+              <Link key={i} to="/hacking/$slug/walkthrough" params={{ slug: r.slug }} className="block rounded-md border border-primary/40 bg-primary/5 p-3 hover:border-primary/60">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1 font-semibold"><BookOpen className="h-3.5 w-3.5" /> {r.name}</span>
+                  <Badge variant="outline" className="text-[10px]">walkthrough · {r.difficulty}</Badge>
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.snippet}</p>
+              </Link>
+            ))}
+          </Group>
+
           <Group title="Kali Tools" count={grouped.tools.length}>
             {grouped.tools.slice(0, 10).map((r, i) => r.kind === "tool" && (
               <Link key={i} to="/kali/$slug" params={{ slug: r.slug }} className="block rounded-md border border-border bg-card p-3 hover:border-primary/60">
@@ -253,7 +303,19 @@ function SearchPage() {
             ))}
           </Group>
 
-          <Group title="Known errors" count={grouped.errors.length}>
+          <Group title="Tool errors" count={grouped.toolErrors.length}>
+            {grouped.toolErrors.slice(0, 10).map((r, i) => r.kind === "toolerror" && (
+              <Link key={i} to="/kali/$slug" params={{ slug: r.toolSlug }} className="block rounded-md border border-border bg-card p-3 hover:border-primary/60">
+                <div className="flex items-center justify-between">
+                  <span className="mono text-sm text-destructive">{r.message}</span>
+                  <Badge variant="outline" className="text-[10px]">tool error · {r.toolName}</Badge>
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.fix}</p>
+              </Link>
+            ))}
+          </Group>
+
+          <Group title="Distro errors" count={grouped.errors.length}>
             {grouped.errors.slice(0, 10).map((r, i) => r.kind === "error" && (
               <Link key={i} to="/distro/$slug" params={{ slug: r.distroSlug }} className="block rounded-md border border-border bg-card p-3 hover:border-primary/60">
                 <div className="flex items-center justify-between">
