@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { playbookBySlug, kaliToolBySlug } from "@/data";
+import { playbookBySlug, kaliToolBySlug, type KaliTool } from "@/data";
 import type { Playbook, PlaybookStep } from "@/data";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/code-block";
@@ -42,7 +42,9 @@ const SEVERITY_COLOR: Record<string, string> = {
 
 function PlaybookPage() {
   const { pb } = Route.useLoaderData();
-  const tools = pb.toolSlugs.map((s: string) => kaliToolBySlug(s)).filter((x): x is NonNullable<typeof x> => Boolean(x));
+  const tools: KaliTool[] = pb.toolSlugs
+    .map((s: string) => kaliToolBySlug(s))
+    .filter((x: KaliTool | undefined): x is KaliTool => x !== undefined);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
