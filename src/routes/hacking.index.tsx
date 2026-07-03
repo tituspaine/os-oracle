@@ -75,13 +75,23 @@ function HackingIndex() {
         </div>
       </header>
 
-      <div className="mb-6 flex flex-wrap items-center gap-2">
+      <div className="mb-6 flex flex-col gap-2">
         <Input
-          placeholder="Search playbooks, CVEs, techniques…"
+          placeholder='Try: "how do I audit a Wi-Fi network" or "test website pricing logic"'
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="max-w-md"
+          className="max-w-2xl"
         />
+        {intentHints.length > 0 && (
+          <div className="flex flex-wrap gap-1 text-[11px] text-muted-foreground">
+            <span className="mr-1">Related intents:</span>
+            {intentHints.map((h) => (
+              <button key={h} type="button" onClick={() => setQ(h)} className="rounded-full border border-border px-2 py-0.5 hover:bg-muted">{h}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="mb-6 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
