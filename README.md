@@ -1,30 +1,73 @@
 # OS Oracle
 
-**Global Ethical Hacking Knowledge Platform - Terminal Edition**
+**The open, offline knowledge operating system for ethical hackers.**
 
-🔌 **Completely Offline** | ⚡ **Lightning Fast** | 💰 **100% Free** | 🔓 **Open Source**
+OS Oracle aims to be the **world’s most in-depth, beginner-friendly, and practical** reference for authorized security testing.
 
-## Overview
+🔌 Offline-first • 🧭 Beginner Mode • ⚡ Fast local search • 🔓 Open source
 
-OS Oracle is a comprehensive, offline-first terminal application providing instant access to:
+> ⚠️ **Authorized use only:** OS Oracle is for legal security testing, education, CTFs, and approved bug bounty work.
 
-- **1,000,000+** verified ethical hacking commands
-- **20,000+** error messages with solutions
-- **500+** attack playbooks (OWASP, CVE, MITRE ATT&CK)
-- **200+** step-by-step walkthroughs
-- **100+** Kali tools with complete documentation
-- **15+** Linux distributions with sysadmin commands
+---
 
-All data is embedded in the binary. Works completely offline.
+## Why this exists
+
+Most security learning is fragmented:
+- Commands are scattered across blogs and outdated gists
+- Beginners don’t know *what to run first*
+- Advanced users waste time hunting syntax and edge cases
+- Many resources assume internet access
+
+OS Oracle solves this with one searchable system that combines:
+- tool command references
+- exploitation/playbook flow
+- defensive context and mitigations
+- common errors + fixes
+- progressive learning paths
+
+---
+
+## Beginner-first TUI navigation (new default mental model)
+
+Think of OS Oracle as a **guided terminal map**:
+
+1. **Start**: pick your level (`beginner`, `intermediate`, `advanced`)
+2. **Choose a track**: recon, web, AD, wireless, priv-esc, etc.
+3. **Run guided workflows**: safe step-by-step sequences
+4. **Dive deeper**: open linked tools, errors, and mitigations
+5. **Save progress**: bookmarks + history
+
+### Suggested command flow for new users
+
+```bash
+# 1) Start broad and learn the landscape
+os-oracle distros
+os-oracle tools
+os-oracle playbooks
+
+# 2) Search one topic and narrow down
+os-oracle search "nmap"
+os-oracle search "nmap" --filter tool
+
+# 3) Open detail pages
+os-oracle tool nmap --commands
+os-oracle playbook reconnaissance
+
+# 4) Save and continue later
+os-oracle bookmark add nmap
+os-oracle history
+```
+
+---
 
 ## Installation
 
-### npm (Recommended)
+### npm (recommended)
 ```bash
 npm install -g os-oracle
 ```
 
-### From Source
+### From source
 ```bash
 git clone https://github.com/tituspaine/os-oracle.git
 cd os-oracle
@@ -32,128 +75,78 @@ npm install
 npm start
 ```
 
-## Quick Start
+---
 
-```bash
-# Search everything
-os-oracle search "privilege escalation"
+## Core commands
 
-# Browse Kali tools
-os-oracle tools
-os-oracle tool metasploit --commands
+### Discovery
+- `os-oracle search <query>`
+- `os-oracle search "sql" --filter playbook`
+- `os-oracle tools`
+- `os-oracle tool <name>`
+- `os-oracle playbooks`
+- `os-oracle distros`
 
-# View attack playbooks
-os-oracle playbooks
-os-oracle playbook sql-injection
+### Learning
+- `os-oracle playbook <slug>`
+- `os-oracle walkthrough <slug>`
+- `os-oracle distro <name>`
+- `os-oracle tool <name> --commands`
 
-# Linux distro commands
-os-oracle distro ubuntu --search "firewall"
-
-# Manage bookmarks
-os-oracle bookmark add nmap
-os-oracle bookmarks
-
-# View search history
-os-oracle history
-```
-
-## All Commands
-
-### Search & Discovery
-- `os-oracle search <query>` - Search all content
-- `os-oracle search "sql" --filter playbook` - Search specific type
-- `os-oracle tools` - List all Kali tools
-- `os-oracle tool <name>` - View tool details
-- `os-oracle playbooks` - List attack playbooks
-- `os-oracle distros` - List Linux distributions
-
-### Learning & Reference
-- `os-oracle playbook <slug>` - View playbook with detection/mitigation
-- `os-oracle walkthrough <slug>` - Start interactive walkthrough
-- `os-oracle distro <name>` - View distro-specific commands
-- `os-oracle tool <name> --commands` - Show all commands for tool
-
-### Local Management
-- `os-oracle bookmark add <item>` - Save bookmark
-- `os-oracle bookmark list` - View bookmarks
-- `os-oracle history` - View search history
-- `os-oracle offline` - Confirm offline capability
-- `os-oracle version` - Show version
-
-## Features
-
-✅ **Completely Offline** - All data embedded, works without internet
-✅ **1M+ Commands** - Every Kali tool, every Linux distro
-✅ **Fast Search** - Local indexing, instant results
-✅ **Bookmarks** - Save and organize frequently used items
-✅ **History** - Track your recent searches
-✅ **100% Free** - Open source, no paid plans
-✅ **Self-Hostable** - Deploy anywhere
-
-## What's Included
-
-- **Kali Tools**: nmap, Metasploit, Burp Suite, sqlmap, nikto, gobuster, aircrack-ng, etc.
-- **Distros**: Ubuntu, Debian, Arch, Fedora, Kali, Parrot, and more
-- **Playbooks**: SQL Injection, XSS, CSRF, RCE, Privilege Escalation, etc.
-- **Walkthroughs**: DVWA, HackTheBox, TryHackMe, PortSwigger, etc.
-- **Errors**: 20,000+ common error messages with solutions
-- **Resources**: Certifications, bug bounty platforms, responsible disclosure
-
-## Technology
-
-- **Pure CLI** - No GUI, works in any terminal
-- **Zero Dependencies** - Standalone binary with no external dependencies
-- **Embedded Data** - All 1M+ commands compressed and bundled
-- **Open Source** - MIT Licensed, full source code available
-
-## Cost
-
-- **No subscription fees**
-- **No paid plans**
-- **No monthly costs**
-- **100% open source forever**
-
-## Supported Platforms
-
-- Linux (all distributions)
-- macOS
-- Windows (via WSL)
-- Docker containers
-- All cloud platforms
-
-## Use Cases
-
-- Penetration testing reference during engagements
-- Security training and education
-- CTF preparation and competition
-- Incident response and forensics
-- Bug bounty hunting
-- Tool development reference
-- Offline access on restricted networks
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Support
-
-- 📖 [Documentation](https://tituspaine.github.io/os-oracle)
-- 🐛 [Report Issues](https://github.com/tituspaine/os-oracle/issues)
-- 💬 [GitHub Discussions](https://github.com/tituspaine/os-oracle/discussions)
-
-## Disclaimer
-
-OS Oracle is for **authorized security testing and educational purposes only**. Unauthorized access to computer systems is illegal. Always get proper authorization before testing.
+### Personal workflow
+- `os-oracle bookmark add <item>`
+- `os-oracle bookmark list`
+- `os-oracle history`
+- `os-oracle offline`
+- `os-oracle version`
 
 ---
 
-Built with ❤️ for ethical hackers, security professionals, and learners worldwide
+## What would make this the world’s best resource (roadmap)
+
+To become truly best-in-class, OS Oracle should keep shipping depth in these areas:
+
+1. **Coverage completeness**
+   - Expand long-tail tools and niche workflows
+   - Add version-aware command variants (tool version + distro version)
+
+2. **Scenario-driven learning**
+   - Beginner-to-advanced tracks by objective (e.g., "Enumerate SMB safely")
+   - Real-world troubleshooting trees, not just flat command lists
+
+3. **Trust & verification**
+   - Source-backed commands with references and tested examples
+   - Confidence labels: verified / community / experimental
+
+4. **Defensive pairing**
+   - Every offensive tactic linked to detection, logging, and mitigation
+
+5. **Accessibility & UX in terminal**
+   - Consistent command naming
+   - Progressive disclosure (simple by default, advanced flags on demand)
+   - Friendly error recovery suggestions for every failed command path
+
+6. **Contributor velocity**
+   - Templates for adding new tools/playbooks/errors quickly
+   - CI checks for schema quality and duplicate command detection
+
+---
+
+## Responsible use
+
+OS Oracle is for **authorized** security work only.
+
+✅ Training, labs, CTFs, sanctioned pentests, approved bug bounty scopes  
+❌ Unauthorized access, disruption, persistence, data exfiltration, illegal use
+
+See [DISCLAIMER.md](DISCLAIMER.md) for legal terms.
+
+---
+
+## Support
+
+- 📖 Docs: https://tituspaine.github.io/os-oracle
+- 🐛 Issues: https://github.com/tituspaine/os-oracle/issues
+- 💬 Discussions: https://github.com/tituspaine/os-oracle/discussions
+
+Built for ethical hackers, defenders, and learners.
