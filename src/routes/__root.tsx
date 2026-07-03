@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { AuthorizedUseBanner } from "@/components/authorized-use-banner";
 
 function NotFoundComponent() {
   return (
@@ -101,6 +102,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
+        <AuthorizedUseBanner />
         <main className="flex-1">
           <Outlet />
         </main>
