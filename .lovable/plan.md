@@ -1,137 +1,152 @@
-
 ## Goal
 
-Three focused additions in one pass:
+Final completion pass — no new features, just fill in remaining depth and make the repo release-ready for GitHub.
 
-1. **Round out the Kali + Linux catalogs** so nothing common is missing.
-2. **Harden search** so tool commands, distro commands, playbooks, and errors are all indexed and rank sensibly for typos, synonyms, and natural-language intent.
-3. **Add a "Play-by-Play" walkthrough** on every playbook — a step-by-step, copy-pasteable, narrated dry-run with expected output at each stage.
+Three tracks, all shipped in one build:
 
-No scope beyond the above. No backend, no AI, no cloud — everything stays as static TS data + client-side Fuse.js.
+1. **Catalog completion** — add every missing tool and command.
+2. **Scenario depth** — add many more walkthrough scenarios per playbook and per exploit.
+3. **Open-source hardening** — repo hygiene, licensing, docs, CI, disclaimers.
+
+Everything stays static TS + client-side Fuse.js. No backend, no AI, no cloud.
 
 ---
 
 ## 1. Catalog completion
 
-### Kali tools (extend `src/data/kali-extra.ts`, plus new files where useful)
+### Kali tools — new file `src/data/kali-extra3.ts`
 
-Add the still-missing entries so every menu in Kali's `kali-linux-large` metapackage has representation. Each entry keeps the existing `KaliTool` shape (commands + errors boxes generated per category pattern):
+Add the last ~120 tools that still aren't in `kali-shallow`, `kali-deep`, `kali-extra`, or `kali-extra2`. Each entry gets the full `KaliTool` shape with hand-authored `commands[]` (5–12 real flags) and `errors[]` (3–5 real failures). Coverage checklist:
 
-- **Info Gathering**: `fierce`, `dnsrecon`, `dnsenum`, `sublist3r`, `subfinder`, `assetfinder`, `httprobe`, `httpx`, `waybackurls`, `gau`, `hakrawler`, `whatweb`, `wafw00f`, `p0f`, `maltego` (ref), `spiderfoot`, `metagoofil`, `snmpwalk`, `snmp-check`, `onesixtyone`, `ike-scan` (already partial → enrich).
-- **Vuln analysis**: `unix-privesc-check`, `linux-exploit-suggester`, `windows-exploit-suggester`, `pompem`, `searchsploit` (deep), `vulscan` NSE, `joomscan`, `droopescan`, `magescan`.
-- **Web app**: `wfuzz`, `commix`, `arjun`, `paramspider`, `jaeles`, `dontgo403`, `hakrawler`, `photon`, `crlfuzz`, `sublert`, `getjs`, `linkfinder`, `secretfinder`, `retire.js`, `nuclei` (deep), `postman-cli` (newman).
-- **DB assessment**: `sqlninja`, `sqlsus`, `bbqsql`, `hexorbase`, `oscanner`, `tnscmd10g`.
-- **Passwords**: `medusa`, `patator`, `ncrack`, `crowbar`, `chntpw`, `mimikatz` (ref), `keimpx`, `crunch`, `cewl`, `cupp`, `mentalist`, `wordlistctl`.
-- **Wireless**: `wifite2` (deep), `airodump-ng`, `aireplay-ng`, `airbase-ng`, `wash`, `pyrit` (ref), `mdk4`, `hcxdumptool` (deep), `hcxtools` (deep), `airgeddon` (deep), `linssid`, `horst`.
-- **Reverse eng**: `apktool`, `dex2jar`, `jadx` (deep), `checksec`, `xxd`, `strings`, `nm`, `objdump`, `readelf`, `ltrace`, `strace`, `bytecode-viewer`, `edb-debugger`, `retdec`, `x64dbg` (ref).
-- **Exploitation**: `searchsploit`, `exploitdb-papers`, `commix`, `getsploit`, `routersploit`, `zaproxy` (deep), `zap-cli`, `koadic`, `starkiller`, `havoc` (ref), `mythic` (ref), `merlin` (ref), `nishang`, `powersploit` (deep).
-- **Sniff/spoof**: `mitmproxy` (deep), `mitmweb`, `mitmdump`, `bettercap` (deep), `ettercap-graphical`, `driftnet`, `urlsnarf`, `dsniff` (deep), `macchanger`, `netsniff-ng`, `hping3`, `scapy`, `yersinia`, `arp-scan`.
-- **Post-exploit**: `linpeas` (deep), `winpeas` (deep), `linenum`, `pspy`, `chisel`, `sshuttle`, `ligolo-ng`, `proxychains-ng` (deep), `weevely` (deep), `webshells` pkg, `mimipenguin`, `laZagne`.
-- **Forensics**: `sleuthkit`, `foremost`, `scalpel`, `ext4magic`, `extundelete`, `hashdeep`, `md5deep`, `dumpzilla`, `regripper`, `pdfid`, `pdf-parser`, `xplico`, `chkrootkit` (deep), `rkhunter` (deep).
-- **Reporting**: `pipal`, `magictree`, `cutycapt`, `cherrytree`, `dradis` (ref), `faraday` (ref).
-- **Social eng**: `set` (deep), `king-phisher` (ref), `evilginx2`, `gophish` (deep), `maskphish`, `zphisher`.
+- **Info gathering**: `amass` (deep expand), `theharvester` (deep expand), `recon-ng` (deep expand), `shodan-cli`, `censys`, `dnstwist`, `urlcrazy`, `dmitry`, `netdiscover`, `masscan` (deep), `zmap`, `unicornscan`, `sslscan`, `sslyze`, `testssl.sh`, `nikto` (deep expand), `whois`, `host`, `ike-scan` (deep expand).
+- **Vuln analysis**: `openvas`/`gvm-cli`, `nessus-cli` (ref), `lynis` (deep), `tiger`, `nikto` NSE, `wpscan` (deep expand), `davtest`, `cadaver`.
+- **Web app**: `burpsuite` (deep expand — proxy CLI, extensions, macros), `zaproxy` (deep expand), `feroxbuster` (deep), `gobuster` (deep expand), `ffuf` (deep expand), `wfuzz` (deep expand), `dirb`, `dirbuster`, `whatweb` (deep), `wafw00f` (deep), `sqlmap` (deep expand — tamper scripts).
+- **Passwords**: `hashcat` (deep expand — mode table, rules, masks), `john` (deep expand — formats, incremental), `hydra` (deep expand — every module), `medusa` (deep), `ncrack` (deep), `patator` (deep), `crackmapexec`/`nxc` (deep expand).
+- **Wireless**: `aircrack-ng` (deep expand), `reaver` (deep expand), `bully`, `kismet` (deep), `fern-wifi-cracker`, `pixiewps`, `cowpatty`, `eaphammer`, `bettercap wifi module` (deep).
+- **AD / Windows**: `impacket-*` full suite (secretsdump, GetNPUsers, GetUserSPNs, wmiexec, psexec, smbexec, atexec, dcomexec, ntlmrelayx, addcomputer, ticketer, kerbrute), `rubeus` (ref), `certipy`, `bloodhound-python`, `sharphound` (ref), `enum4linux-ng` (deep), `smbmap` (deep).
+- **Cloud/K8s**: `pacu` (deep), `scoutsuite` (deep), `prowler` (deep), `cloudsploit`, `kube-hunter` (deep), `kube-bench` (deep), `kubectl` recon patterns, `peirates`, `trivy` (deep), `grype`, `syft`, `dockle`.
+- **Mobile**: `mobsf` (deep), `frida` (deep), `objection` (deep), `apktool` (deep), `jadx` (deep), `drozer`.
+- **Forensics**: `volatility3` (deep expand — every plugin group), `autopsy`, `bulk_extractor`, `binwalk` (deep expand), `foremost` (deep), `photorec`, `testdisk`.
+- **C2 / post-ex**: `sliver` (deep), `mythic` client patterns, `covenant` (ref), `empire`/`starkiller` (deep), `merlin`, `chisel` (deep), `ligolo-ng` (deep), `sshuttle` (deep).
 
-Where a tool has been called out as `deep`, replace the generated stub with hand-authored `commands` (5–15 real flags per tool) and 3–6 real `errors`. This is where the "add every command" ask lands.
+For tools already present as stubs, ship a `kali-overrides.ts` map keyed by slug that upgrades depth from `shallow` to `deep` and replaces the generated commands/errors. `src/data/index.ts` applies the override during merge so we don't duplicate entries.
 
-### Linux distro commands (extend `src/data/distros.ts`)
+### Linux distros — extend `src/data/distros.ts`
 
-For each distro already listed, top up `commands[]` so the coverage matches what real users actually type:
+For every distro, top up `commands[]` to cover:
 
-- **Package mgmt** (per-family variants): install / remove / search / show / update / upgrade / clean / reinstall / hold / list-installed / downgrade / autoremove / list-files / which-package-owns.
-- **Systemd**: `systemctl {start,stop,restart,reload,enable,disable,mask,unmask,status,is-active,is-enabled,list-units,list-unit-files,daemon-reload}`, `journalctl -u/-f/-p/--since`, `loginctl`, `systemd-analyze blame|critical-chain`.
-- **User/perm**: `useradd`, `usermod`, `passwd`, `groupadd`, `chage`, `sudo -l`, `visudo`, `getent`, `id`, `su`, `chmod`, `chown`, `chgrp`, `umask`, `getfacl`, `setfacl`, `chattr`, `lsattr`.
-- **Network**: `ip {a,r,link,neigh}`, `nmcli`, `ss`, `resolvectl`, `firewall-cmd` / `ufw` / `iptables` / `nft`, `ping`, `traceroute`, `mtr`, `dig`, `nslookup`, `curl`, `wget`, `scp`, `rsync`, `ssh`, `ssh-keygen`, `ssh-copy-id`.
-- **Disk/FS**: `lsblk`, `blkid`, `mount`, `umount`, `fdisk`, `parted`, `mkfs.*`, `fsck`, `tune2fs`, `e2label`, `df`, `du`, `dd`, `losetup`, LVM (`pv/vg/lvcreate|display|remove`), LUKS (`cryptsetup`).
-- **Process/perf**: `ps`, `top`, `htop`, `free`, `uptime`, `vmstat`, `iostat`, `pidstat`, `strace`, `ltrace`, `lsof`, `nice`, `renice`, `kill`, `pkill`, `pgrep`.
-- **Kernel/modules**: `uname`, `lsmod`, `modprobe`, `insmod`, `rmmod`, `sysctl`, `dmesg`.
-- Distro-unique: NixOS (`nix-env`, `nixos-rebuild`, `nix flake`), Arch (`pacman`, `makepkg`, `paru`), Gentoo (`emerge`, `equery`, `eselect`), Alpine (`apk`, `rc-service`, `setup-alpine`), openSUSE (`zypper`, `snapper`, `transactional-update`), Fedora (`dnf`, `rpm-ostree`, `toolbox`).
+- Package manager: install, remove, search, show, update, upgrade, autoremove, clean, reinstall, hold, list-installed, downgrade, list-files, which-package-owns, add-repo, GPG key trust.
+- systemd + journald + logind: full verb list, timers, targets, `systemd-analyze blame/critical-chain`.
+- Users/permissions: useradd, usermod, passwd, chage, groupadd, sudo, visudo, PAM basics, getfacl/setfacl, chattr/lsattr.
+- Networking: ip, nmcli, ss, resolvectl, nft, iptables, ufw, firewall-cmd, tcpdump, wireshark-cli.
+- Storage: lsblk, blkid, parted, mkfs.*, fsck, LVM, LUKS, ZFS (where applicable), Btrfs snapshots (Fedora/openSUSE).
+- Processes/perf: ps, top, htop, vmstat, iostat, pidstat, strace, ltrace, lsof, kill/pgrep family.
+- Kernel/modules: uname, lsmod, modprobe, sysctl, dmesg, kernel-install.
+- Distro-specific: NixOS (`nix flake`, `nixos-rebuild switch --flake`), Arch (`pacman`, `paru`, `makepkg -si`), Alpine (`apk`, `rc-service`, `setup-*`), Gentoo (`emerge`, `equery`, `eselect`), openSUSE (`zypper`, `snapper`, `transactional-update`), Fedora (`dnf`, `rpm-ostree`, `toolbox`), RHEL/Rocky (`subscription-manager`, `dnf module`), Void (`xbps-*`), Slackware (`slackpkg`, `installpkg`).
 
-Same schema as today — no route or component changes needed to render them.
+Also add 3–5 more real `errors[]` to each distro (dependency conflicts, held packages, dpkg locks, systemd start failures, SELinux denials, etc.).
 
 ---
 
-## 2. Search hardening
+## 2. Scenario depth
 
-Rework `src/routes/search.tsx` + `src/data/search-synonyms.ts` so one query hits every corpus and ranks meaningfully.
+### Walkthroughs — extend `src/data/walkthroughs.ts`
 
-- **Expanded corpora**. Today Fuse indexes distros, tools, and playbooks at the "object" level. Add three more indices:
-  - **Commands index**: every `Command` from every distro and Kali tool, with backlink `{kind, parentSlug, name, syntax, description, category}`.
-  - **Errors index**: every `KnownError` with backlink `{kind, parentSlug, message, cause, fix}`.
-  - **Playbook steps index**: each step title + narration + command lines, with `{playbookSlug, stepIndex}` for deep-linking.
-- **Weights & thresholds**. Configure Fuse per-index with `threshold: 0.35`, `ignoreLocation: true`, `useExtendedSearch: true`, `minMatchCharLength: 2`, and explicit `weight` per key (name > syntax > description > examples). Cap results per bucket, then merge and re-sort by normalized score so no single bucket drowns the others.
-- **Intent expansion 2.0** (`search-synonyms.ts`):
-  - Grow `INTENTS` from ~30 to ~150 entries covering the most-asked phrasings across web, wifi, AD, cloud, mobile, IoT, forensics, and defensive testing.
-  - Add `expandQuery()` post-processing: strip filler ("how do i", "can you show me"), lemmatize a small verb table (crack→cracking, enumerate→enum, bypass→bypassing), and inject official tool names when a well-known synonym is used (e.g. "wifi handshake" → adds `aircrack-ng hcxdumptool hashcat`).
-  - Add `explainMatch(query, hit)` returning the token(s) that fired, so the results UI can show a "matched on: xss, dalfox" chip.
-- **Results UI**: five collapsible sections — Playbooks, Tools, Commands, Errors, Distros — with counts. Each hit shows the matched tokens, a one-liner, and a `<Link>` to the right route (commands deep-link `/kali/$slug#cmd-<name>` and `/distro/$slug#cmd-<name>` via a small anchor added to the render).
-- **No new deps** required — Fuse.js is already installed.
+Today: 10–12 walkthroughs. Target: every playbook gets at least one walkthrough, and the high-traffic ones get multiple variants (different targets / difficulty). Shape unchanged.
 
-Every page keeps the existing `AuthorizedUseBanner`; no ethics/UX regression.
+- Add 40+ new walkthroughs to reach ~55 total. Coverage: SQLi (union, blind boolean, blind time, second-order), XSS (reflected, stored, DOM, CSP bypass), SSRF (cloud metadata AWS/GCP/Azure, gopher, Redis), XXE (classic, blind OOB), SSTI (Jinja2, Twig, Freemarker), Deserialization (Java, .NET, Python pickle, PHP), IDOR, JWT (alg=none, weak secret, kid injection), OAuth (redirect_uri, PKCE downgrade), Log4Shell, Spring4Shell, ProxyShell, PrintNightmare, EternalBlue, Zerologon, PetitPotam, ADCS ESC1–ESC11, Kerberoast, AS-REP roast, DCSync, DCShadow, unconstrained delegation, RBCD, WPA2 handshake, WPA2 PMKID, WPS Pixie-Dust, Evil Twin, KRACK detection, Bluetooth BIAS (defensive), Linux privesc (SUID, sudo, cron, capabilities, LD_PRELOAD, PATH hijack, Docker group, GTFOBins routes), Windows privesc (AlwaysInstallElevated, UsoSvc, SeImpersonate/PrintSpoofer, unquoted service paths), container escape (docker.sock, CAP_SYS_ADMIN, kernel), K8s (exposed dashboard, ETCD, RBAC misconfig), AWS (SSRF→IMDSv1, Cognito misconfig, S3 acl), business logic (pricing race, coupon reuse, checkout skip, mass assignment), API (BOLA, BFLA, mass assignment, GraphQL introspection + batching).
 
----
+### Per-scenario detail per frame
 
-## 3. Play-by-Play walkthrough feature
+Each new walkthrough follows the existing `WalkthroughFrame` shape but now consistently ships:
 
-Add a narrated, step-by-step "dry run" view on top of each playbook. Users pick a scenario, then walk through prompts with the exact command, expected output, what the tester should look for, and next-decision branches.
+- 10–20 frames.
+- Per-frame `branches[]` (at least 2 for the tricky steps) so a user picking a different observation gets a different next step.
+- Per-frame `troubleshoot[]` (2–4 `KnownError` entries) — real failure messages with cause + fix.
+- Realistic `expectedOutput` blocks (not lorem — actual-looking tool output).
 
-### Data model (new file `src/data/walkthroughs.ts`)
+### Playbook cross-links
 
-```ts
-export type Walkthrough = {
-  playbookSlug: string;         // links back to a Playbook
-  scenario: string;             // e.g. "DVWA on localhost, medium security"
-  environment: string[];        // preconditions + lab setup notes
-  legalNote: string;            // required, mirrors playbook
-  frames: WalkthroughFrame[];   // ordered
-};
+Update `src/routes/hacking.$slug.tsx` to list *all* walkthroughs available for the playbook (currently assumes one). `walkthroughBySlug` becomes `walkthroughsByPlaybook(slug): Walkthrough[]`; route params get a scenario id: `hacking.$slug.walkthrough.$scenario.tsx`. Old `hacking.$slug.walkthrough.tsx` becomes a redirect to the first scenario for that playbook.
 
-export type WalkthroughFrame = {
-  title: string;
-  narration: string;            // 2–4 sentences of "what & why"
-  command: { code: string; note: string };
-  expectedOutput: string;       // fenced block of realistic-looking output
-  interpret: string;            // what to notice in the output
-  branches?: { on: string; goto: string }[]; // "if you see X, jump to frame Y"
-  troubleshoot?: KnownError[];  // per-frame errors
-};
-```
+### Search coverage
 
-Ship an initial set of 12 walkthroughs mapped to the most-visited playbooks:
-`sqli-sqlmap`, `xss-reflected`, `log4shell`, `business-logic-pricing`, `idor`, `wpa2-handshake`, `pmkid-attack`, `bloodhound-mapping`, `asrep-roast`, `smb-enum`, `linux-privesc`, `windows-privesc`. Each 8–15 frames.
-
-### UI
-
-New route: `src/routes/hacking.$slug.walkthrough.tsx` (child of the existing playbook detail).
-
-- Renders one frame at a time with Prev / Next controls and a step counter.
-- Left column: narration + "what to look for". Right column: `code-block` with the command, then a second `code-block` styled as terminal output with the expected result. Bottom: per-frame troubleshoot list.
-- "Copy all commands" button dumps every frame's command as a shell script.
-- Deep-link via `?frame=3` so users can share a specific step.
-- Wrapped in the existing `AckGate`; footer keeps the authorised-use banner.
-
-Add a "▶ Play-by-play walkthrough" button on `hacking.$slug.tsx` that appears only when a walkthrough exists for that playbook; falls back to a tasteful "walkthrough coming — use the steps above" note otherwise.
-
-### Search integration
-
-Walkthrough frames also feed the new commands + steps indices so a query like `"sqlmap dbs"` lands directly on the specific frame.
+`src/routes/search.tsx` already indexes walkthrough frames — no changes needed beyond the new scenario id in the deep-link.
 
 ---
 
-## Deliverables & files touched
+## 3. Open-source hardening
 
-- `src/data/kali-extra.ts` — expanded.
-- `src/data/kali-deep.ts` — added deep entries for the tools flagged above.
-- `src/data/distros.ts` — added ~40 commands per distro.
-- `src/data/search-synonyms.ts` — expanded intents, `expandQuery`, `explainMatch`.
-- `src/routes/search.tsx` — multi-index, weighted, sectioned results.
-- `src/components/command-table.tsx` — add stable `id="cmd-<slug>"` anchors on rows.
-- `src/data/walkthroughs.ts` — new.
-- `src/routes/hacking.$slug.walkthrough.tsx` — new.
-- `src/routes/hacking.$slug.tsx` — CTA button + walkthrough presence check.
-- `src/data/index.ts` — export walkthroughs + selector `walkthroughByPlaybook(slug)`.
+Everything in this section is repo hygiene — nothing changes the running app's UX.
 
-## Out of scope (explicit)
+### Legal & disclaimers
 
-- No new frameworks, backend, AI, or auth.
-- No visual redesign of existing pages beyond adding the walkthrough CTA and result sections.
-- No changes to `AuthorizedUseBanner` / `AckGate` behavior.
+- Add `LICENSE` (MIT) at repo root.
+- Add `NOTICE.md` — third-party attributions for Fuse.js, Radix, Tailwind, shadcn/ui, lucide-react.
+- Add `DISCLAIMER.md` — long-form version of the in-app banner; explicit "no warranty, authorised testing only, list of jurisdictions" language.
+- Add `SECURITY.md` — how to report vulnerabilities in *this repo* (not the tools it documents); reference to `security-memory`.
+- Add `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1.
+- Add `CONTRIBUTING.md` — how to add a tool / playbook / walkthrough (schema pointers, style rules, ethics requirement).
+
+### GitHub metadata
+
+- `.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml`, `content_correction.yml`, `config.yml` (turns off blank issues, points at Discussions).
+- `.github/PULL_REQUEST_TEMPLATE.md` — checklist including ethics attestation, source citation for any new command/exploit info.
+- `.github/workflows/ci.yml` — Bun setup → `bun install --frozen-lockfile` → `bun run typecheck` → `bun run build`. Node LTS matrix.
+- `.github/workflows/codeql.yml` — CodeQL JS/TS scan on PRs.
+- `.github/dependabot.yml` — weekly npm updates, grouped.
+- `.github/FUNDING.yml` — empty scaffold with commented options.
+
+### README
+
+Rewrite `README.md` to include: what this is (Linux + Kali reference + ethical security testing handbook, fully offline), the authorised-use disclaimer up top, screenshots (added as `docs/screenshots/*.png` placeholders), quickstart (`bun install`, `bun dev`), tech stack, data model overview, how search works, how to add content (link to `CONTRIBUTING.md`), license, acknowledgements.
+
+### Repo hygiene
+
+- Verify `.gitignore` covers `node_modules`, `.env*`, `dist`, `.wrangler`, `.vite`, `.turbo`, `.DS_Store`, `coverage`, `playwright-report`, `test-results`.
+- Add `.editorconfig`.
+- Add `.nvmrc` pinning Node LTS.
+- Verify `package.json` has `name`, `description`, `license`, `repository`, `keywords`, `engines`, `scripts.typecheck`, `scripts.lint`, `scripts.format`.
+- Add `docs/` folder with `data-model.md`, `search.md`, `walkthroughs.md`, `adding-content.md`.
+
+### In-app polish (small)
+
+- `src/routes/about.tsx`: link to GitHub repo, license, contributing, disclaimer, and per-source attributions.
+- `src/routes/ethics.tsx`: append a "reporting misuse" section and a link to `DISCLAIMER.md` (rendered client-side from the same MD source via a tiny inlined string constant to avoid a build-time fs read).
+- `AuthorizedUseBanner`: no text change — already covers scope.
+
+### Verification
+
+After the writes, run typecheck and build in the same batch. Fix any red squiggles from the extra command entries (mostly TS literal narrowing on `category`). No test suite is added — out of scope.
+
+---
+
+## Files touched
+
+**Data**
+- `src/data/kali-extra3.ts` (new, ~120 tools)
+- `src/data/kali-overrides.ts` (new, upgrade table)
+- `src/data/distros.ts` (extend)
+- `src/data/walkthroughs.ts` (extend to ~55 scenarios)
+- `src/data/index.ts` (merge override, new selector `walkthroughsByPlaybook`)
+
+**Routes**
+- `src/routes/hacking.$slug.tsx` (list all walkthroughs)
+- `src/routes/hacking.$slug.walkthrough.$scenario.tsx` (new)
+- `src/routes/hacking.$slug.walkthrough.tsx` (redirect shim)
+- `src/routes/about.tsx` (repo/license links)
+- `src/routes/ethics.tsx` (misuse reporting section)
+
+**Repo**
+- `LICENSE`, `NOTICE.md`, `DISCLAIMER.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `README.md`
+- `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/workflows/ci.yml`, `.github/workflows/codeql.yml`, `.github/dependabot.yml`, `.github/FUNDING.yml`
+- `.editorconfig`, `.nvmrc`, `.gitignore` (top-up)
+- `docs/data-model.md`, `docs/search.md`, `docs/walkthroughs.md`, `docs/adding-content.md`
+- `package.json` (metadata + scripts)
+
+## Out of scope
+
+- No new UI redesign, no new pages beyond the walkthrough scenario route.
+- No backend, no auth, no analytics, no AI.
+- No test suite.
+- No changes to `AuthorizedUseBanner` / `AckGate` behaviour.
