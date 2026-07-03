@@ -241,6 +241,18 @@ function SearchPage() {
             ))}
           </Group>
 
+          <Group title="Play-by-play walkthroughs" count={grouped.walkthroughs.length}>
+            {grouped.walkthroughs.slice(0, 10).map((r, i) => r.kind === "walkthrough" && (
+              <Link key={i} to="/hacking/$slug/walkthrough" params={{ slug: r.slug }} className="block rounded-md border border-primary/40 bg-primary/5 p-3 hover:border-primary/60">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1 font-semibold"><BookOpen className="h-3.5 w-3.5" /> {r.name}</span>
+                  <Badge variant="outline" className="text-[10px]">walkthrough · {r.difficulty}</Badge>
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.snippet}</p>
+              </Link>
+            ))}
+          </Group>
+
           <Group title="Kali Tools" count={grouped.tools.length}>
             {grouped.tools.slice(0, 10).map((r, i) => r.kind === "tool" && (
               <Link key={i} to="/kali/$slug" params={{ slug: r.slug }} className="block rounded-md border border-border bg-card p-3 hover:border-primary/60">
@@ -291,7 +303,19 @@ function SearchPage() {
             ))}
           </Group>
 
-          <Group title="Known errors" count={grouped.errors.length}>
+          <Group title="Tool errors" count={grouped.toolErrors.length}>
+            {grouped.toolErrors.slice(0, 10).map((r, i) => r.kind === "toolerror" && (
+              <Link key={i} to="/kali/$slug" params={{ slug: r.toolSlug }} className="block rounded-md border border-border bg-card p-3 hover:border-primary/60">
+                <div className="flex items-center justify-between">
+                  <span className="mono text-sm text-destructive">{r.message}</span>
+                  <Badge variant="outline" className="text-[10px]">tool error · {r.toolName}</Badge>
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.fix}</p>
+              </Link>
+            ))}
+          </Group>
+
+          <Group title="Distro errors" count={grouped.errors.length}>
             {grouped.errors.slice(0, 10).map((r, i) => r.kind === "error" && (
               <Link key={i} to="/distro/$slug" params={{ slug: r.distroSlug }} className="block rounded-md border border-border bg-card p-3 hover:border-primary/60">
                 <div className="flex items-center justify-between">
