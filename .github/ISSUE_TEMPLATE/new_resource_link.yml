@@ -1,0 +1,29 @@
+name: New resource or reference link
+description: Suggest a high-signal public resource that improves accuracy or contributor velocity.
+labels: [content, resources]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Resource title
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      placeholder: https://...
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this belongs in distro/ref
+      description: Explain whether it improves commands, mitigations, walkthroughs, or contributor onboarding.
+    validations:
+      required: true
+  - type: textarea
+    id: tags
+    attributes:
+      label: Tags
+      description: "Examples: cloud, api-security, wireless, incident-response."

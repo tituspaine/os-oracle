@@ -23,6 +23,17 @@ before contributing.
 - Vendored copies of copyrighted third-party documentation.
 - Content without a source citation.
 
+## Low-friction submission paths
+
+Not every contributor needs to open a code PR first. Use the GitHub issue forms for:
+
+- **New Kali tool command** — one real command, flags, examples, and common errors.
+- **New playbook / walkthrough** — a lab-safe scenario with citations and ethical framing.
+- **Error message + fix** — exact text, root cause, and at least one confirmed remediation.
+- **Resource / link** — a high-signal upstream source that strengthens the reference.
+
+The in-app `/community` page mirrors the same workflow and explains the current scale roadmap.
+
 ## Dev setup
 
 ```bash
@@ -68,6 +79,17 @@ The PR template will prompt you; the short version is:
 - [ ] `bun run build` passes locally.
 - [ ] `bun run lint` passes locally.
 - [ ] No new dependencies without discussion.
+
+## Security review gates
+
+Every contribution should be easy to submit but hard to weaponise:
+
+- Keep examples tied to upstream docs, man pages, CVE records, or safe lab environments.
+- Do not submit malware, credential harvesters, persistence kits, destructive payloads, or
+  bypass-ready exploit chains.
+- Prefer defensive, troubleshooting, detection, mitigation, and authorised-testing framing.
+- If a contribution would require a backend, cloud service, or arbitrary code execution path,
+  open a feature request before doing implementation work.
 
 ## Style
 

@@ -43,3 +43,16 @@ frame-by-frame authoring guide.
 Anything you add is automatically indexed by `src/routes/search.tsx` — no manual registration.
 If your content introduces a new domain word (a technique name, a tool alias), add it to
 `INTENTS` in `src/data/search-synonyms.ts` so intent search catches it.
+
+## Structured community submissions
+
+If you are not ready to edit TypeScript directly, start with the GitHub issue forms instead:
+
+- `new_kali_command.yml`
+- `new_playbook_or_walkthrough.yml`
+- `new_error_or_fix.yml`
+- `new_resource_link.yml`
+
+Those forms capture the citation, ethical framing, and troubleshooting details maintainers need
+to turn a submission into merged static content without introducing a backend or auto-publish
+surface.

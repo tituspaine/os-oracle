@@ -1,0 +1,54 @@
+name: New playbook or walkthrough
+description: Propose a safe scenario with citations, steps, and troubleshooting notes.
+labels: [content, playbook]
+body:
+  - type: dropdown
+    id: submission_type
+    attributes:
+      label: Submission type
+      options:
+        - Playbook
+        - Walkthrough
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Scenario summary
+      description: Explain the lab-safe scenario, the goal, and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Ordered steps
+      description: Include prerequisites, key commands, expected output, and recovery steps.
+    validations:
+      required: true
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection and mitigation
+      description: Describe how defenders can detect, validate, and mitigate the scenario.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Public lab docs, CVE references, upstream documentation, or standards links.
+    validations:
+      required: true
+  - type: checkboxes
+    id: ethics
+    attributes:
+      label: Ethics attestation
+      options:
+        - label: This content targets labs, owned systems, or explicit written-authorisation scenarios only.
+          required: true

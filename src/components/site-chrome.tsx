@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Terminal, Search, ShieldCheck, Scale } from "lucide-react";
+import { Terminal, Search, ShieldCheck, Scale, Users } from "lucide-react";
 import { useState, type ReactNode, type FormEvent } from "react";
 
 export function SiteHeader() {
@@ -15,9 +15,14 @@ export function SiteHeader() {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <Terminal className="h-5 w-5 text-primary" />
-          <span className="font-semibold tracking-tight">distro<span className="text-primary">/ref</span></span>
+          <span className="font-semibold tracking-tight">
+            distro<span className="text-primary">/ref</span>
+          </span>
         </Link>
-        <form onSubmit={onSubmit} className="order-3 flex w-full items-center gap-2 sm:order-2 sm:w-auto sm:flex-1 sm:max-w-md">
+        <form
+          onSubmit={onSubmit}
+          className="order-3 flex w-full items-center gap-2 sm:order-2 sm:w-auto sm:flex-1 sm:max-w-md"
+        >
           <div className="relative w-full">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -32,8 +37,18 @@ export function SiteHeader() {
         <nav className="order-2 flex items-center gap-1 text-sm sm:order-3">
           <NavLink to="/">Distros</NavLink>
           <NavLink to="/kali">Kali</NavLink>
-          <NavLink to="/hacking"><ShieldCheck className="mr-1 inline h-3.5 w-3.5" />Security Testing</NavLink>
-          <NavLink to="/ethics"><Scale className="mr-1 inline h-3.5 w-3.5" />Ethics</NavLink>
+          <NavLink to="/hacking">
+            <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
+            Security Testing
+          </NavLink>
+          <NavLink to="/community">
+            <Users className="mr-1 inline h-3.5 w-3.5" />
+            Community
+          </NavLink>
+          <NavLink to="/ethics">
+            <Scale className="mr-1 inline h-3.5 w-3.5" />
+            Ethics
+          </NavLink>
           <NavLink to="/about">About</NavLink>
         </nav>
       </div>
@@ -58,9 +73,16 @@ export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-border">
       <div className="mx-auto max-w-6xl px-4 py-6 text-xs text-muted-foreground">
-        Local, static reference. No AI. No cloud. No telemetry. Content is
-        for authorised security testing, learning, and defence only — see{" "}
-        <Link to="/ethics" className="text-primary hover:underline">ethics & authorisation</Link>.
+        Local, static reference. No AI. No cloud. No telemetry. Content is for authorised security
+        testing, learning, and defence only — see{" "}
+        <Link to="/ethics" className="text-primary hover:underline">
+          ethics & authorisation
+        </Link>
+        . Want to help scale it? See{" "}
+        <Link to="/community" className="text-primary hover:underline">
+          community submissions
+        </Link>
+        .
       </div>
     </footer>
   );

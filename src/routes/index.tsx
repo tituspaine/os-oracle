@@ -1,15 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { DISTROS, KALI_TOOLS, PLAYBOOKS } from "@/data";
 import { Badge } from "@/components/ui/badge";
-import { Skull, Terminal, Package } from "lucide-react";
+import { Skull, Terminal, Package, Users } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Linux distros — distro/ref" },
-      { name: "description", content: "Browse every major Linux distribution: purpose, best use cases, package manager, and full command reference with error fixes." },
+      {
+        name: "description",
+        content:
+          "Browse every major Linux distribution: purpose, best use cases, package manager, and full command reference with error fixes.",
+      },
       { property: "og:title", content: "Linux distros — distro/ref" },
-      { property: "og:description", content: "Every major Linux distribution with commands, use cases, and troubleshooting." },
+      {
+        property: "og:description",
+        content: "Every major Linux distribution with commands, use cases, and troubleshooting.",
+      },
     ],
   }),
   component: Index,
@@ -40,9 +47,9 @@ function Index() {
           Linux distributions &amp; the complete Kali toolset
         </h1>
         <p className="mt-3 max-w-3xl text-muted-foreground">
-          A local, static reference for every major Linux distribution and the tools shipped with Kali Linux.
-          Each entry lists what the system is for, when to use it, its commands, and how to solve common errors.
-          Nothing here calls out to the cloud — the data ships with the app.
+          A local, static reference for every major Linux distribution and the tools shipped with
+          Kali Linux. Each entry lists what the system is for, when to use it, its commands, and how
+          to solve common errors. Nothing here calls out to the cloud — the data ships with the app.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <Badge variant="outline">{DISTROS.length} distributions</Badge>
@@ -51,18 +58,55 @@ function Index() {
         </div>
       </section>
 
-      <section className="mb-10 grid gap-3 sm:grid-cols-3">
-        <Link to="/kali" className="rounded-lg border border-border bg-card p-4 hover:border-primary/60">
-          <div className="flex items-center gap-2 font-semibold"><Terminal className="h-4 w-4 text-primary" />Kali tools</div>
-          <p className="mt-1 text-sm text-muted-foreground">Every tool, categorised, with commands and errors.</p>
+      <section className="mb-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Link
+          to="/kali"
+          className="rounded-lg border border-border bg-card p-4 hover:border-primary/60"
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            <Terminal className="h-4 w-4 text-primary" />
+            Kali tools
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Every tool, categorised, with commands and errors.
+          </p>
         </Link>
-        <Link to="/hacking" className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 hover:border-destructive">
-          <div className="flex items-center gap-2 font-semibold text-destructive"><Skull className="h-4 w-4" />Hacking playbooks</div>
-          <p className="mt-1 text-sm text-muted-foreground">Top vulnerabilities & exploits with step-by-step commands and error handling.</p>
+        <Link
+          to="/hacking"
+          className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 hover:border-destructive"
+        >
+          <div className="flex items-center gap-2 font-semibold text-destructive">
+            <Skull className="h-4 w-4" />
+            Hacking playbooks
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Top vulnerabilities & exploits with step-by-step commands and error handling.
+          </p>
         </Link>
-        <Link to="/search" className="rounded-lg border border-border bg-card p-4 hover:border-primary/60">
-          <div className="flex items-center gap-2 font-semibold"><Package className="h-4 w-4 text-primary" />Intent search</div>
-          <p className="mt-1 text-sm text-muted-foreground">Describe what you want — "crack wifi", "escalate privileges" — get the right tool.</p>
+        <Link
+          to="/search"
+          className="rounded-lg border border-border bg-card p-4 hover:border-primary/60"
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            <Package className="h-4 w-4 text-primary" />
+            Intent search
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Describe what you want — "crack wifi", "escalate privileges" — get the right tool.
+          </p>
+        </Link>
+        <Link
+          to="/community"
+          className="rounded-lg border border-border bg-card p-4 hover:border-primary/60"
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            <Users className="h-4 w-4 text-primary" />
+            Community scaling
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Structured contribution paths, secure review gates, and the roadmap for expanding
+            coverage safely.
+          </p>
         </Link>
       </section>
 

@@ -1,0 +1,36 @@
+name: New error message or fix
+description: Add a real error, root cause, and confirmed remediation.
+labels: [content, troubleshooting]
+body:
+  - type: input
+    id: area
+    attributes:
+      label: Affected area
+      placeholder: /kali/sqlmap or apt/dpkg
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Exact error text
+    validations:
+      required: true
+  - type: textarea
+    id: cause
+    attributes:
+      label: Root cause
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Fix or workaround
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source URL
+      placeholder: https://...
+    validations:
+      required: true
