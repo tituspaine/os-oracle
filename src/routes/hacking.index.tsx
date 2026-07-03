@@ -135,5 +135,6 @@ function HackingIndex() {
         <p className="text-sm text-muted-foreground">No playbooks match.</p>
       )}
     </div>
+    </AckGate>
   );
 }
