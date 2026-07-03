@@ -4,7 +4,12 @@ import { KALI_SHALLOW_TOOLS } from "./kali-shallow";
 import { KALI_EXTRA_TOOLS } from "./kali-extra";
 import { KALI_EXTRA2_TOOLS } from "./kali-extra2";
 import { KALI_EXTRA3_TOOLS } from "./kali-extra3";
-import { PLAYBOOKS as CORE_PLAYBOOKS, PLAYBOOK_CATEGORIES, playbookBySlug as _pbs } from "./hacking";
+import { KALI_EXTENDED_TOOLS } from "./kali-extended";
+import {
+  PLAYBOOKS as CORE_PLAYBOOKS,
+  PLAYBOOK_CATEGORIES,
+  playbookBySlug as _pbs,
+} from "./hacking";
 import { EXTRA_PLAYBOOKS } from "./playbooks-extra";
 import type { KaliTool } from "./types";
 import type { Playbook } from "./hacking";
@@ -25,6 +30,7 @@ for (const t of [
   ...KALI_EXTRA_TOOLS,
   ...KALI_EXTRA2_TOOLS,
   ...KALI_EXTRA3_TOOLS,
+  ...KALI_EXTENDED_TOOLS,
 ]) {
   _merged.set(t.slug, t);
 }

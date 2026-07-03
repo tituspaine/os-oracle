@@ -22,7 +22,10 @@ function NotFoundComponent() {
         <h2 className="mt-4 text-xl font-semibold">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">That path isn't in this reference.</p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
             Back to distros
           </Link>
         </div>
@@ -43,10 +46,17 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">This page failed to render.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >Try again</button>
-          <a href="/" className="rounded-md border border-border bg-background px-4 py-2 text-sm">Home</a>
+          >
+            Try again
+          </button>
+          <a href="/" className="rounded-md border border-border bg-background px-4 py-2 text-sm">
+            Home
+          </a>
         </div>
       </div>
     </div>
@@ -58,10 +68,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "distro/ref — Linux distro & Kali tool command reference" },
-      { name: "description", content: "Offline-first reference of every major Linux distribution, plus the full Kali Linux toolset — with commands, use cases, and error fixes." },
-      { property: "og:title", content: "distro/ref — Linux & Kali command reference" },
-      { property: "og:description", content: "Purpose, best use cases, complete command list, and error solutions for every major Linux distro and Kali tool." },
+      { title: "OS Oracle — Offline Ethical Hacking & Linux Reference" },
+      {
+        name: "description",
+        content:
+          "OS Oracle: the complete offline-first reference for ethical hackers. Covers every major Linux distribution, 100+ Kali tools, hacking playbooks, step-by-step walkthroughs, a global community forum, and a standalone CLI — all bundled with no cloud required.",
+      },
+      { property: "og:title", content: "OS Oracle — Offline Ethical Hacking & Linux Reference" },
+      {
+        property: "og:description",
+        content:
+          "Complete offline reference: Linux distros, Kali tools, hacking playbooks, walkthroughs, community forum, and standalone CLI for ethical hackers worldwide.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

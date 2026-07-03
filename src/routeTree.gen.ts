@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ForumRouteImport } from './routes/forum'
 import { Route as EthicsRouteImport } from './routes/ethics'
+import { Route as CliRouteImport } from './routes/cli'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KaliIndexRouteImport } from './routes/kali.index'
@@ -25,9 +28,24 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForumRoute = ForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EthicsRoute = EthicsRouteImport.update({
   id: '/ethics',
   path: '/ethics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CliRoute = CliRouteImport.update({
+  id: '/cli',
+  path: '/cli',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -74,7 +92,10 @@ const HackingSlugWalkthroughRoute = HackingSlugWalkthroughRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/cli': typeof CliRoute
   '/ethics': typeof EthicsRoute
+  '/forum': typeof ForumRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/hacking/$slug': typeof HackingSlugRouteWithChildren
@@ -86,7 +107,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/cli': typeof CliRoute
   '/ethics': typeof EthicsRoute
+  '/forum': typeof ForumRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/hacking/$slug': typeof HackingSlugRouteWithChildren
@@ -99,7 +123,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/cli': typeof CliRoute
   '/ethics': typeof EthicsRoute
+  '/forum': typeof ForumRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/hacking/$slug': typeof HackingSlugRouteWithChildren
@@ -113,7 +140,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
+    | '/cli'
     | '/ethics'
+    | '/forum'
     | '/search'
     | '/distro/$slug'
     | '/hacking/$slug'
@@ -125,7 +155,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/admin'
+    | '/cli'
     | '/ethics'
+    | '/forum'
     | '/search'
     | '/distro/$slug'
     | '/hacking/$slug'
@@ -137,7 +170,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
+    | '/cli'
     | '/ethics'
+    | '/forum'
     | '/search'
     | '/distro/$slug'
     | '/hacking/$slug'
@@ -150,7 +186,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRoute
+  CliRoute: typeof CliRoute
   EthicsRoute: typeof EthicsRoute
+  ForumRoute: typeof ForumRoute
   SearchRoute: typeof SearchRoute
   DistroSlugRoute: typeof DistroSlugRoute
   HackingSlugRoute: typeof HackingSlugRouteWithChildren
@@ -168,11 +207,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forum': {
+      id: '/forum'
+      path: '/forum'
+      fullPath: '/forum'
+      preLoaderRoute: typeof ForumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ethics': {
       id: '/ethics'
       path: '/ethics'
       fullPath: '/ethics'
       preLoaderRoute: typeof EthicsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cli': {
+      id: '/cli'
+      path: '/cli'
+      fullPath: '/cli'
+      preLoaderRoute: typeof CliRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -249,7 +309,10 @@ const HackingSlugRouteWithChildren = HackingSlugRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRoute,
+  CliRoute: CliRoute,
   EthicsRoute: EthicsRoute,
+  ForumRoute: ForumRoute,
   SearchRoute: SearchRoute,
   DistroSlugRoute: DistroSlugRoute,
   HackingSlugRoute: HackingSlugRouteWithChildren,
@@ -260,3 +323,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
