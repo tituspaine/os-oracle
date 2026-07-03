@@ -19,7 +19,7 @@ export type WalkthroughStep = {
   /** Short imperative title. */
   title: string;
   /** Longer narrated explanation of what and why. */
-  narration: string;
+  narration?: string;
   /** The command as you would type it. */
   command?: string;
   /** Realistic, redacted, LAB-ONLY expected output. */
