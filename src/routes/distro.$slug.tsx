@@ -13,7 +13,8 @@ export const Route = createFileRoute("/distro/$slug")({
     return { distro };
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Distro not found" }, { name: "robots", content: "noindex" }] };
+    if (!loaderData)
+      return { meta: [{ title: "Distro not found" }, { name: "robots", content: "noindex" }] };
     const d = loaderData.distro;
     return {
       meta: [
@@ -28,7 +29,9 @@ export const Route = createFileRoute("/distro/$slug")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-3xl px-4 py-16 text-center">
       <h1 className="text-2xl font-bold">Distro not found</h1>
-      <Link to="/" className="mt-4 inline-block text-primary hover:underline">← Back to distros</Link>
+      <Link to="/" className="mt-4 inline-block text-primary hover:underline">
+        ← Back to distros
+      </Link>
     </div>
   ),
 });
@@ -38,13 +41,18 @@ function DistroPage() {
   const related = DISTROS.filter((x) => x.family === d.family && x.slug !== d.slug).slice(0, 4);
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
+      <Link
+        to="/"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+      >
         <ArrowLeft className="h-4 w-4" /> All distros
       </Link>
       <header className="mb-6">
         <div className="flex flex-wrap items-baseline gap-3">
           <h1 className="text-3xl font-bold tracking-tight">{d.name}</h1>
-          <Badge variant="outline" className="mono">{d.packageManager}</Badge>
+          <Badge variant="outline" className="mono">
+            {d.packageManager}
+          </Badge>
           <Badge variant="outline">{d.init}</Badge>
           <Badge variant="outline">{d.defaultShell}</Badge>
         </div>
@@ -65,17 +73,23 @@ function DistroPage() {
         <TabsContent value="overview" className="mt-6 space-y-6">
           <Section title="Best use cases">
             <ul className="list-disc pl-6 text-sm space-y-1">
-              {d.bestUseCases.map((x: string) => <li key={x}>{x}</li>)}
+              {d.bestUseCases.map((x: string) => (
+                <li key={x}>{x}</li>
+              ))}
             </ul>
           </Section>
           <Section title="When to use">
             <ul className="list-disc pl-6 text-sm space-y-1">
-              {d.whenToUse.map((x: string) => <li key={x}>{x}</li>)}
+              {d.whenToUse.map((x: string) => (
+                <li key={x}>{x}</li>
+              ))}
             </ul>
           </Section>
           <Section title="When not to use">
             <ul className="list-disc pl-6 text-sm space-y-1">
-              {d.whenNotToUse.map((x: string) => <li key={x}>{x}</li>)}
+              {d.whenNotToUse.map((x: string) => (
+                <li key={x}>{x}</li>
+              ))}
             </ul>
           </Section>
           {related.length > 0 && (
@@ -87,7 +101,9 @@ function DistroPage() {
                     to="/distro/$slug"
                     params={{ slug: r.slug }}
                     className="rounded-full border border-border px-3 py-1 text-xs hover:border-primary/60 hover:text-primary"
-                  >{r.name}</Link>
+                  >
+                    {r.name}
+                  </Link>
                 ))}
               </div>
             </Section>
@@ -107,7 +123,10 @@ function DistroPage() {
             <p className="text-sm text-muted-foreground">
               Kali bundles hundreds of offensive-security tools. Browse the full catalog:
             </p>
-            <Link to="/kali" className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+            <Link
+              to="/kali"
+              className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            >
               Open Kali tool catalog →
             </Link>
           </TabsContent>
@@ -120,7 +139,9 @@ function DistroPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
       {children}
     </div>
   );

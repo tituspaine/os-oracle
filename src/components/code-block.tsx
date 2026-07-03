@@ -9,11 +9,20 @@ export function CodeBlock({ code, className }: { code: string; className?: strin
       await navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
   return (
-    <div className={cn("group relative rounded-md border border-border bg-[var(--code-bg)] text-[var(--code-fg)]", className)}>
-      <pre className="overflow-x-auto p-3 text-sm leading-relaxed mono"><code>{code}</code></pre>
+    <div
+      className={cn(
+        "group relative rounded-md border border-border bg-[var(--code-bg)] text-[var(--code-fg)]",
+        className,
+      )}
+    >
+      <pre className="overflow-x-auto p-3 text-sm leading-relaxed mono">
+        <code>{code}</code>
+      </pre>
       <button
         type="button"
         onClick={onCopy}

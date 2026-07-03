@@ -16,11 +16,10 @@ export function AuthorizedUseBanner() {
       <div className="mx-auto flex max-w-6xl items-start gap-2 px-4 py-2 text-xs sm:text-[13px]">
         <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
         <p className="text-foreground/90">
-          <strong>Authorised testing, education, and defence only.</strong>{" "}
-          All information on this site is provided for authorised security
-          testing, learning, and defensive purposes. Use against systems you
-          do not own or lack explicit written permission to test is illegal
-          and unethical.{" "}
+          <strong>Authorised testing, education, and defence only.</strong> All information on this
+          site is provided for authorised security testing, learning, and defensive purposes. Use
+          against systems you do not own or lack explicit written permission to test is illegal and
+          unethical.{" "}
           <Link to="/ethics" className="text-primary underline underline-offset-2 hover:opacity-80">
             Read the ethics &amp; scope guide
           </Link>

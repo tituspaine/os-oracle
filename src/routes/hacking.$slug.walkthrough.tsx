@@ -25,10 +25,7 @@ export const Route = createFileRoute("/hacking/$slug/walkthrough")({
   head: ({ loaderData }) => {
     if (!loaderData)
       return {
-        meta: [
-          { title: "Walkthrough not found" },
-          { name: "robots", content: "noindex" },
-        ],
+        meta: [{ title: "Walkthrough not found" }, { name: "robots", content: "noindex" }],
       };
     const w = loaderData.wt;
     return {
@@ -89,7 +86,9 @@ function WalkthroughPage() {
           <Badge variant="outline" className="text-[10px]">
             <Clock className="mr-1 h-3 w-3" /> {wt.duration}
           </Badge>
-          <Badge variant="outline" className="text-[10px]">Lab: {wt.labSetup}</Badge>
+          <Badge variant="outline" className="text-[10px]">
+            Lab: {wt.labSetup}
+          </Badge>
         </div>
         <p className="mt-4 max-w-3xl text-foreground/90">{wt.scenario}</p>
         <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
@@ -145,15 +144,13 @@ function WalkthroughPage() {
                     <Eye className="h-3 w-3" /> expected output (lab, simulated)
                   </div>
                   <pre className="mono overflow-x-auto rounded-md border border-border bg-muted/40 p-3 text-xs text-foreground/85">
-{s.expectedOutput}
+                    {s.expectedOutput}
                   </pre>
                 </div>
               )}
               {s.observation && (
                 <div className="mt-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
-                  <span className="mr-1 text-xs uppercase tracking-wider text-primary">
-                    Read:
-                  </span>
+                  <span className="mr-1 text-xs uppercase tracking-wider text-primary">Read:</span>
                   {s.observation}
                 </div>
               )}
@@ -213,8 +210,7 @@ function WalkthroughPage() {
       {parent && (
         <div className="mt-8 rounded-md border border-border bg-muted/20 p-4 text-sm">
           <p className="text-muted-foreground">
-            The concise reference for this scenario lives on the
-            {" "}
+            The concise reference for this scenario lives on the{" "}
             <Link
               to="/hacking/$slug"
               params={{ slug: wt.slug }}

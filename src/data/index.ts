@@ -1,6 +1,7 @@
 import { DISTROS as BASE_DISTROS } from "./distros";
 import { DISTRO_EXTRA_COMMANDS } from "./distros-extra";
 import { KALI_DEEP_TOOLS } from "./kali-deep";
+import { KALI_DEEP2_TOOLS } from "./kali-deep2";
 import { KALI_SHALLOW_TOOLS } from "./kali-shallow";
 import { KALI_EXTRA_TOOLS } from "./kali-extra";
 import { KALI_EXTRA2_TOOLS } from "./kali-extra2";
@@ -11,6 +12,7 @@ import {
   playbookBySlug as _pbs,
 } from "./hacking";
 import { EXTRA_PLAYBOOKS } from "./playbooks-extra";
+import { EXTRA2_PLAYBOOKS } from "./playbooks-extra2";
 import type { Distro, KaliTool } from "./types";
 import type { Playbook } from "./hacking";
 
@@ -38,6 +40,7 @@ for (const t of [
   ...KALI_EXTRA_TOOLS,
   ...KALI_EXTRA2_TOOLS,
   ...KALI_EXTRA3_TOOLS,
+  ...KALI_DEEP2_TOOLS,
 ]) {
   _merged.set(t.slug, t);
 }
@@ -49,7 +52,7 @@ export const kaliToolBySlug = (slug: string) => KALI_TOOLS.find((t) => t.slug ==
 
 // Merge playbooks the same way.
 const _pb = new Map<string, Playbook>();
-for (const p of [...CORE_PLAYBOOKS, ...EXTRA_PLAYBOOKS]) _pb.set(p.slug, p);
+for (const p of [...CORE_PLAYBOOKS, ...EXTRA_PLAYBOOKS, ...EXTRA2_PLAYBOOKS]) _pb.set(p.slug, p);
 export const PLAYBOOKS: Playbook[] = Array.from(_pb.values()).sort((a, b) =>
   a.title.localeCompare(b.title),
 );

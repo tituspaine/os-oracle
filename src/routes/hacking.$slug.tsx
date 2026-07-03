@@ -13,7 +13,8 @@ export const Route = createFileRoute("/hacking/$slug")({
     return { pb };
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Playbook not found" }, { name: "robots", content: "noindex" }] };
+    if (!loaderData)
+      return { meta: [{ title: "Playbook not found" }, { name: "robots", content: "noindex" }] };
     const p = loaderData.pb;
     return {
       meta: [
@@ -27,7 +28,9 @@ export const Route = createFileRoute("/hacking/$slug")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-3xl px-4 py-16 text-center">
       <h1 className="text-2xl font-bold">Playbook not found</h1>
-      <Link to="/hacking" className="mt-4 inline-block text-primary hover:underline">← All playbooks</Link>
+      <Link to="/hacking" className="mt-4 inline-block text-primary hover:underline">
+        ← All playbooks
+      </Link>
     </div>
   ),
   component: PlaybookPage,
@@ -48,19 +51,32 @@ function PlaybookPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <Link to="/hacking" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
+      <Link
+        to="/hacking"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+      >
         <ArrowLeft className="h-4 w-4" /> All playbooks
       </Link>
 
       <header className="mb-6">
         <div className="flex flex-wrap items-baseline gap-3">
           <h1 className="text-3xl font-bold tracking-tight">{pb.title}</h1>
-          <Badge className={`text-[10px] uppercase ${SEVERITY_COLOR[pb.severity]}`}>{pb.severity}</Badge>
+          <Badge className={`text-[10px] uppercase ${SEVERITY_COLOR[pb.severity]}`}>
+            {pb.severity}
+          </Badge>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline">{pb.category}</Badge>
-          {pb.cve?.map((c: string) => <span key={c} className="mono">{c}</span>)}
-          {pb.mitreAttack?.map((m: string) => <span key={m} className="mono text-primary/80">MITRE {m}</span>)}
+          {pb.cve?.map((c: string) => (
+            <span key={c} className="mono">
+              {c}
+            </span>
+          ))}
+          {pb.mitreAttack?.map((m: string) => (
+            <span key={m} className="mono text-primary/80">
+              MITRE {m}
+            </span>
+          ))}
         </div>
         <p className="mt-4 max-w-3xl text-foreground/90">{pb.summary}</p>
 
@@ -83,16 +99,22 @@ function PlaybookPage() {
 
       {pb.prerequisites.length > 0 && (
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Prerequisites</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Prerequisites
+          </h2>
           <ul className="list-disc space-y-1 pl-5 text-sm">
-            {pb.prerequisites.map((p: string, i: number) => <li key={i}>{p}</li>)}
+            {pb.prerequisites.map((p: string, i: number) => (
+              <li key={i}>{p}</li>
+            ))}
           </ul>
         </section>
       )}
 
       {tools.length > 0 && (
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tools used</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Tools used
+          </h2>
           <div className="flex flex-wrap gap-2">
             {tools.map((t) => (
               <Link
@@ -115,7 +137,9 @@ function PlaybookPage() {
           {pb.steps.map((s: PlaybookStep, i: number) => (
             <li key={i} className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-baseline gap-3">
-                <span className="mono text-2xl font-bold text-primary/70">{String(i + 1).padStart(2, "0")}</span>
+                <span className="mono text-2xl font-bold text-primary/70">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
                 <h3 className="text-base font-semibold">{s.title}</h3>
               </div>
               {s.detail && <p className="mt-2 text-sm text-foreground/90">{s.detail}</p>}
