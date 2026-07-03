@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { PLAYBOOKS, PLAYBOOK_CATEGORIES, expandQuery, nearestIntents } from "@/data";
+import { PLAYBOOKS, PLAYBOOK_CATEGORIES, WALKTHROUGHS, hasWalkthrough, expandQuery, nearestIntents } from "@/data";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, BookOpen } from "lucide-react";
 import { AckGate } from "@/components/ack-gate";
 
 export const Route = createFileRoute("/hacking/")({
