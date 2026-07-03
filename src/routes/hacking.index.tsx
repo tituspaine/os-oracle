@@ -75,6 +75,36 @@ function HackingIndex() {
         </div>
       </header>
 
+      <section className="mb-8 rounded-lg border border-primary/40 bg-primary/5 p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="inline-flex items-center gap-2 text-lg font-semibold text-primary">
+            <BookOpen className="h-5 w-5" /> Play-by-play walkthroughs
+          </h2>
+          <span className="text-xs text-muted-foreground">{WALKTHROUGHS.length} available</span>
+        </div>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Narrated end-to-end runs with real commands, expected terminal output, and branching
+          troubleshooting — perfect for your first authorised lab attempt.
+        </p>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {WALKTHROUGHS.map((w) => (
+            <li key={w.slug}>
+              <Link
+                to="/hacking/$slug/walkthrough"
+                params={{ slug: w.slug }}
+                className="block rounded-md border border-border bg-card p-3 hover:border-primary/60"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">{w.title}</span>
+                  <Badge variant="outline" className="text-[10px]">{w.difficulty}</Badge>
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{w.scenario}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <div className="mb-6 flex flex-col gap-2">
         <Input
           placeholder='Try: "how do I audit a Wi-Fi network" or "test website pricing logic"'
@@ -127,6 +157,11 @@ function HackingIndex() {
                 {p.mitreAttack?.map((m) => <span key={m} className="mono text-primary/80">{m}</span>)}
               </div>
               <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.summary}</p>
+              {hasWalkthrough(p.slug) && (
+                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                  <BookOpen className="h-3 w-3" /> Play-by-play available
+                </span>
+              )}
             </Link>
           </li>
         ))}
