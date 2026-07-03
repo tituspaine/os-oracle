@@ -1,0 +1,46 @@
+name: New Kali tool command
+description: Submit a real command, example, and troubleshooting detail for a Kali tool.
+labels: [content, kali]
+body:
+  - type: input
+    id: tool
+    attributes:
+      label: Tool name or slug
+      placeholder: sqlmap
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command syntax and flags
+      description: Include the exact command and explain what the flags do.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Real examples
+      description: Add one or more examples that are safe for labs or owned systems.
+    validations:
+      required: true
+  - type: textarea
+    id: errors
+    attributes:
+      label: Common errors and fixes
+      description: Include exact error text, likely cause, and remediation.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source URL
+      placeholder: https://...
+    validations:
+      required: true
+  - type: checkboxes
+    id: ethics
+    attributes:
+      label: Ethics attestation
+      options:
+        - label: This content is for authorised testing, learning, or defence only and does not include malware or destructive payloads.
+          required: true

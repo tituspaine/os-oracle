@@ -42,12 +42,12 @@ npm run dev
 
 ## Scripts
 
-| Script          | What it does                          |
-| --------------- | ------------------------------------- |
-| `bun dev`       | Start Vite dev server on `:8080`      |
-| `bun run build` | Production build                      |
-| `bun run lint`  | ESLint the codebase                   |
-| `bun run format`| Prettier-format the codebase          |
+| Script           | What it does                     |
+| ---------------- | -------------------------------- |
+| `bun dev`        | Start Vite dev server on `:8080` |
+| `bun run build`  | Production build                 |
+| `bun run lint`   | ESLint the codebase              |
+| `bun run format` | Prettier-format the codebase     |
 
 ## Tech stack
 
@@ -59,16 +59,16 @@ npm run dev
 
 ## Where the content lives
 
-| File                              | What's inside                                        |
-| --------------------------------- | ---------------------------------------------------- |
-| `src/data/types.ts`               | Shared types (`Command`, `KnownError`, `Distro`…)    |
-| `src/data/common-commands.ts`     | Cross-distro core Linux commands                      |
-| `src/data/distros.ts`             | Per-distro metadata + distro-specific commands       |
-| `src/data/kali-{shallow,deep,extra,extra2,extra3}.ts` | Kali tool catalog                    |
-| `src/data/hacking.ts`             | Core exploitation playbooks                          |
-| `src/data/playbooks-extra.ts`     | Business-logic, cloud, AD, mobile, IoT playbooks     |
-| `src/data/walkthroughs.ts`        | Narrated play-by-play scenarios                      |
-| `src/data/search-synonyms.ts`     | Intent map + query expansion                         |
+| File                                                  | What's inside                                     |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `src/data/types.ts`                                   | Shared types (`Command`, `KnownError`, `Distro`…) |
+| `src/data/common-commands.ts`                         | Cross-distro core Linux commands                  |
+| `src/data/distros.ts`                                 | Per-distro metadata + distro-specific commands    |
+| `src/data/kali-{shallow,deep,extra,extra2,extra3}.ts` | Kali tool catalog                                 |
+| `src/data/hacking.ts`                                 | Core exploitation playbooks                       |
+| `src/data/playbooks-extra.ts`                         | Business-logic, cloud, AD, mobile, IoT playbooks  |
+| `src/data/walkthroughs.ts`                            | Narrated play-by-play scenarios                   |
+| `src/data/search-synonyms.ts`                         | Intent map + query expansion                      |
 
 ## Contributing
 
@@ -79,6 +79,19 @@ Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md). Every content PR must includ
 3. Tests where relevant (typecheck must pass).
 
 See also [`docs/data-model.md`](./docs/data-model.md) and [`docs/adding-content.md`](./docs/adding-content.md).
+
+## Community scaling
+
+- The in-app [`/community`](./src/routes/community.tsx) page documents the safest expansion plan:
+  structured submission types, approval workflow, security review gates, and the highest-value
+  areas still to build out.
+- GitHub issue forms now cover:
+  - new Kali tool commands
+  - new playbooks / walkthroughs
+  - error-message fixes
+  - high-value external resources
+- The contribution model stays **static by design**: no live uploads, no runtime code execution,
+  and no auto-publishing path that bypasses maintainers.
 
 ## Security
 
