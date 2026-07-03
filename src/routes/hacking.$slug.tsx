@@ -1,12 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { playbookBySlug, kaliToolBySlug } from "@/data";
+import type { Playbook, PlaybookStep } from "@/data";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/code-block";
 import { ErrorList } from "@/components/error-list";
 import { ArrowLeft, ShieldAlert, Eye, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/hacking/$slug")({
-  loader: ({ params }) => {
+  loader: ({ params }): { pb: Playbook } => {
     const pb = playbookBySlug(params.slug);
     if (!pb) throw notFound();
     return { pb };
@@ -41,7 +42,7 @@ const SEVERITY_COLOR: Record<string, string> = {
 
 function PlaybookPage() {
   const { pb } = Route.useLoaderData();
-  const tools = pb.toolSlugs.map((s) => kaliToolBySlug(s)).filter(Boolean);
+  const tools = pb.toolSlugs.map((s: string) => kaliToolBySlug(s)).filter(Boolean);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -56,8 +57,8 @@ function PlaybookPage() {
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline">{pb.category}</Badge>
-          {pb.cve?.map((c) => <span key={c} className="mono">{c}</span>)}
-          {pb.mitreAttack?.map((m) => <span key={m} className="mono text-primary/80">MITRE {m}</span>)}
+          {pb.cve?.map((c: string) => <span key={c} className="mono">{c}</span>)}
+          {pb.mitreAttack?.map((m: string) => <span key={m} className="mono text-primary/80">MITRE {m}</span>)}
         </div>
         <p className="mt-4 max-w-3xl text-foreground/90">{pb.summary}</p>
 
@@ -71,7 +72,7 @@ function PlaybookPage() {
         <section className="mb-6">
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Prerequisites</h2>
           <ul className="list-disc space-y-1 pl-5 text-sm">
-            {pb.prerequisites.map((p, i) => <li key={i}>{p}</li>)}
+            {pb.prerequisites.map((p: string, i: number) => <li key={i}>{p}</li>)}
           </ul>
         </section>
       )}
@@ -98,7 +99,7 @@ function PlaybookPage() {
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold">Steps</h2>
         <ol className="space-y-4">
-          {pb.steps.map((s, i) => (
+          {pb.steps.map((s: PlaybookStep, i: number) => (
             <li key={i} className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-baseline gap-3">
                 <span className="mono text-2xl font-bold text-primary/70">{String(i + 1).padStart(2, "0")}</span>
@@ -106,7 +107,7 @@ function PlaybookPage() {
               </div>
               {s.detail && <p className="mt-2 text-sm text-foreground/90">{s.detail}</p>}
               <div className="mt-3 space-y-2">
-                {s.commands.map((c, j) => (
+                {s.commands.map((c: { code: string; note: string }, j: number) => (
                   <div key={j}>
                     <CodeBlock code={c.code} />
                     {c.note && <p className="mt-1 text-xs text-muted-foreground">{c.note}</p>}

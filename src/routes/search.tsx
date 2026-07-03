@@ -34,7 +34,7 @@ function SearchPage() {
   // Reflect input into URL (debounced-ish via effect).
   useEffect(() => {
     const t = setTimeout(() => {
-      navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true });
+      navigate({ search: (prev: { q?: string }) => ({ ...prev, q: q || undefined }), replace: true });
     }, 300);
     return () => clearTimeout(t);
   }, [q, navigate]);
@@ -96,14 +96,14 @@ function SearchPage() {
         body: [e.message, e.cause, e.fix, d.name].join(" "),
       })),
     );
-    const opts = { keys: ["name", "body"], threshold: 0.35, ignoreLocation: true, includeScore: true } as const;
+    const baseOpts = { threshold: 0.35, ignoreLocation: true, includeScore: true };
     return {
-      playbooks: new Fuse(playbooks, opts),
-      distros: new Fuse(distros, opts),
-      tools: new Fuse(tools, opts),
-      distroCommands: new Fuse(distroCommands, { ...opts, keys: ["name", "syntax", "body"] }),
-      toolCommands: new Fuse(toolCommands, { ...opts, keys: ["name", "syntax", "body"] }),
-      errors: new Fuse(errors, { ...opts, keys: ["message", "body"] }),
+      playbooks: new Fuse(playbooks, { ...baseOpts, keys: ["name", "body"] }),
+      distros: new Fuse(distros, { ...baseOpts, keys: ["name", "body"] }),
+      tools: new Fuse(tools, { ...baseOpts, keys: ["name", "body"] }),
+      distroCommands: new Fuse(distroCommands, { ...baseOpts, keys: ["name", "syntax", "body"] }),
+      toolCommands: new Fuse(toolCommands, { ...baseOpts, keys: ["name", "syntax", "body"] }),
+      errors: new Fuse(errors, { ...baseOpts, keys: ["message", "body"] }),
     };
   }, []);
 

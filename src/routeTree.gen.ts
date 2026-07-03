@@ -13,7 +13,9 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KaliIndexRouteImport } from './routes/kali.index'
+import { Route as HackingIndexRouteImport } from './routes/hacking.index'
 import { Route as KaliSlugRouteImport } from './routes/kali.$slug'
+import { Route as HackingSlugRouteImport } from './routes/hacking.$slug'
 import { Route as DistroSlugRouteImport } from './routes/distro.$slug'
 
 const SearchRoute = SearchRouteImport.update({
@@ -36,9 +38,19 @@ const KaliIndexRoute = KaliIndexRouteImport.update({
   path: '/kali/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HackingIndexRoute = HackingIndexRouteImport.update({
+  id: '/hacking/',
+  path: '/hacking/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KaliSlugRoute = KaliSlugRouteImport.update({
   id: '/kali/$slug',
   path: '/kali/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HackingSlugRoute = HackingSlugRouteImport.update({
+  id: '/hacking/$slug',
+  path: '/hacking/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DistroSlugRoute = DistroSlugRouteImport.update({
@@ -52,7 +64,9 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
+  '/hacking/$slug': typeof HackingSlugRoute
   '/kali/$slug': typeof KaliSlugRoute
+  '/hacking/': typeof HackingIndexRoute
   '/kali/': typeof KaliIndexRoute
 }
 export interface FileRoutesByTo {
@@ -60,7 +74,9 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
+  '/hacking/$slug': typeof HackingSlugRoute
   '/kali/$slug': typeof KaliSlugRoute
+  '/hacking': typeof HackingIndexRoute
   '/kali': typeof KaliIndexRoute
 }
 export interface FileRoutesById {
@@ -69,7 +85,9 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
+  '/hacking/$slug': typeof HackingSlugRoute
   '/kali/$slug': typeof KaliSlugRoute
+  '/hacking/': typeof HackingIndexRoute
   '/kali/': typeof KaliIndexRoute
 }
 export interface FileRouteTypes {
@@ -79,17 +97,29 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/distro/$slug'
+    | '/hacking/$slug'
     | '/kali/$slug'
+    | '/hacking/'
     | '/kali/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/search' | '/distro/$slug' | '/kali/$slug' | '/kali'
+  to:
+    | '/'
+    | '/about'
+    | '/search'
+    | '/distro/$slug'
+    | '/hacking/$slug'
+    | '/kali/$slug'
+    | '/hacking'
+    | '/kali'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/search'
     | '/distro/$slug'
+    | '/hacking/$slug'
     | '/kali/$slug'
+    | '/hacking/'
     | '/kali/'
   fileRoutesById: FileRoutesById
 }
@@ -98,7 +128,9 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   SearchRoute: typeof SearchRoute
   DistroSlugRoute: typeof DistroSlugRoute
+  HackingSlugRoute: typeof HackingSlugRoute
   KaliSlugRoute: typeof KaliSlugRoute
+  HackingIndexRoute: typeof HackingIndexRoute
   KaliIndexRoute: typeof KaliIndexRoute
 }
 
@@ -132,11 +164,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KaliIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hacking/': {
+      id: '/hacking/'
+      path: '/hacking'
+      fullPath: '/hacking/'
+      preLoaderRoute: typeof HackingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kali/$slug': {
       id: '/kali/$slug'
       path: '/kali/$slug'
       fullPath: '/kali/$slug'
       preLoaderRoute: typeof KaliSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hacking/$slug': {
+      id: '/hacking/$slug'
+      path: '/hacking/$slug'
+      fullPath: '/hacking/$slug'
+      preLoaderRoute: typeof HackingSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/distro/$slug': {
@@ -154,7 +200,9 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   SearchRoute: SearchRoute,
   DistroSlugRoute: DistroSlugRoute,
+  HackingSlugRoute: HackingSlugRoute,
   KaliSlugRoute: KaliSlugRoute,
+  HackingIndexRoute: HackingIndexRoute,
   KaliIndexRoute: KaliIndexRoute,
 }
 export const routeTree = rootRouteImport
