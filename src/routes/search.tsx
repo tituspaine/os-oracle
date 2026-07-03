@@ -2,17 +2,19 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { DISTROS, KALI_TOOLS, PLAYBOOKS, expandQuery, nearestIntents } from "@/data";
+import { DISTROS, KALI_TOOLS, PLAYBOOKS, WALKTHROUGHS, expandQuery, nearestIntents } from "@/data";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, BookOpen } from "lucide-react";
 
 type Hit =
   | { kind: "playbook"; slug: string; name: string; snippet: string; category: string; severity: string; score: number }
+  | { kind: "walkthrough"; slug: string; name: string; snippet: string; difficulty: string; score: number }
   | { kind: "distro"; slug: string; name: string; snippet: string; score: number }
   | { kind: "tool"; slug: string; name: string; snippet: string; category: string; score: number }
   | { kind: "command"; distroSlug: string; distroName: string; name: string; syntax: string; description: string; score: number }
   | { kind: "toolcommand"; toolSlug: string; toolName: string; name: string; syntax: string; description: string; score: number }
+  | { kind: "toolerror"; toolSlug: string; toolName: string; message: string; fix: string; score: number }
   | { kind: "error"; distroSlug: string; distroName: string; message: string; fix: string; score: number };
 
 export const Route = createFileRoute("/search")({
@@ -47,7 +49,27 @@ function SearchPage() {
       snippet: p.summary,
       category: p.category,
       severity: p.severity,
-      body: [p.title, p.summary, p.category, ...(p.cve ?? []), ...(p.mitreAttack ?? []), ...p.steps.map((s) => s.title + " " + s.detail)].join(" "),
+      body: [
+        p.title,
+        p.summary,
+        p.category,
+        ...(p.cve ?? []),
+        ...(p.mitreAttack ?? []),
+        ...p.steps.map((s) => `${s.title} ${s.detail}`),
+      ].join(" "),
+    }));
+    const walkthroughs = WALKTHROUGHS.map((w) => ({
+      _kind: "walkthrough" as const,
+      slug: w.slug,
+      name: w.title,
+      snippet: w.scenario,
+      difficulty: w.difficulty,
+      body: [
+        w.title,
+        w.scenario,
+        w.labSetup,
+        ...w.steps.map((s) => `${s.title} ${s.narration} ${s.command ?? ""}`),
+      ].join(" "),
     }));
     const distros = DISTROS.map((d) => ({
       _kind: "distro" as const,
@@ -83,7 +105,17 @@ function SearchPage() {
         name: c.name,
         syntax: c.syntax,
         description: c.description,
-        body: [c.name, c.syntax, c.description, t.name].join(" "),
+        body: [c.name, c.syntax, c.description, t.name, c.category].join(" "),
+      })),
+    );
+    const toolErrors = KALI_TOOLS.flatMap((t) =>
+      (t.errors ?? []).map((e) => ({
+        _kind: "toolerror" as const,
+        toolSlug: t.slug,
+        toolName: t.name,
+        message: e.message,
+        fix: e.fix,
+        body: [e.message, e.cause, e.fix, t.name].join(" "),
       })),
     );
     const errors = DISTROS.flatMap((d) =>
@@ -98,12 +130,14 @@ function SearchPage() {
     );
     const baseOpts = { threshold: 0.35, ignoreLocation: true, includeScore: true };
     return {
-      playbooks: new Fuse(playbooks, { ...baseOpts, keys: ["name", "body"] }),
-      distros: new Fuse(distros, { ...baseOpts, keys: ["name", "body"] }),
-      tools: new Fuse(tools, { ...baseOpts, keys: ["name", "body"] }),
-      distroCommands: new Fuse(distroCommands, { ...baseOpts, keys: ["name", "syntax", "body"] }),
-      toolCommands: new Fuse(toolCommands, { ...baseOpts, keys: ["name", "syntax", "body"] }),
-      errors: new Fuse(errors, { ...baseOpts, keys: ["message", "body"] }),
+      playbooks: new Fuse(playbooks, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "body"] }),
+      walkthroughs: new Fuse(walkthroughs, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "body"] }),
+      distros: new Fuse(distros, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "body"] }),
+      tools: new Fuse(tools, { ...baseOpts, keys: [{ name: "name", weight: 3 }, "body"] }),
+      distroCommands: new Fuse(distroCommands, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "syntax", "body"] }),
+      toolCommands: new Fuse(toolCommands, { ...baseOpts, keys: [{ name: "name", weight: 2 }, "syntax", "body"] }),
+      toolErrors: new Fuse(toolErrors, { ...baseOpts, keys: [{ name: "message", weight: 2 }, "body"] }),
+      errors: new Fuse(errors, { ...baseOpts, keys: [{ name: "message", weight: 2 }, "body"] }),
     };
   }, []);
 
