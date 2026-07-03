@@ -65,17 +65,17 @@ function DistroPage() {
         <TabsContent value="overview" className="mt-6 space-y-6">
           <Section title="Best use cases">
             <ul className="list-disc pl-6 text-sm space-y-1">
-              {d.bestUseCases.map((x) => <li key={x}>{x}</li>)}
+              {d.bestUseCases.map((x: string) => <li key={x}>{x}</li>)}
             </ul>
           </Section>
           <Section title="When to use">
             <ul className="list-disc pl-6 text-sm space-y-1">
-              {d.whenToUse.map((x) => <li key={x}>{x}</li>)}
+              {d.whenToUse.map((x: string) => <li key={x}>{x}</li>)}
             </ul>
           </Section>
           <Section title="When not to use">
             <ul className="list-disc pl-6 text-sm space-y-1">
-              {d.whenNotToUse.map((x) => <li key={x}>{x}</li>)}
+              {d.whenNotToUse.map((x: string) => <li key={x}>{x}</li>)}
             </ul>
           </Section>
           {related.length > 0 && (
