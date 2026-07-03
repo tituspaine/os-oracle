@@ -1,0 +1,29 @@
+name: Content correction
+description: A command, flag, error message, CVE, or playbook step is wrong.
+labels: [content]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page / URL
+      placeholder: /kali/nmap
+    validations:
+      required: true
+  - type: textarea
+    id: incorrect
+    attributes:
+      label: What is incorrect?
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: What should it say?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source (man page, upstream docs, CVE)
+    validations:
+      required: true
