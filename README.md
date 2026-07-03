@@ -1,96 +1,175 @@
-# distro/ref — Linux & Kali reference + ethical security testing handbook
+# 🔮 OS Oracle — Offline Linux & Kali Reference CLI
 
-> **Authorised testing, education, and defence only.** Every command, playbook, and walkthrough in this
-> repository is provided for **authorised** security testing, learning, and defensive purposes.
-> Use against systems you do not own or lack **explicit written permission** to test is illegal and
-> unethical. See [`DISCLAIMER.md`](./DISCLAIMER.md) and the in-app `/ethics` page.
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![GitHub Pages](https://img.shields.io/badge/docs-GitHub_Pages-blue.svg)](https://tituspaine.github.io/os-oracle)
+[![npm](https://img.shields.io/badge/npm-os--oracle-red.svg)](https://www.npmjs.com/package/os-oracle)
 
-An offline, static, client-side reference for:
+> **Authorized testing, education, and defence only.** All content is provided for authorized
+> security testing, learning, and defensive purposes. See [DISCLAIMER.md](./DISCLAIMER.md).
 
-- Every mainstream Linux distribution (Debian/Ubuntu, RHEL/Fedora/Rocky/Alma, Arch/Manjaro, openSUSE,
-  Alpine, Gentoo, Slackware, NixOS, Kali) with real commands, examples, and known errors.
-- The Kali Linux tool catalog — hundreds of tools, each with commands, flags, invocation
-  examples, and common failure messages.
-- A security-testing playbook: dozens of exploitation, post-exploitation, business-logic, cloud,
-  Active Directory, wireless, mobile, IoT, and container scenarios.
-- Narrated **play-by-play walkthroughs** — step-by-step, copy-pasteable, lab-only dry runs with
-  expected output and branching decisions.
-- An intent-based fuzzy search that maps natural-language questions ("how do I audit a Wi-Fi
-  network?") to the right playbook, tool, or command.
+An **offline-first**, terminal-only reference for:
 
-No backend. No AI. No cloud. Everything is static TypeScript data + client-side
-[Fuse.js](https://fusejs.io/).
+- **100+ Kali Linux tools** — commands, flags, examples, common errors
+- **15+ Linux distributions** — package managers, system commands, errors
+- **Security playbooks** — step-by-step attack scenarios (Web, AD, Wireless, Network…)
+- **Narrated walkthroughs** — copy-pasteable lab dry-runs with expected output
+- **Smart search** — find anything by keyword across all categories
 
-## Screenshots
+**No internet required. No account. No fees. Ever.**
 
-Placeholders live in [`docs/screenshots/`](./docs/screenshots) — add real captures before publishing.
+---
 
-## Quickstart
+## 📚 Documentation
+
+**→ [https://tituspaine.github.io/os-oracle](https://tituspaine.github.io/os-oracle)**
+
+---
+
+## 🚀 Quick Start
+
+### Install
 
 ```bash
-bun install
+# npm (Node 18+)
+npm install -g os-oracle
+
+# Bun
+bun install -g os-oracle
+```
+
+### Use it
+
+```bash
+# Search everything
+os-oracle search "sql injection"
+
+# Look up a Kali tool
+os-oracle tool nmap
+os-oracle tool metasploit
+
+# Browse all tools
+os-oracle tools
+os-oracle tools --category "Web Application Analysis"
+
+# Linux distro reference
+os-oracle distro ubuntu
+os-oracle distro arch
+
+# Security playbooks
+os-oracle playbooks
+os-oracle playbook sql-injection
+
+# Walkthroughs
+os-oracle walkthroughs
+os-oracle walkthrough nmap-scan
+
+# Bookmarks
+os-oracle bookmark add tool nmap
+os-oracle bookmarks
+
+# Check offline status
+os-oracle offline
+```
+
+---
+
+## 📋 All Commands
+
+| Command | Description |
+|---------|-------------|
+| `os-oracle search <query>` | Search all data |
+| `os-oracle search <q> --type tools` | Filter by type |
+| `os-oracle tools` | List all Kali tools |
+| `os-oracle tools --category <cat>` | Filter by category |
+| `os-oracle tool <name>` | Full tool reference |
+| `os-oracle distros` | List all distros |
+| `os-oracle distro <name>` | Full distro reference |
+| `os-oracle playbooks` | List all playbooks |
+| `os-oracle playbook <slug>` | Show playbook |
+| `os-oracle walkthroughs` | List walkthroughs |
+| `os-oracle walkthrough <slug>` | Show walkthrough |
+| `os-oracle bookmark add <type> <slug>` | Add bookmark |
+| `os-oracle bookmark remove <slug>` | Remove bookmark |
+| `os-oracle bookmarks` | List bookmarks |
+| `os-oracle history` | Recent command history |
+| `os-oracle history clear` | Clear history |
+| `os-oracle config` | Show config |
+| `os-oracle config set <key> <val>` | Set config value |
+| `os-oracle config reset` | Reset to defaults |
+| `os-oracle offline` | Check data status |
+| `os-oracle version` | Show version |
+
+---
+
+## 🗄️ Data
+
+All data lives in `src/data/` as TypeScript source files:
+
+| File | Contents |
+|------|----------|
+| `src/data/kali-deep.ts` | Deep Kali tool entries (full commands + examples) |
+| `src/data/kali-shallow.ts` | Shallow Kali tool entries (stubs) |
+| `src/data/kali-extra*.ts` | Additional tools |
+| `src/data/distros.ts` | Linux distribution data |
+| `src/data/hacking.ts` | Security playbooks |
+| `src/data/playbooks-extra.ts` | Additional playbooks |
+| `src/data/walkthroughs.ts` | Narrated walkthroughs |
+
+JSON files (for the CLI) are generated with:
+
+```bash
+npm run generate:data
+```
+
+---
+
+## 🛠️ Development
+
+```bash
+# Clone
+git clone https://github.com/tituspaine/os-oracle.git
+cd os-oracle
+
+# Install
+bun install   # or: npm install
+
+# Web UI dev server
 bun dev
-# open http://localhost:8080
+
+# Generate JSON data for CLI
+bun run generate:data
+
+# Build CLI
+bun run build:cli
+
+# Lint
+bun run lint
+
+# Build web app
+bun run build
 ```
 
-Node 20+ works too:
+---
 
-```bash
-npm install
-npm run dev
-```
+## 🤝 Contributing
 
-## Scripts
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-| Script          | What it does                          |
-| --------------- | ------------------------------------- |
-| `bun dev`       | Start Vite dev server on `:8080`      |
-| `bun run build` | Production build                      |
-| `bun run lint`  | ESLint the codebase                   |
-| `bun run format`| Prettier-format the codebase          |
+**To add a new Kali tool:** edit `src/data/kali-extra3.ts`  
+**To add a new distro:** edit `src/data/distros.ts`  
+**To add a playbook:** edit `src/data/playbooks-extra.ts`  
+**To add a walkthrough:** edit `src/data/walkthroughs.ts`  
 
-## Tech stack
+---
 
-- [TanStack Start](https://tanstack.com/start) (React 19 + Vite 7, SSR-capable)
-- [Tailwind CSS v4](https://tailwindcss.com/)
-- [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/) primitives
-- [Fuse.js](https://fusejs.io/) for fuzzy + intent search
-- [lucide-react](https://lucide.dev/) icons
+## 📄 License
 
-## Where the content lives
+[MIT](./LICENSE) — free to use, fork, modify, and redistribute.
 
-| File                              | What's inside                                        |
-| --------------------------------- | ---------------------------------------------------- |
-| `src/data/types.ts`               | Shared types (`Command`, `KnownError`, `Distro`…)    |
-| `src/data/common-commands.ts`     | Cross-distro core Linux commands                      |
-| `src/data/distros.ts`             | Per-distro metadata + distro-specific commands       |
-| `src/data/kali-{shallow,deep,extra,extra2,extra3}.ts` | Kali tool catalog                    |
-| `src/data/hacking.ts`             | Core exploitation playbooks                          |
-| `src/data/playbooks-extra.ts`     | Business-logic, cloud, AD, mobile, IoT playbooks     |
-| `src/data/walkthroughs.ts`        | Narrated play-by-play scenarios                      |
-| `src/data/search-synonyms.ts`     | Intent map + query expansion                         |
+---
 
-## Contributing
+## ⚠️ Disclaimer
 
-Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md). Every content PR must include:
-
-1. A source citation (man page, official docs, CVE reference, tool README).
-2. An **ethics attestation** — the checklist in the PR template.
-3. Tests where relevant (typecheck must pass).
-
-See also [`docs/data-model.md`](./docs/data-model.md) and [`docs/adding-content.md`](./docs/adding-content.md).
-
-## Security
-
-To report a vulnerability **in this codebase**, see [`SECURITY.md`](./SECURITY.md).
-This project does not host any exploit payloads, malware, or offensive infrastructure.
-
-## License
-
-[MIT](./LICENSE). Third-party notices in [`NOTICE.md`](./NOTICE.md).
-
-## Acknowledgements
-
-- The Kali Linux and Offensive Security teams for the tool metadata that inspired the catalog.
-- The maintainers of every open-source tool documented here.
-- The security community whose write-ups, CVEs, and lab environments make ethical training possible.
+This tool is for **authorized testing, education, and defensive security** only. Using techniques
+against systems you don't own or lack explicit written permission to test is illegal. See
+[DISCLAIMER.md](./DISCLAIMER.md) and the in-app `/ethics` page.

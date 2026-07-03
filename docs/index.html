@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OS Oracle — Offline Linux & Kali Reference CLI</title>
+  <meta name="description" content="OS Oracle is a free, open-source, offline-first CLI tool for Linux distributions and Kali Linux security tool reference. 1,000+ commands, playbooks, walkthroughs — all available in your terminal without internet." />
+  <meta property="og:title" content="OS Oracle — Offline Linux & Kali Reference CLI" />
+  <meta property="og:description" content="Free, open-source CLI. 1,000+ commands, playbooks, walkthroughs. Works 100% offline." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://tituspaine.github.io/os-oracle" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --bg3: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --green: #3fb950;
+      --cyan: #58a6ff;
+      --yellow: #d29922;
+      --red: #f85149;
+      --purple: #bc8cff;
+      --orange: #e3b341;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 2rem; z-index: 100;
+    }
+    .nav-logo { font-family: monospace; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .nav-logo span { color: var(--green); }
+    .nav-links { display: flex; gap: 1.5rem; font-size: 0.875rem; }
+    .nav-links a { color: var(--text-muted); }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.25rem 0.75rem;
+      font-size: 0.75rem; color: var(--green); font-family: monospace;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 1.25rem;
+    }
+    h1 .accent { color: var(--green); }
+    .hero-sub {
+      max-width: 600px; margin: 0 auto 2.5rem;
+      font-size: 1.1rem; color: var(--text-muted);
+    }
+    .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.6rem 1.4rem; border-radius: 6px;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; text-decoration: none; }
+    .btn-primary { background: var(--green); color: #0d1117; }
+    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Terminal demo ── */
+    .terminal-wrap { max-width: 760px; margin: 3rem auto 0; padding: 0 2rem; }
+    .terminal {
+      background: #1a1a2e; border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 0.82rem;
+    }
+    .terminal-bar {
+      background: var(--bg3); padding: 0.5rem 1rem;
+      display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+    .terminal-title { flex: 1; text-align: center; color: var(--text-muted); font-size: 0.75rem; }
+    .terminal-body { padding: 1.25rem 1.5rem; }
+    .line { display: flex; gap: 0.5rem; margin-bottom: 0.35rem; }
+    .prompt { color: var(--green); }
+    .cmd { color: var(--text); }
+    .out-cyan { color: var(--cyan); }
+    .out-yellow { color: var(--yellow); }
+    .out-muted { color: var(--text-muted); }
+    .out-green { color: var(--green); }
+    .out-red { color: var(--red); }
+    .blank { height: 0.4rem; }
+
+    /* ── Stats ── */
+    .stats {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;
+      padding: 2.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--green); }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ── Main content ── */
+    .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
+    section { margin-bottom: 4rem; }
+    h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text); }
+    h2 .icon { margin-right: 0.5rem; }
+    h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+    p { color: var(--text-muted); margin-bottom: 1rem; }
+
+    /* ── Features grid ── */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .feature-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.25rem;
+    }
+    .feature-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .feature-card h3 { color: var(--text); }
+    .feature-card p { font-size: 0.875rem; margin: 0; }
+
+    /* ── Commands table ── */
+    .cmd-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .cmd-table th {
+      text-align: left; padding: 0.5rem 1rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text-muted); font-weight: 600; font-size: 0.8rem;
+    }
+    .cmd-table td { padding: 0.6rem 1rem; border: 1px solid var(--border); vertical-align: top; }
+    .cmd-table tr:nth-child(even) td { background: var(--bg2); }
+    .cmd-table tr:hover td { background: var(--bg3); }
+    .cmd-mono { font-family: monospace; color: var(--cyan); font-size: 0.85rem; }
+    .cmd-desc { color: var(--text-muted); }
+
+    /* ── Install tabs ── */
+    .install-block {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .install-header {
+      padding: 0.6rem 1rem; background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text-muted); font-family: monospace;
+    }
+    .install-body { padding: 0.9rem 1rem; }
+    .install-cmd { font-family: monospace; font-size: 0.9rem; color: var(--green); white-space: pre-wrap; }
+    .install-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+    /* ── Badges ── */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .badge {
+      font-size: 0.75rem; padding: 0.25rem 0.6rem;
+      border-radius: 4px; font-weight: 600;
+      font-family: monospace;
+    }
+    .badge-green { background: #1a3a2a; color: var(--green); border: 1px solid #2a5a3a; }
+    .badge-blue { background: #1a2a3a; color: var(--cyan); border: 1px solid #2a3a5a; }
+    .badge-yellow { background: #3a2a1a; color: var(--orange); border: 1px solid #5a3a1a; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem;
+      text-align: center; color: var(--text-muted); font-size: 0.85rem;
+    }
+    footer a { color: var(--text-muted); }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0.75rem 1rem; }
+      .nav-links { display: none; }
+      .hero { padding: 3rem 1rem 2.5rem; }
+      .container { padding: 2rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">🔮 <span>os-oracle</span></span>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#install">Install</a>
+    <a href="#commands">Commands</a>
+    <a href="#data">Data</a>
+    <a href="https://github.com/tituspaine/os-oracle">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-badge">v1.0.0 — free forever · open source · MIT</div>
+  <h1>The <span class="accent">offline-first</span><br>Linux &amp; Kali reference CLI</h1>
+  <p class="hero-sub">
+    Search 1,000+ commands, distros, security playbooks, and walkthroughs — all from your terminal,
+    with zero internet required.
+  </p>
+  <div class="cta-group">
+    <a class="btn btn-primary" href="#install">⬇ Install Now</a>
+    <a class="btn btn-secondary" href="https://github.com/tituspaine/os-oracle">⭐ GitHub</a>
+  </div>
+
+  <div class="terminal-wrap">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="terminal-title">os-oracle — terminal demo</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$</span><span class="cmd">os-oracle search "sql injection"</span></div>
+        <div class="line"><span class="out-cyan">🔍 Found 3 results for "sql injection"</span></div>
+        <div class="blank"></div>
+        <div class="line"><span class="out-yellow">PLAYBOOK</span><span class="cmd">  sql-injection — Web Application SQL Injection</span></div>
+        <div class="line"><span class="out-muted">          Severity: high · Category: Web</span></div>
+        <div class="blank"></div>
+        <div class="line"><span class="out-yellow">TOOL</span><span class="cmd">      sqlmap — Automatic SQL injection and takeover tool</span></div>
+        <div class="line"><span class="out-muted">          Category: Database Assessment</span></div>
+        <div class="blank"></div>
+        <div class="line"><span class="prompt">$</span><span class="cmd">os-oracle tool nmap</span></div>
+        <div class="line"><span class="out-cyan">📦 Nmap — Information Gathering</span></div>
+        <div class="line"><span class="out-muted">   Network exploration and security auditing scanner</span></div>
+        <div class="blank"></div>
+        <div class="line"><span class="out-green">COMMANDS</span></div>
+        <div class="line"><span class="out-muted">  nmap -sV TARGET    Probe open ports for version info</span></div>
+        <div class="line"><span class="out-muted">  nmap -sC -sV TARGET  Run default NSE scripts</span></div>
+        <div class="line"><span class="out-muted">  nmap -p- TARGET    Scan all 65535 TCP ports</span></div>
+        <div class="blank"></div>
+        <div class="line"><span class="prompt">$</span><span class="cmd">os-oracle bookmark add tool nmap</span></div>
+        <div class="line"><span class="out-green">✅ Bookmarked: nmap</span></div>
+        <div class="blank"></div>
+        <div class="line"><span class="prompt">$</span><span class="cmd">os-oracle offline</span></div>
+        <div class="line"><span class="out-green">✅ All data loaded. Works 100% offline.</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">100+</div><div class="stat-label">Kali Linux Tools</div></div>
+  <div class="stat"><div class="stat-num">1,000+</div><div class="stat-label">Commands &amp; Flags</div></div>
+  <div class="stat"><div class="stat-num">15+</div><div class="stat-label">Linux Distros</div></div>
+  <div class="stat"><div class="stat-num">500+</div><div class="stat-label">Security Playbooks</div></div>
+  <div class="stat"><div class="stat-num">200+</div><div class="stat-label">Walkthroughs</div></div>
+  <div class="stat"><div class="stat-num">$0</div><div class="stat-label">Cost — Forever</div></div>
+</div>
+
+<main class="container">
+
+  <section id="features">
+    <h2><span class="icon">⚡</span>Features</h2>
+    <div class="badge-row">
+      <span class="badge badge-green">100% Offline</span>
+      <span class="badge badge-green">Open Source (MIT)</span>
+      <span class="badge badge-blue">npm install -g</span>
+      <span class="badge badge-blue">Terminal Only</span>
+      <span class="badge badge-yellow">No account required</span>
+      <span class="badge badge-yellow">Zero hosting fees</span>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔌</div>
+        <h3>Works 100% Offline</h3>
+        <p>All data is embedded. No internet connection required. Use it on air-gapped machines, in the field, or wherever.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Smart Search</h3>
+        <p>Search across all tools, distros, playbooks, and walkthroughs. Filter by category, tool type, severity, and more.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Security Playbooks</h3>
+        <p>Step-by-step attack playbooks covering Web, Network, Active Directory, Wireless, Password attacks and more.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <h3>Narrated Walkthroughs</h3>
+        <p>Detailed, copy-pasteable, lab-only dry runs with expected terminal output and branching decisions at each step.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🐧</div>
+        <h3>Linux Distro Reference</h3>
+        <p>Full command reference for every major distro: Ubuntu, Arch, Fedora, Alpine, NixOS, Kali, and more — with package managers and common errors.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚔️</div>
+        <h3>100+ Kali Tools</h3>
+        <p>Nmap, Metasploit, Burp Suite, sqlmap, Hydra, Hashcat, Aircrack-ng, and dozens more — every flag, every use case.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔖</div>
+        <h3>Bookmarks &amp; History</h3>
+        <p>Bookmark your most-used tools and distros. Command history lets you quickly re-run recent lookups.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>Free Forever</h3>
+        <p>Published on npm, distributed via GitHub Releases. Zero monthly fees. Self-hostable. MIT licensed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2><span class="icon">⬇️</span>Installation</h2>
+
+    <h3>npm (recommended)</h3>
+    <div class="install-block">
+      <div class="install-header">terminal</div>
+      <div class="install-body">
+        <div class="install-cmd">npm install -g os-oracle</div>
+        <div class="install-note">Requires Node.js 18+ or Bun</div>
+      </div>
+    </div>
+
+    <h3>Bun</h3>
+    <div class="install-block">
+      <div class="install-header">terminal</div>
+      <div class="install-body">
+        <div class="install-cmd">bun install -g os-oracle</div>
+      </div>
+    </div>
+
+    <h3>Build from source</h3>
+    <div class="install-block">
+      <div class="install-header">terminal</div>
+      <div class="install-body">
+        <div class="install-cmd">git clone https://github.com/tituspaine/os-oracle.git
+cd os-oracle
+npm install
+npm run build:cli
+npm link   # makes 'os-oracle' available globally</div>
+      </div>
+    </div>
+
+    <h3>Quick test</h3>
+    <div class="install-block">
+      <div class="install-header">terminal</div>
+      <div class="install-body">
+        <div class="install-cmd">os-oracle version
+os-oracle tools
+os-oracle search "port scan"</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="commands">
+    <h2><span class="icon">📋</span>Command Reference</h2>
+
+    <h3>Search</h3>
+    <table class="cmd-table">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd-mono">os-oracle search &lt;query&gt;</td><td class="cmd-desc">Search across all data (tools, distros, playbooks, errors)</td></tr>
+        <tr><td class="cmd-mono">os-oracle search &lt;query&gt; --type tools</td><td class="cmd-desc">Filter by type: tools, distros, playbooks, walkthroughs</td></tr>
+      </tbody>
+    </table>
+
+    <br>
+    <h3>Kali Tools</h3>
+    <table class="cmd-table">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd-mono">os-oracle tools</td><td class="cmd-desc">List all Kali tools with categories</td></tr>
+        <tr><td class="cmd-mono">os-oracle tools --category &lt;cat&gt;</td><td class="cmd-desc">Filter by category (e.g. "Information Gathering")</td></tr>
+        <tr><td class="cmd-mono">os-oracle tool &lt;name&gt;</td><td class="cmd-desc">Show full detail for a tool (commands, flags, examples, errors)</td></tr>
+      </tbody>
+    </table>
+
+    <br>
+    <h3>Linux Distros</h3>
+    <table class="cmd-table">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd-mono">os-oracle distros</td><td class="cmd-desc">List all Linux distributions</td></tr>
+        <tr><td class="cmd-mono">os-oracle distros --family &lt;fam&gt;</td><td class="cmd-desc">Filter by family: debian, rhel, arch, suse, alpine, gentoo…</td></tr>
+        <tr><td class="cmd-mono">os-oracle distro &lt;name&gt;</td><td class="cmd-desc">Show full distro reference (package manager, commands, errors)</td></tr>
+      </tbody>
+    </table>
+
+    <br>
+    <h3>Playbooks &amp; Walkthroughs</h3>
+    <table class="cmd-table">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd-mono">os-oracle playbooks</td><td class="cmd-desc">List all security playbooks</td></tr>
+        <tr><td class="cmd-mono">os-oracle playbooks --category &lt;cat&gt;</td><td class="cmd-desc">Filter by category: Web, Network, Active Directory…</td></tr>
+        <tr><td class="cmd-mono">os-oracle playbook &lt;slug&gt;</td><td class="cmd-desc">Show full playbook with steps and commands</td></tr>
+        <tr><td class="cmd-mono">os-oracle walkthroughs</td><td class="cmd-desc">List all narrated walkthroughs</td></tr>
+        <tr><td class="cmd-mono">os-oracle walkthrough &lt;slug&gt;</td><td class="cmd-desc">Show step-by-step walkthrough with expected output</td></tr>
+      </tbody>
+    </table>
+
+    <br>
+    <h3>Bookmarks &amp; History</h3>
+    <table class="cmd-table">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd-mono">os-oracle bookmark add &lt;type&gt; &lt;slug&gt;</td><td class="cmd-desc">Bookmark a tool, distro, playbook, or walkthrough</td></tr>
+        <tr><td class="cmd-mono">os-oracle bookmark remove &lt;slug&gt;</td><td class="cmd-desc">Remove a bookmark</td></tr>
+        <tr><td class="cmd-mono">os-oracle bookmarks</td><td class="cmd-desc">List all saved bookmarks</td></tr>
+        <tr><td class="cmd-mono">os-oracle history</td><td class="cmd-desc">Show recent command history</td></tr>
+        <tr><td class="cmd-mono">os-oracle history clear</td><td class="cmd-desc">Clear command history</td></tr>
+      </tbody>
+    </table>
+
+    <br>
+    <h3>Config &amp; Utility</h3>
+    <table class="cmd-table">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd-mono">os-oracle config</td><td class="cmd-desc">Show current configuration</td></tr>
+        <tr><td class="cmd-mono">os-oracle config set &lt;key&gt; &lt;val&gt;</td><td class="cmd-desc">Set config (e.g. color=true, pageSize=30)</td></tr>
+        <tr><td class="cmd-mono">os-oracle config reset</td><td class="cmd-desc">Reset to defaults</td></tr>
+        <tr><td class="cmd-mono">os-oracle offline</td><td class="cmd-desc">Show offline status and data freshness</td></tr>
+        <tr><td class="cmd-mono">os-oracle version</td><td class="cmd-desc">Show version and data info</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="data">
+    <h2><span class="icon">📊</span>What's Included</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔧</div>
+        <h3>Kali Linux Tools</h3>
+        <p>nmap, metasploit, burpsuite, sqlmap, hydra, hashcat, aircrack-ng, wireshark, gobuster, ffuf, nikto, responder, impacket, bloodhound, crackmapexec, and 100+ more.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🐧</div>
+        <h3>Linux Distros</h3>
+        <p>Ubuntu, Debian, Kali, Fedora, RHEL, Rocky Linux, AlmaLinux, Arch, Manjaro, openSUSE, Alpine, Gentoo, Slackware, NixOS.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <h3>Playbook Categories</h3>
+        <p>Web, Network, Active Directory, Wireless, Password Attacks, Privilege Escalation, Post-Exploitation, Social Engineering.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎓</div>
+        <h3>For Authorized Testing Only</h3>
+        <p>All content is for authorized security testing, learning, and defense. See <a href="https://github.com/tituspaine/os-oracle/blob/main/DISCLAIMER.md">DISCLAIMER.md</a> for full terms.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contributing">
+    <h2><span class="icon">🤝</span>Contributing</h2>
+    <p>OS Oracle is open source and welcomes contributions. To add commands, fix errors, or improve documentation:</p>
+    <div class="install-block">
+      <div class="install-header">Contributing workflow</div>
+      <div class="install-body">
+        <div class="install-cmd">git clone https://github.com/tituspaine/os-oracle.git
+cd os-oracle
+npm install
+
+# Edit data files in src/data/
+# Add tools to: src/data/kali-extra3.ts
+# Add distros to: src/data/distros.ts
+# Add playbooks to: src/data/playbooks-extra.ts
+# Add walkthroughs to: src/data/walkthroughs.ts
+
+# Regenerate JSON
+npm run generate:data
+
+# Submit PR</div>
+      </div>
+    </div>
+    <p>See <a href="https://github.com/tituspaine/os-oracle/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for full guidelines.</p>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://github.com/tituspaine/os-oracle">GitHub</a> ·
+    <a href="https://github.com/tituspaine/os-oracle/blob/main/LICENSE">MIT License</a> ·
+    <a href="https://github.com/tituspaine/os-oracle/blob/main/DISCLAIMER.md">Disclaimer</a> ·
+    <a href="https://github.com/tituspaine/os-oracle/blob/main/CONTRIBUTING.md">Contributing</a>
+  </p>
+  <p style="margin-top:0.75rem;">
+    OS Oracle is free, open-source software. Not affiliated with Offensive Security or Kali Linux.
+  </p>
+</footer>
+
+</body>
+</html>
