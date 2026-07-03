@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as EthicsRouteImport } from './routes/ethics'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ import { Route as HackingSlugWalkthroughRouteImport } from './routes/hacking.$sl
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EthicsRoute = EthicsRouteImport.update({
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ethics': typeof EthicsRoute
+  '/resources': typeof ResourcesRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/hacking/$slug': typeof HackingSlugRouteWithChildren
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ethics': typeof EthicsRoute
+  '/resources': typeof ResourcesRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/hacking/$slug': typeof HackingSlugRouteWithChildren
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ethics': typeof EthicsRoute
+  '/resources': typeof ResourcesRoute
   '/search': typeof SearchRoute
   '/distro/$slug': typeof DistroSlugRoute
   '/hacking/$slug': typeof HackingSlugRouteWithChildren
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ethics'
+    | '/resources'
     | '/search'
     | '/distro/$slug'
     | '/hacking/$slug'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ethics'
+    | '/resources'
     | '/search'
     | '/distro/$slug'
     | '/hacking/$slug'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ethics'
+    | '/resources'
     | '/search'
     | '/distro/$slug'
     | '/hacking/$slug'
@@ -151,6 +163,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   EthicsRoute: typeof EthicsRoute
+  ResourcesRoute: typeof ResourcesRoute
   SearchRoute: typeof SearchRoute
   DistroSlugRoute: typeof DistroSlugRoute
   HackingSlugRoute: typeof HackingSlugRouteWithChildren
@@ -166,6 +179,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ethics': {
@@ -250,6 +270,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   EthicsRoute: EthicsRoute,
+  ResourcesRoute: ResourcesRoute,
   SearchRoute: SearchRoute,
   DistroSlugRoute: DistroSlugRoute,
   HackingSlugRoute: HackingSlugRouteWithChildren,
@@ -260,3 +281,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

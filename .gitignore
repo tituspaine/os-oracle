@@ -30,3 +30,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# CLI build artifacts
+cli/node_modules
+cli/dist

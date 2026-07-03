@@ -1,21 +1,34 @@
-import { DISTROS, distroBySlug } from "./distros";
+import { DISTROS as BASE_DISTROS } from "./distros";
+import { DISTRO_EXTRA_COMMANDS } from "./distros-extra";
 import { KALI_DEEP_TOOLS } from "./kali-deep";
 import { KALI_SHALLOW_TOOLS } from "./kali-shallow";
 import { KALI_EXTRA_TOOLS } from "./kali-extra";
 import { KALI_EXTRA2_TOOLS } from "./kali-extra2";
 import { KALI_EXTRA3_TOOLS } from "./kali-extra3";
-import { PLAYBOOKS as CORE_PLAYBOOKS, PLAYBOOK_CATEGORIES, playbookBySlug as _pbs } from "./hacking";
+import {
+  PLAYBOOKS as CORE_PLAYBOOKS,
+  PLAYBOOK_CATEGORIES,
+  playbookBySlug as _pbs,
+} from "./hacking";
 import { EXTRA_PLAYBOOKS } from "./playbooks-extra";
-import type { KaliTool } from "./types";
+import type { Distro, KaliTool } from "./types";
 import type { Playbook } from "./hacking";
 
-export { DISTROS, distroBySlug };
+export const DISTROS: Distro[] = BASE_DISTROS.map((d) => {
+  const extras = DISTRO_EXTRA_COMMANDS[d.slug];
+  if (!extras?.length) return d;
+  return { ...d, commands: [...d.commands, ...extras] };
+});
+
+export const distroBySlug = (slug: string) => DISTROS.find((d) => d.slug === slug);
 export type * from "./types";
 export { PLAYBOOK_CATEGORIES };
 export type { Playbook, PlaybookCategory, PlaybookStep } from "./hacking";
 export { SYNONYMS, expandQuery, nearestIntents } from "./search-synonyms";
 export { WALKTHROUGHS, walkthroughBySlug, hasWalkthrough } from "./walkthroughs";
 export type { Walkthrough, WalkthroughStep } from "./walkthroughs";
+export { GLOBAL_RESOURCES } from "./resources";
+export type { ResourceSection, ResourceLink } from "./resources";
 
 // Merge tools, de-duplicate by slug (later sources win — extras override earlier stubs).
 const _merged = new Map<string, KaliTool>();

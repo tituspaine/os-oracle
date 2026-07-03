@@ -1,0 +1,23 @@
+{
+  "name": "os-oracle",
+  "version": "1.0.0",
+  "description": "Offline terminal CLI for OS Oracle — ethical hacking reference",
+  "type": "module",
+  "bin": {
+    "os-oracle": "./bin/os-oracle.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node ./scripts/postbuild.mjs",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^22.0.0"
+  },
+  "keywords": ["security", "hacking", "kali", "linux", "cli", "reference"],
+  "license": "MIT"
+}
