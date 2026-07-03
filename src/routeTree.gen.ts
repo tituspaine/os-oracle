@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as KaliIndexRouteImport } from './routes/kali.index'
 import { Route as DistroSlugRouteImport } from './routes/distro.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KaliIndexRoute = KaliIndexRouteImport.update({
+  id: '/kali/',
+  path: '/kali/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DistroSlugRoute = DistroSlugRouteImport.update({
@@ -26,27 +32,31 @@ const DistroSlugRoute = DistroSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/distro/$slug': typeof DistroSlugRoute
+  '/kali/': typeof KaliIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/distro/$slug': typeof DistroSlugRoute
+  '/kali': typeof KaliIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/distro/$slug': typeof DistroSlugRoute
+  '/kali/': typeof KaliIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/distro/$slug'
+  fullPaths: '/' | '/distro/$slug' | '/kali/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/distro/$slug'
-  id: '__root__' | '/' | '/distro/$slug'
+  to: '/' | '/distro/$slug' | '/kali'
+  id: '__root__' | '/' | '/distro/$slug' | '/kali/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DistroSlugRoute: typeof DistroSlugRoute
+  KaliIndexRoute: typeof KaliIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kali/': {
+      id: '/kali/'
+      path: '/kali'
+      fullPath: '/kali/'
+      preLoaderRoute: typeof KaliIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/distro/$slug': {
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DistroSlugRoute: DistroSlugRoute,
+  KaliIndexRoute: KaliIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
