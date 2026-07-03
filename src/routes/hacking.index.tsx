@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { PLAYBOOKS, PLAYBOOK_CATEGORIES } from "@/data";
+import { PLAYBOOKS, PLAYBOOK_CATEGORIES, expandQuery, nearestIntents } from "@/data";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ShieldAlert } from "lucide-react";
+import { AckGate } from "@/components/ack-gate";
 
 export const Route = createFileRoute("/hacking/")({
   head: () => ({
@@ -28,23 +29,37 @@ function HackingIndex() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("");
 
-  const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    return PLAYBOOKS.filter((p) => {
-      if (cat && p.category !== cat) return false;
-      if (!needle) return true;
-      return (
-        p.title.toLowerCase().includes(needle) ||
-        p.summary.toLowerCase().includes(needle) ||
-        (p.cve ?? []).some((c) => c.toLowerCase().includes(needle))
-      );
-    });
+  // Intent-based search: natural-language queries ("how do I audit a Wi-Fi
+  // network's security?") expand into tool/technique keywords via
+  // expandQuery(), then we score each playbook by how many expanded terms
+  // hit its title/summary/tools/CVE.
+  const { filtered, intentHints } = useMemo(() => {
+    const raw = q.trim().toLowerCase();
+    if (!raw && !cat) return { filtered: PLAYBOOKS, intentHints: [] as string[] };
+    const expanded = raw ? expandQuery(raw) : [raw];
+    const terms = Array.from(new Set(expanded.flatMap((s) => s.toLowerCase().split(/\s+/)))).filter((t) => t.length > 2);
+    const scored = PLAYBOOKS
+      .filter((p) => !cat || p.category === cat)
+      .map((p) => {
+        if (!raw) return { p, score: 1 };
+        const hay = [p.title, p.summary, p.category, ...(p.cve ?? []), ...(p.toolSlugs ?? []), ...(p.mitreAttack ?? [])]
+          .join(" ").toLowerCase();
+        const score = terms.reduce((s, t) => (hay.includes(t) ? s + 1 : s), 0);
+        return { p, score };
+      })
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+    return {
+      filtered: scored.map((s) => s.p),
+      intentHints: raw ? nearestIntents(raw, 4) : [],
+    };
   }, [q, cat]);
 
   return (
+    <AckGate>
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Hacking playbooks</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Security Testing Playbooks</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
           Step-by-step walkthroughs for the most-searched vulnerabilities and exploits — each step
           shows the exact command and links directly to the Kali tool page. All content is for
@@ -60,13 +75,23 @@ function HackingIndex() {
         </div>
       </header>
 
-      <div className="mb-6 flex flex-wrap items-center gap-2">
+      <div className="mb-6 flex flex-col gap-2">
         <Input
-          placeholder="Search playbooks, CVEs, techniques…"
+          placeholder='Try: "how do I audit a Wi-Fi network" or "test website pricing logic"'
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="max-w-md"
+          className="max-w-2xl"
         />
+        {intentHints.length > 0 && (
+          <div className="flex flex-wrap gap-1 text-[11px] text-muted-foreground">
+            <span className="mr-1">Related intents:</span>
+            {intentHints.map((h) => (
+              <button key={h} type="button" onClick={() => setQ(h)} className="rounded-full border border-border px-2 py-0.5 hover:bg-muted">{h}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="mb-6 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
@@ -110,5 +135,6 @@ function HackingIndex() {
         <p className="text-sm text-muted-foreground">No playbooks match.</p>
       )}
     </div>
+    </AckGate>
   );
 }

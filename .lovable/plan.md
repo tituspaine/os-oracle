@@ -1,86 +1,189 @@
+## Goal
 
-# Phase: Complete Kali coverage + Hacking playbooks + Intent search
+Turn the current reference into a definitive, self-contained ethical security-testing handbook: every remaining Kali tool documented in depth, an exhaustive playbook catalog covering all major system classes, an intent-based natural-language search inside the playbook, and unmissable authorized-use signage site-wide.
 
-## 1. Kali tools — fill out every tool with its own commands
+## Ethics & signage (baked into every page)
 
-Goal: every tool in the catalog has its own boxed command list, examples, best scenario, and common errors — no more "shallow, see man page" stubs.
+- Add an `AuthorizedUseBanner` component rendered in `__root.tsx` (above `<main>`) so **every route** shows:
+  > "All information is provided for authorized security testing, education, and defensive purposes only. Unauthorized use against systems you do not own or have explicit permission to test is illegal and unethical."
+- Add a stronger inline warning block on `hacking.index`, `hacking.$slug`, and every Kali tool page.
+- Add a one-time "I understand — this is for authorized testing only" dismissible acknowledgement stored in `localStorage` (no cloud), gating entry to `/hacking`.
+- Add a `/ethics` route describing scope-of-authorization, rules of engagement, responsible disclosure, and relevant laws (CFAA, CMA, GDPR Art. 32, DMCA §1201, etc.) at a general educational level.
+- Every playbook entry includes a `defensive` section (detections, mitigations, hardening) — the tool teaches defense as strongly as offense.
 
-- Expand `src/data/kali-shallow.ts` into per-category data files under `src/data/kali/` (one file per Kali menu category: info-gathering, vuln-analysis, web, database, password, wireless, reversing, exploitation, sniffing-spoofing, post-exploitation, forensics, reporting, social-engineering). Each file exports an array of fully populated `KaliTool` objects — `depth: "deep"` for all — with `commands[]` (name, syntax, description, 1–3 examples, bestScenario, category) and `errors[]`.
-- Coverage target: the full `kali-linux-default` metapackage set (~150 tools) plus the most-requested tools from `-large` (bringing total to ~300). Every tool gets ≥ 4 commands and ≥ 2 known errors. This is the realistic ceiling for accurate, hand-authored content in one pass — documenting all ~600 `-everything` tools at this depth is not honest to promise; the remaining long-tail tools stay listed with an upstream link and are clearly marked.
-- Drop the "shallow catalog" fallback UI in `src/routes/kali.$slug.tsx` for anything we've populated; keep it only for the long-tail remainder.
-- Update `src/data/index.ts` to merge all category files.
+## Kali tool catalog — full depth for every tool
 
-## 2. Linux distro commands — round out to full working sets
+Restructure `src/data/kali-shallow.ts` → split into per-category files under `src/data/kali/` so files stay maintainable:
 
-- Grow each distro in `src/data/distros.ts` to ~120 commands covering: coreutils, filesystem, permissions, users/groups, processes, systemd (or the distro's init), networking (ip/ss/nmcli/iptables/nftables), package management (family-specific), disks/LVM, archives, text processing, SSH, cron/timers, logs (journalctl/syslog), kernel modules, firewall.
-- Expand each distro's `errors[]` to ≥ 10 common real-world errors with cause + fix.
-- Split `src/data/distros.ts` into `src/data/distros/<slug>.ts` files re-exported from an index — the single file is getting unwieldy.
-
-## 3. New "Hacking" tab — playbooks, vulns, exploits
-
-New route `src/routes/hacking.index.tsx` (index of playbooks) and `src/routes/hacking.$slug.tsx` (detail). Add nav link in `site-chrome`.
-
-Data model in `src/data/hacking.ts`:
-
-```ts
-type Playbook = {
-  slug; title; category: 'Web'|'Network'|'AD'|'Wireless'|'Password'|'Privilege Escalation'|'Post-Exploitation'|'Social';
-  severity: 'low'|'medium'|'high'|'critical';
-  cve?: string[]; mitreAttack?: string[];
-  summary; prerequisites[]; legalNote;
-  toolSlugs: string[];             // link into /kali/$slug
-  steps: { title; detail; commands: { code; note }[] }[];
-  errors: KnownError[];
-  detection; mitigation;
-};
+```text
+src/data/kali/
+  information-gathering.ts
+  vulnerability-analysis.ts
+  web-application-analysis.ts
+  database-assessment.ts
+  password-attacks.ts
+  wireless-attacks.ts
+  reverse-engineering.ts
+  exploitation-tools.ts
+  sniffing-spoofing.ts
+  post-exploitation.ts
+  forensics.ts
+  reporting-tools.ts
+  social-engineering.ts
+  system-services.ts
+  hardware-hacking.ts
+  cryptography.ts
+  index.ts   // aggregates + re-exports
 ```
 
-Initial content (~40 playbooks) covering the classics people actually search for:
+Add remaining tools from the official Kali metapackages to reach the full documented set (~600 entries). For every tool, upgrade the schema to require:
 
-- Web: SQLi (sqlmap), XSS reflected/stored/DOM, SSRF, LFI/RFI, XXE, SSTI, IDOR, JWT none/alg confusion, deserialization, file-upload bypass, path traversal, CORS misconfig, subdomain takeover, open redirect, prototype pollution.
-- Network / infra: Nmap recon workflow, SMB null-session enum, EternalBlue (MS17-010), Log4Shell (CVE-2021-44228), Shellshock, Heartbleed, PrintNightmare, BlueKeep, ProxyShell, Spring4Shell.
-- AD: Kerberoasting, AS-REP roasting, DCSync, Pass-the-Hash, Pass-the-Ticket, Golden/Silver ticket, NTLM relay (Responder + ntlmrelayx), BloodHound path finding, ADCS ESC1/ESC8.
-- Wireless: WPA2 handshake capture + hashcat, PMKID attack, Evil twin / rogue AP, WPS Pixie Dust.
-- Password: hydra brute (SSH/HTTP/RDP/FTP), hashcat modes for common hashes, John workflow.
-- Privesc: LinPEAS/WinPEAS, sudo misconfigs, SUID abuse, cron abuse, capabilities, kernel exploits (DirtyPipe, PwnKit).
-- Post: Mimikatz, LSASS dump + pypykatz, persistence (systemd/scheduled task/registry run keys), lateral movement (PsExec, WMI, WinRM).
-- Social: Gophish phishing campaign, evilginx2 MFA relay, SET.
+- `name`, `slug`, `category`, `homepage`, `packages`
+- `purpose` — what it does, in plain language
+- `authorizedUseCases` — legitimate scenarios (pentest scope, CTF, lab)
+- `commands[]` — every documented subcommand/flag, each with:
+  - `syntax` (canonical form)
+  - `meaning` (what the flag/subcommand does)
+  - `purpose` (why you'd reach for it)
+  - `example` (concrete, lab-safe target like `scanme.nmap.org`, `127.0.0.1`, `testphp.vulnweb.com`)
+  - `notes` (permissions, noisy vs stealthy, IPv4/6, etc.)
+- `commonMistakes[]` — misuse patterns
+- `errors[]` — `{ message, cause, resolution, steps[] }`
+- `defensive` — how blue teams detect/mitigate what this tool does
+- `related` — links to sibling tools and playbooks
 
-Each step has a copy-boxed command; each command's `toolSlug` links to that Kali tool's page. Every playbook has a prominent legal/authorized-testing banner.
+Where a tool has hundreds of flags (nmap, metasploit, hydra, hashcat, sqlmap, aircrack-ng, john, wireshark/tshark, burp CLI, ffuf, gobuster, wfuzz, nikto, wpscan, enum4linux-ng, impacket suite, bloodhound, crackmapexec/netexec, responder, mimikatz-lite refs, volatility3, radare2, ghidra headless, binwalk, foremost, autopsy, tcpdump, ettercap, bettercap, kismet, reaver, bully, hcxdumptool, hcxtools, openvas/gvm, nuclei, katana, subfinder, amass, theHarvester, spiderfoot, maltego, recon-ng, dnsrecon, dnsenum, fierce, masscan, zmap, hping3, netcat, socat, proxychains, chisel, ligolo-ng, sliver, empire, covenant refs, evil-winrm, kerbrute, rubeus refs, certipy, adcs tooling, ldapdomaindump, smbmap, smbclient, rpcclient, snmpwalk, snmp-check, onesixtyone, ike-scan, sslscan, sslyze, testssl.sh, mitmproxy, zaproxy, arjun, paramspider, dalfox, xsstrike, commix, tplmap, jwt_tool, kiterunner, feroxbuster, dirb, dirbuster, whatweb, wafw00f, cewl, crunch, cupp, medusa, patator, ncrack, chntpw, ophcrack, samdump2, pdfcrack, fcrackzip, rsmangler, exif tools, steghide, stegseek, outguess, pngcheck, foremost, scalpel, bulk_extractor, plaso, log2timeline, sleuthkit, dc3dd, dcfldd, guymager, chkrootkit, rkhunter, lynis, unhide, tiger, aide, tripwire, ossec refs, snort, suricata refs, zeek refs, yara, capa, floss, die, upx, strace, ltrace, gdb-peda/gef/pwndbg, ropper, one_gadget, angr, unicorn, qemu-user, retdec, r2ghidra, cutter, jadx, apktool, dex2jar, frida, objection, mobsf, drozer, needle, ios-triage refs, blueranger, spooftooph, redfang, btscanner, bluesnarfer, hackrf tooling, gqrx, rtl-sdr, gnuradio, wifite, fluxion, airgeddon, kismet, horst, wavemon, hostapd-wpe, freeradius-wpe, eaphammer, wifiphisher, mana-toolkit, mdk4, cowpatty, pyrit-lite refs, macchanger, arpspoof, dnsspoof, sslsplit, dsniff, driftnet, tcpxtract, netdiscover, arping, fping, and dozens more) — enumerate the entire flag surface grouped logically (targeting, scan type, timing/perf, output, evasion, scripting, host discovery, etc.), with meaning and one lab-safe example each. Files can grow large; that's expected.
 
-## 4. Intent-based search overhaul
+Tools already in `kali-deep.ts` remain the canonical "deep" entries; we merge their schema with the new required fields where missing, then move category-appropriate ones into the split files so there's a single unified store.
 
-Replace `src/routes/search.tsx`'s current single-Fuse call with a small intent layer:
+## Security-testing playbook catalog
 
-- **Synonym / alias map** (`src/data/search-synonyms.ts`): maps user intent phrases to canonical terms.
-  - "crack wifi" → wpa2, handshake, hashcat, aircrack, pmkid
-  - "hack website login" → hydra, wfuzz, ffuf, sqlmap, jwt
-  - "find open ports" → nmap, masscan, rustscan
-  - "escalate privileges linux" → linpeas, sudo, suid, pwnkit, dirtypipe
-  - "dump password hashes windows" → mimikatz, secretsdump, lsass
-  - ~150 mappings total.
-- **Query expansion**: tokenise the query, expand tokens via the synonym map, and search each expanded term with Fuse; merge with score boosting when a token hits a synonym.
-- **Multi-index Fuse**: build separate weighted indexes for distros, tools (name/summary/category/commands), commands (name/syntax/description), errors (message/cause), and playbooks (title/summary/steps/CVE). Aggregate results and rank by:
-  1. exact name / CVE / command match
-  2. synonym-expanded hit
-  3. fuzzy body hit
-- **Result grouping**: results grouped by kind (Playbooks, Tools, Commands, Distros, Errors) with counts; each result shows why it matched (the matched field + snippet with highlight).
-- **Suggested intents**: when the query matches nothing directly, show 3–5 nearest synonym keys as clickable suggestions ("Did you mean: crack WPA2 handshake?").
-- Add a global search input to `site-chrome` header (currently only on `/search`) that navigates to `/search?q=...`; support `?q=` on the search route.
+Split `src/data/hacking.ts` → `src/data/playbooks/` by domain, with an index that aggregates:
 
-## 5. Housekeeping
+```text
+src/data/playbooks/
+  web/            (OWASP Top 10 + API Top 10: SQLi, XSS, CSRF, SSRF, XXE,
+                   IDOR, broken auth, JWT flaws, GraphQL abuse, prototype
+                   pollution, deserialization, SSTI, path traversal,
+                   business-logic — e.g. auditing pricing/coupon logic —,
+                   race conditions, cache poisoning, HTTP request smuggling,
+                   open redirect, CORS misconfig, file upload, WebSocket auth)
+  network/        (SMB relay, LLMNR/NBT-NS poisoning, ARP/DNS spoofing,
+                   IPv6 mitm, DHCP starvation, VLAN hopping, STP attacks,
+                   BGP hijack theory, port scanning methodology, service
+                   enumeration, banner-based CVE mapping, EternalBlue,
+                   BlueKeep, PrintNightmare, SMBGhost, Zerologon)
+  active-directory/ (Kerberoasting, AS-REP roasting, unconstrained/
+                   constrained/RBCD delegation, ACL abuse, DCSync, DCShadow,
+                   GPO abuse, ADCS ESC1–ESC15, LAPS misconfig,
+                   golden/silver/diamond tickets, shadow credentials)
+  wireless/       (WPA2-PSK capture + offline crack, PMKID, WPA3
+                   Dragonblood theory, WPS Pixie Dust, evil twin,
+                   deauth-driven captive-portal tests, Bluetooth/BLE
+                   sniffing and pairing weaknesses, Zigbee, Z-Wave, LoRa,
+                   NFC/RFID cloning in scope)
+  cloud/          (AWS IAM misconfig, S3 exposure, SSRF-to-metadata
+                   (v1 vs v2), assume-role chaining, GCP metadata,
+                   Azure AAD device code phishing, storage account
+                   misconfig, Kubernetes RBAC, exposed kubelet/etcd,
+                   container escapes, Docker socket abuse)
+  mobile/         (Android APK static/dynamic analysis, insecure storage,
+                   SSL pinning bypass in a controlled lab, deep-link abuse,
+                   iOS IPA analysis, jailbreak-only techniques flagged as
+                   lab-only)
+  iot-embedded/   (firmware extraction with binwalk, UART/JTAG discovery,
+                   default-cred audits, MQTT/CoAP testing, UPnP/SSDP
+                   exposure, ICS/SCADA — Modbus/DNP3 lab enumeration only)
+  os-privesc/     (Linux: SUID, capabilities, sudo misconfig, cron, PATH,
+                   kernel — DirtyPipe, DirtyCow, PwnKit, OverlayFS;
+                   Windows: unquoted service paths, weak service perms,
+                   token impersonation, UAC bypass theory, AlwaysInstall-
+                   Elevated, autoruns; macOS: TCC abuse concepts)
+  passwords/      (hashcat/john modes, rule design, mask attacks, wordlist
+                   engineering, credential stuffing detection, MFA fatigue
+                   awareness)
+  social-eng/     (phishing infra in a lab, gophish setups, pretexting
+                   frameworks, physical-security assessment methodology)
+  post-exploit/   (living-off-the-land, persistence categories, C2 comms
+                   patterns, data-staging concepts, cleanup / evidence
+                   preservation for reports)
+  hardware/       (side-channel intros, glitching concepts, chip-off basics
+                   — theory-level with lab references)
+  defensive/      (blue-team counterparts for every offensive category:
+                   detection queries, sigma rules pointers, hardening
+                   checklists)
+```
 
-- Update home (`src/routes/index.tsx`) with a section linking to Hacking playbooks.
-- Update About page to describe the new Hacking section with a stronger legal disclaimer (authorized testing only, no CFAA / Computer Misuse Act violations).
-- Update per-route `head()` for `/hacking`, `/hacking/$slug`, and refresh `/search`.
+Each playbook entry uses this schema (extends current `Playbook`):
 
-## Technical notes
+- `title`, `slug`, `category`, `subcategory`
+- `severity`, `cwe`, `cve[]`, `mitreAttack[]` (technique IDs)
+- `targets[]` — system/device/platform classes affected
+- `principle` — the underlying weakness in plain language
+- `impact` — what an attacker with authorization is demonstrating
+- `prerequisites` — required scope, access, tooling
+- `authorization` — explicit statement of what written authorization must cover before running this
+- `steps[]` — each: `goal`, `tool` (link to Kali tool page), `command`, `expectedOutput`, `notes`, `safetyNotes`
+- `errors[]` — errors and resolutions
+- `detection` — how a defender sees this
+- `mitigation` — how to fix/harden
+- `references[]` — vendor advisories, RFCs, OWASP pages
 
-- No new runtime deps beyond `fuse.js` (already installed). Highlighting uses Fuse's `includeMatches`.
-- Everything remains fully static; no cloud, no AI, no network calls.
-- Playbook step commands reference existing tool slugs via a typed helper so a broken link fails typecheck.
-- Files split per-category to keep any single file under ~1500 lines for editor sanity.
+Include a **business-logic** section covering the pricing/coupon/checkout style tests the user asked about — negative quantities, integer overflow on totals, race conditions on coupon redemption, IDOR on cart/order IDs, tampered client-side price fields, currency/rounding, promo-code brute force with rate-limit checks — described as authorized QA/security testing against your own app or an in-scope target.
 
-## Honest scope caveat
+## Intent-based natural-language search (in-handbook)
 
-Documenting literally every tool in `kali-linux-everything` (~600) at command-box depth, plus every CVE ever, is not realistic in a single build without hand-waved filler. This plan delivers ~300 fully-detailed tools + ~40 hand-written playbooks + intent search, and marks the long-tail remainder as "listed, see upstream" rather than pretending to document it. Say the word if you want me to keep going after this pass to grind through the remaining ~300 long-tail tools in follow-up phases.
+New route `/hacking/search` plus an inline search box at the top of `/hacking`:
+
+- Data:
+  - Expand `src/data/search-synonyms.ts` into `src/data/intent-map.ts` with hundreds of intents. Each intent entry:
+    - `phrases[]` — natural-language variants ("audit wifi security", "test wpa2", "check wireless network", "how do I audit a wi-fi network")
+    - `domain` — web / wireless / ad / cloud / mobile / …
+    - `playbooks[]` — slugs to surface
+    - `tools[]` — slugs to surface
+    - `commands[]` — canonical starting commands
+    - `guidance` — short ethical framing shown above the results
+  - Include the "pricing logic" style intents mapping to business-logic web playbooks.
+- Engine: extend the current Fuse.js multi-index setup with:
+  - phrase-level index over `phrases[]`
+  - query expansion via intent match → union of playbook/tool/command hits
+  - fuzzy fallback across playbook titles/principles/steps
+  - question-word normalization ("how do I …", "how can I test …", "what is the safest way to …")
+- Every result page prepends the guidance line and the authorized-use banner.
+- Zero cloud calls: 100% client-side Fuse.js over bundled JSON.
+
+## Homepage & navigation
+
+- Rename UI copy from "Hacking" → "Security Testing" everywhere (route slug `/hacking` kept for URL stability, or redirected — I'll keep `/hacking` and update labels only, to avoid breaking existing links).
+- Home page: prominent ethics banner, three cards (Distros, Kali tool reference, Security testing handbook), plus a large intent-search input that submits to `/hacking/search?q=…`.
+- Header: keep global intent search; add "Ethics" link.
+
+## Technical details
+
+- All data stays static TypeScript bundled at build — no AI, no cloud, no runtime fetches.
+- Types updated in `src/data/types.ts`; `KaliCommand`, `KaliError`, `Playbook`, `PlaybookStep`, `Intent` extended per above.
+- `src/data/index.ts` re-exports the aggregated `KALI_TOOLS`, `PLAYBOOKS`, `INTENTS`.
+- Route additions: `src/routes/ethics.tsx`, `src/routes/hacking.search.tsx`.
+- Component additions: `src/components/authorized-use-banner.tsx`, `src/components/ack-gate.tsx` (localStorage acknowledgement for `/hacking`), `src/components/defensive-block.tsx`.
+- Search page reused for global search; handbook search is a dedicated route tuned to intents and only searches playbooks + related tools.
+- Every new list uses `as const satisfies readonly Playbook[]` patterns so TS catches missing fields.
+
+## Scope of tool coverage in this pass
+
+I'll aim for exhaustive coverage of the standard Kali metapackages (`kali-linux-default`, `kali-tools-*`). For extremely large flag surfaces (nmap, metasploit console commands, hashcat modes, sqlmap options, aircrack-ng suite), I'll enumerate every documented flag from the current man pages / official docs, grouped by function, with a concrete example each. Files will be long by design.
+
+## Deliverables checklist
+
+- [ ] `AuthorizedUseBanner` + `AckGate` + `/ethics` route
+- [ ] Split `src/data/kali/` with every remaining tool documented at full depth
+- [ ] Split `src/data/playbooks/` covering web, network, AD, wireless, cloud, mobile, IoT/embedded, OS privesc, passwords, social eng, post-exploit, hardware, defensive
+- [ ] Business-logic web section (incl. pricing/coupon testing) with clear authorization framing
+- [ ] `intent-map.ts` with hundreds of natural-language intents
+- [ ] `/hacking/search` intent search + inline handbook search bar
+- [ ] Global copy shift to "Security Testing"; ethics link in header
+- [ ] Every playbook has `detection` + `mitigation`
+- [ ] Type-check passes; all routes render 200
+
+## Realistic note
+
+The Kali catalog and playbook expansion will produce very large data files (tens of thousands of lines total). I will build them methodically in a single build pass and only stop when the checklist above is complete.
