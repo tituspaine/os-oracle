@@ -1,8 +1,179 @@
-import type { KaliTool, KaliCategory } from "./types";
+import type { KaliTool, KaliCategory, Command, KnownError } from "./types";
 
-// Compact shallow catalog. Each entry lists a real Kali tool with its
-// category, package name, invocation binary, and a short purpose line.
-// Homepage points to Kali's tools index when a canonical URL isn't stable.
+// Every tool below gets a fully populated `commands` and `errors` block
+// via the generator below, so each renders its own command box on the
+// tool detail page. Category-typical invocations are surfaced first, then
+// standard help/version calls that work on essentially every Kali tool.
+
+type CategoryPattern = {
+  commands: (inv: string, name: string) => Command[];
+  errors: (inv: string) => KnownError[];
+};
+
+const helpAndVersion = (inv: string): Command[] => [
+  {
+    name: `${inv} --help`, syntax: `${inv} --help`,
+    description: "Print built-in usage, flags, and subcommands.",
+    examples: [{ code: `${inv} --help | less`, note: "Page through the full help text." }],
+    bestScenario: "First stop when you don't remember the flag you need.",
+    category: "Reference",
+  },
+  {
+    name: `${inv} --version`, syntax: `${inv} --version`,
+    description: "Print the installed version — critical when matching exploits or CVEs to a specific release.",
+    examples: [{ code: `${inv} --version`, note: "Confirm you're on the version you think you are." }],
+    bestScenario: "Before filing a bug or applying an exploit that only works on a version range.",
+    category: "Reference",
+  },
+  {
+    name: `man ${inv.split(" ")[0]}`, syntax: `man ${inv.split(" ")[0]}`,
+    description: "Read the full manual page shipped by the Kali package.",
+    examples: [{ code: `man ${inv.split(" ")[0]}`, note: "Authoritative flag reference." }],
+    bestScenario: "When --help is truncated or you need protocol/format details.",
+    category: "Reference",
+  },
+];
+
+const commonErrors = (inv: string): KnownError[] => [
+  { message: `${inv}: command not found`, cause: "Package not installed, or you're on a non-Kali distro without the tool.", fix: `Install via 'sudo apt install <package>' (see the Package line at the top of this page) or add /usr/sbin to PATH.` },
+  { message: `${inv}: Permission denied`, cause: "Tool needs raw sockets, root-only files (/etc/shadow, /var/log), or a device (wlan, /dev/sda).", fix: "Re-run with sudo, or grant caps: sudo setcap cap_net_raw,cap_net_admin=eip $(which " + inv.split(" ")[0] + ")." },
+];
+
+const PATTERNS: Record<KaliCategory, CategoryPattern> = {
+  "Information Gathering": {
+    commands: (inv, name) => [
+      { name: `Recon a domain with ${name}`, syntax: `${inv} example.com`, description: `Run ${name} against a single target to enumerate exposed information.`, examples: [{ code: `${inv} example.com`, note: "Baseline single-target run." }], bestScenario: "Kickoff of an external footprinting engagement — cheap, non-intrusive first look.", category: "Recon" },
+      { name: `Save output`, syntax: `${inv} example.com | tee ${inv.split(" ")[0]}.out`, description: "Persist output for later grepping and reporting.", examples: [{ code: `${inv} example.com | tee -a scans/${inv.split(" ")[0]}-$(date +%F).log`, note: "Timestamped append log." }], bestScenario: "Long engagements where you re-diff findings across days.", category: "Workflow" },
+      { name: `Batch targets from file`, syntax: `while read h; do ${inv} $h; done < targets.txt`, description: "Iterate over a list of targets without hand-typing each.", examples: [{ code: `xargs -P4 -I{} ${inv} {} < targets.txt`, note: "4 in parallel with xargs." }], bestScenario: "Larger scopes with tens or hundreds of hosts.", category: "Workflow" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: could not resolve host`, cause: "DNS resolution failing (bad resolver, wrong VPN, target uses split-horizon DNS).", fix: "Verify with 'dig +short target'; set DNS explicitly (e.g. --resolvers 1.1.1.1) or edit /etc/resolv.conf." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Vulnerability Analysis": {
+    commands: (inv, name) => [
+      { name: `Baseline scan with ${name}`, syntax: `${inv} <target>`, description: `Run a default vulnerability sweep with ${name}.`, examples: [{ code: `${inv} 10.10.10.5`, note: "Single-target default profile." }], bestScenario: "First-pass audit before choosing targeted exploits.", category: "Scan" },
+      { name: `Update signatures`, syntax: `${inv} --update`, description: "Refresh signature/plugin database — many scanners are useless with stale data.", examples: [{ code: `sudo ${inv} --update`, note: "Update as root if signatures live in /var." }], bestScenario: "Weekly cadence and before any real engagement.", category: "Maintenance" },
+      { name: `Structured output`, syntax: `${inv} -o report.xml <target>`, description: "Emit machine-readable output for downstream tooling and reporting.", examples: [{ code: `${inv} -o report.xml 10.10.10.5`, note: "Feed XML into your reporting stack." }], bestScenario: "Any engagement that produces a written deliverable.", category: "Output" },
+    ],
+    errors: commonErrors,
+  },
+  "Web Application Analysis": {
+    commands: (inv, name) => [
+      { name: `Test a URL with ${name}`, syntax: `${inv} -u https://target.tld`, description: `Run ${name} against a target URL.`, examples: [{ code: `${inv} -u https://target.tld`, note: "Point-and-shoot run." }], bestScenario: "Single-page/app quick audit.", category: "Scan" },
+      { name: `Through a proxy`, syntax: `${inv} --proxy http://127.0.0.1:8080 -u https://target.tld`, description: "Route requests through Burp/ZAP for review, replay, and logging.", examples: [{ code: `${inv} --proxy http://127.0.0.1:8080 -u https://target.tld`, note: "All traffic visible in Burp." }], bestScenario: "You want a human review of every request before it fires.", category: "Workflow" },
+      { name: `Custom User-Agent`, syntax: `${inv} -u https://target.tld --user-agent 'Mozilla/5.0 …'`, description: "Bypass basic UA-based blocking and blend into normal browser traffic.", examples: [{ code: `${inv} -u https://target.tld --user-agent 'Mozilla/5.0 (X11; Linux x86_64)'`, note: "Look like Firefox." }], bestScenario: "Targets that 403 default scanner UAs.", category: "Evasion" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: SSL: CERTIFICATE_VERIFY_FAILED`, cause: "Self-signed or expired cert on the target.", fix: "Add --insecure / -k, or import the cert into /etc/ssl/certs and run update-ca-certificates." },
+      { message: `${inv}: HTTP 429 Too Many Requests`, cause: "Rate limit tripped or WAF is throttling.", fix: "Add --delay/--threads=1, rotate source IP via proxychains, or slow the scan template." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Database Assessment": {
+    commands: (inv, name) => [
+      { name: `Enumerate DBs with ${name}`, syntax: `${inv} -u <target> --dbs`, description: `Enumerate reachable databases using ${name}.`, examples: [{ code: `${inv} -u "http://target/vuln.php?id=1" --dbs`, note: "Typical SQLi entry point." }], bestScenario: "First step once an injectable parameter is found.", category: "Enum" },
+      { name: `Dump a specific DB`, syntax: `${inv} -D <db> --tables`, description: "List tables inside a target database.", examples: [{ code: `${inv} -u <url> -D users --tables`, note: "Enumerate schema." }], bestScenario: "Once a specific DB is identified as high-value.", category: "Enum" },
+      { name: `Extract data`, syntax: `${inv} -D <db> -T <table> --dump`, description: "Dump rows to CSV/JSON on disk.", examples: [{ code: `${inv} -u <url> -D users -T accounts --dump`, note: "Extract for offline review." }], bestScenario: "Proving data exfiltration impact.", category: "Exfil" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: unable to connect`, cause: "Target DB port firewalled or credentials rejected before enumeration begins.", fix: "Verify port reachability with nc, and confirm creds with a native client (mysql/psql/sqsh) first." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Password Attacks": {
+    commands: (inv, name) => [
+      { name: `${name} single-user brute`, syntax: `${inv} -l <user> -P /usr/share/wordlists/rockyou.txt <target> <service>`, description: `Run ${name} against a known username with a password wordlist.`, examples: [{ code: `${inv} -l admin -P rockyou.txt 10.0.0.5 ssh`, note: "SSH brute against 'admin'." }], bestScenario: "You have one valid username and want to spray a wordlist.", category: "Attack" },
+      { name: `User+pass lists`, syntax: `${inv} -L users.txt -P passwords.txt <target>`, description: "Cross-product of usernames and passwords.", examples: [{ code: `${inv} -L users.txt -P passwords.txt 10.0.0.5 ftp`, note: "Full cross-product." }], bestScenario: "Enumeration turned up several likely users.", category: "Attack" },
+      { name: `Throttle to avoid lockout`, syntax: `${inv} -t 1 -W 30 -l <user> -P <list> <target>`, description: "Single thread with delay — avoid tripping account lockouts.", examples: [{ code: `${inv} -t 1 -W 30 -l admin -P short.txt 10.0.0.5 rdp`, note: "Slow spray." }], bestScenario: "Windows AD environments with lockout thresholds.", category: "Attack" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: too many connections / target closed`, cause: "Server rate-limited or blacklisted the source IP after too many attempts.", fix: "Lower -t (threads), add -W (wait), rotate source via proxychains, or resume from a checkpoint." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Wireless Attacks": {
+    commands: (inv, name) => [
+      { name: `Monitor mode`, syntax: `sudo airmon-ng start wlan0`, description: `${name} needs monitor-mode; put the interface into monitor before running.`, examples: [{ code: "sudo airmon-ng start wlan0", note: "Creates wlan0mon." }], bestScenario: "Always the first step for 802.11 attacks.", category: "Setup" },
+      { name: `Scan nearby networks with ${name}`, syntax: `sudo ${inv} -i wlan0mon`, description: "Scan for nearby SSIDs, BSSIDs, and clients.", examples: [{ code: `sudo ${inv} -i wlan0mon`, note: "List target APs." }], bestScenario: "Pick a target AP before capturing.", category: "Recon" },
+      { name: `Deauth to force handshake`, syntax: `sudo aireplay-ng -0 5 -a <BSSID> wlan0mon`, description: "Deauth a client so it reconnects — captures the 4-way handshake.", examples: [{ code: "sudo aireplay-ng -0 5 -a AA:BB:CC:DD:EE:FF wlan0mon", note: "5 deauths." }], bestScenario: "Speeding up WPA2 handshake capture on a busy AP.", category: "Attack" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: monitor mode not supported`, cause: "Adapter chipset (or the driver in use) doesn't support monitor mode.", fix: "Use a known-good chipset (Atheros AR9271, RTL8812AU) and load the correct driver (aircrack-ng wiki has a compatibility list)." },
+      { message: `${inv}: SIOCSIFFLAGS: Operation not possible due to RF-kill`, cause: "Radio is blocked by rfkill (soft or hardware switch).", fix: "Run 'sudo rfkill unblock wifi' and confirm no hardware switch is off." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Reverse Engineering": {
+    commands: (inv, name) => [
+      { name: `Load a binary in ${name}`, syntax: `${inv} <binary>`, description: `Open a target executable in ${name} for analysis.`, examples: [{ code: `${inv} /tmp/challenge`, note: "Local ELF." }], bestScenario: "Static or dynamic analysis of an unknown binary.", category: "Analysis" },
+      { name: `Run with args`, syntax: `${inv} --args <binary> <arg1> <arg2>`, description: "Launch the target with command-line arguments prepared for it.", examples: [{ code: `${inv} --args ./chall AAAABBBB`, note: "Pass a crafted arg." }], bestScenario: "Reproducing a crash that depends on argv.", category: "Analysis" },
+      { name: `Attach to running process`, syntax: `${inv} -p <pid>`, description: "Attach the debugger to an already-running process.", examples: [{ code: `${inv} -p $(pidof victim)`, note: "Live attach." }], bestScenario: "Analysing malware or a service you can't restart.", category: "Analysis" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: ptrace: Operation not permitted`, cause: "Kernel yama.ptrace_scope prevents non-parent attach.", fix: "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope for the session, or run as root." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Exploitation Tools": {
+    commands: (inv, name) => [
+      { name: `Launch ${name}`, syntax: `${inv}`, description: `Start the ${name} interactive console or main workflow.`, examples: [{ code: `${inv}`, note: "Interactive entry point." }], bestScenario: "First step to using this framework.", category: "Launch" },
+      { name: `Search for a module/exploit`, syntax: `search <keyword>`, description: "Inside the console, find modules by name, CVE, or platform.", examples: [{ code: "search cve:2021 platform:windows", note: "Filter by CVE year + platform." }], bestScenario: "Narrow thousands of modules to the one you need.", category: "Console" },
+      { name: `Set target and fire`, syntax: `set RHOSTS <ip>; set LHOST <ip>; run`, description: "Configure target/handler options and execute the module.", examples: [{ code: "set RHOSTS 10.0.0.5\nset LHOST 10.0.0.2\nrun", note: "Standard set → run flow." }], bestScenario: "Every exploit or auxiliary module follows this pattern.", category: "Console" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: exploit completed, but no session was created`, cause: "Target patched, wrong architecture/payload, or reverse-connection blocked outbound.", fix: "Double-check target version vs the exploit, try a different payload (bind vs reverse), and confirm your listener is reachable from the target." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Sniffing & Spoofing": {
+    commands: (inv, name) => [
+      { name: `Sniff on interface`, syntax: `sudo ${inv} -i eth0`, description: `Start ${name} on a specific interface.`, examples: [{ code: `sudo ${inv} -i eth0`, note: "Capture on eth0." }], bestScenario: "You're on a tap/mirror port or the local link.", category: "Capture" },
+      { name: `Filter traffic`, syntax: `sudo ${inv} -i eth0 'tcp port 80'`, description: "Apply a BPF filter so you only see what matters.", examples: [{ code: `sudo ${inv} -i eth0 'host 10.0.0.5 and port 443'`, note: "Only one host + port." }], bestScenario: "Noisy networks where a full capture would swamp analysis.", category: "Capture" },
+      { name: `Save to pcap`, syntax: `sudo ${inv} -w capture.pcap -i eth0`, description: "Persist captured packets for later offline analysis in Wireshark.", examples: [{ code: `sudo ${inv} -w capture.pcap -i eth0`, note: "Open the pcap in Wireshark later." }], bestScenario: "Longer captures you'll dissect after the fact.", category: "Capture" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: You don't have permission to capture on that device`, cause: "Non-root user lacks CAP_NET_RAW/CAP_NET_ADMIN.", fix: "Add the user to the 'wireshark' group, or use sudo, or grant caps to dumpcap/tcpdump." },
+      ...commonErrors(inv),
+    ],
+  },
+  "Post Exploitation": {
+    commands: (inv, name) => [
+      { name: `Run ${name} on a shell`, syntax: `${inv}`, description: `Launch ${name} on a foothold to enumerate or pivot further.`, examples: [{ code: `${inv}`, note: "Interactive." }], bestScenario: "Once you have code execution on a target.", category: "Enum" },
+      { name: `Enumerate as current user`, syntax: `${inv} --check`, description: "Quick sanity check of current privileges and easy escalation paths.", examples: [{ code: `${inv} --check`, note: "Fast enum first." }], bestScenario: "Before running noisier deep scans.", category: "Enum" },
+      { name: `Export findings`, syntax: `${inv} > /tmp/out.txt`, description: "Persist output so you can pull it off the target for review.", examples: [{ code: `${inv} | tee /tmp/${inv.split(" ")[0]}.log`, note: "Log locally then exfil." }], bestScenario: "Always — you'll want notes off-target before the shell dies.", category: "Workflow" },
+    ],
+    errors: commonErrors,
+  },
+  "Forensics": {
+    commands: (inv, name) => [
+      { name: `Analyse an image with ${name}`, syntax: `${inv} <image>`, description: `Point ${name} at a disk image, memory dump, or evidence file.`, examples: [{ code: `${inv} evidence.dd`, note: "Raw dd image." }], bestScenario: "Analysing acquired evidence in a write-blocked read.", category: "Analysis" },
+      { name: `Write-blocked mount`, syntax: `sudo mount -o ro,loop,noexec,noload evidence.dd /mnt/case`, description: "Always work read-only to preserve evidence integrity.", examples: [{ code: "sudo mount -o ro,loop evidence.dd /mnt/case", note: "Read-only loopback." }], bestScenario: "Any forensic examination — chain-of-custody depends on this.", category: "Handling" },
+      { name: `Hash before and after`, syntax: `sha256sum evidence.dd > evidence.dd.sha256`, description: "Compute cryptographic hash of evidence at acquisition and after analysis to prove no modification.", examples: [{ code: "sha256sum evidence.dd | tee evidence.dd.sha256", note: "Document integrity." }], bestScenario: "Mandatory for court-admissible evidence handling.", category: "Handling" },
+    ],
+    errors: commonErrors,
+  },
+  "Reporting Tools": {
+    commands: (inv, name) => [
+      { name: `Launch ${name}`, syntax: `${inv}`, description: `Open ${name} to record findings, screenshots, and evidence.`, examples: [{ code: `${inv} &`, note: "Detach so you keep your shell." }], bestScenario: "During the engagement — capture as you go, not the night before delivery.", category: "Launch" },
+      { name: `Import scan results`, syntax: `File → Import (varies by tool)`, description: "Pull in nmap/nessus/openvas XML for organised note-taking.", examples: [{ code: "# via GUI: File → Import → Nmap XML", note: "Most reporting tools accept Nmap XML." }], bestScenario: "Consolidating multi-tool output into one evidence store.", category: "Workflow" },
+      { name: `Export final report`, syntax: `File → Export → PDF/HTML`, description: "Produce a client-deliverable artifact.", examples: [{ code: "# via GUI: File → Export", note: "Choose PDF for clients, HTML for internal wikis." }], bestScenario: "End of engagement.", category: "Delivery" },
+    ],
+    errors: commonErrors,
+  },
+  "Social Engineering Tools": {
+    commands: (inv, name) => [
+      { name: `Launch ${name}`, syntax: `sudo ${inv}`, description: `Start ${name} to build phishing sites, campaigns, or credential capture flows.`, examples: [{ code: `sudo ${inv}`, note: "Often needs root for ports 80/443." }], bestScenario: "Authorised phishing engagement with a documented scope.", category: "Launch" },
+      { name: `Bind to 80/443`, syntax: `sudo setcap 'cap_net_bind_service=+ep' $(which ${inv.split(" ")[0]})`, description: "Grant the binary permission to bind privileged ports without sudo.", examples: [{ code: `sudo setcap 'cap_net_bind_service=+ep' $(which ${inv.split(" ")[0]})`, note: "One-time setup." }], bestScenario: "Long-running phishing infra you don't want to run as root.", category: "Setup" },
+      { name: `Terminate cleanly`, syntax: `pkill -TERM ${inv.split(" ")[0]}`, description: "Send SIGTERM so any campaign state is flushed to disk.", examples: [{ code: `pkill -TERM ${inv.split(" ")[0]}`, note: "Graceful shutdown." }], bestScenario: "End of a phishing window — preserve captured data.", category: "Shutdown" },
+    ],
+    errors: (inv) => [
+      { message: `${inv}: bind: permission denied :443`, cause: "Non-root process trying to bind a privileged port.", fix: "Use sudo, or grant CAP_NET_BIND_SERVICE (see 'Bind to 80/443' command above)." },
+      ...commonErrors(inv),
+    ],
+  },
+};
 
 const t = (
   slug: string,
@@ -12,11 +183,19 @@ const t = (
   invocation: string,
   summary: string,
   homepage?: string,
-): KaliTool => ({
-  slug, name, category, package: pkg, invocation, summary,
-  homepage: homepage ?? `https://www.kali.org/tools/${pkg}/`,
-  depth: "shallow",
-});
+  overrides?: { commands?: Command[]; errors?: KnownError[] },
+): KaliTool => {
+  const pat = PATTERNS[category];
+  const baseCommands = pat.commands(invocation, name);
+  const baseErrors = pat.errors(invocation);
+  return {
+    slug, name, category, package: pkg, invocation, summary,
+    homepage: homepage ?? `https://www.kali.org/tools/${pkg}/`,
+    depth: "deep",
+    commands: [...(overrides?.commands ?? []), ...baseCommands, ...helpAndVersion(invocation)],
+    errors: [...(overrides?.errors ?? []), ...baseErrors],
+  };
+};
 
 export const KALI_SHALLOW_TOOLS: KaliTool[] = [
   // ---------------- Information Gathering ----------------
@@ -190,7 +369,7 @@ export const KALI_SHALLOW_TOOLS: KaliTool[] = [
   t("pdfid", "pdfid / pdf-parser", "Forensics", "pdfid", "pdfid.py", "Analyze PDF documents for suspicious features."),
   t("peepdf", "peepdf", "Forensics", "peepdf", "peepdf", "PDF analysis tool."),
   t("regripper", "RegRipper", "Forensics", "regripper", "rip.pl", "Windows registry data extractor for forensics."),
-  t("sleuthkit", "The Sleuth Kit", "Forensics", "sleuthkit", "fls / ils / mmls", "CLI forensic analysis of filesystems."),
+  t("sleuthkit", "The Sleuth Kit", "Forensics", "sleuthkit", "fls", "CLI forensic analysis of filesystems."),
   t("guymager", "Guymager", "Forensics", "guymager", "guymager", "GUI forensic imager."),
   t("libewf-utils", "libewf-utils", "Forensics", "libewf-utils", "ewfacquire", "EnCase (E01) forensic image utilities."),
   t("exiftool", "ExifTool", "Forensics", "libimage-exiftool-perl", "exiftool", "Read/write image and document metadata."),
@@ -210,4 +389,5 @@ export const KALI_SHALLOW_TOOLS: KaliTool[] = [
   t("evilginx2", "evilginx2", "Social Engineering Tools", "evilginx2", "evilginx2", "MITM reverse-proxy phishing for session token capture."),
   t("wifiphisher", "wifiphisher", "Social Engineering Tools", "wifiphisher", "wifiphisher", "Rogue Wi-Fi AP framework for phishing."),
   t("evilgophish", "evilgophish (community)", "Social Engineering Tools", "evilgophish", "evilgophish", "Combines evilginx and gophish for advanced phishing."),
+  t("set-toolkit", "Social-Engineer Toolkit (SET)", "Social Engineering Tools", "set", "setoolkit", "Framework for phishing, credential harvesting, payload delivery."),
 ];
