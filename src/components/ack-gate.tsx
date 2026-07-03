@@ -37,14 +37,23 @@ export function AckGate({ children }: { children: ReactNode }) {
           <h1 className="text-lg font-semibold">Authorised-use acknowledgement</h1>
         </div>
         <p className="text-sm text-foreground/90">
-          The Security Testing handbook documents offensive techniques so
-          defenders can understand, detect, and mitigate them, and so
-          authorised testers can perform their work under written scope.
+          The Security Testing handbook documents offensive techniques so defenders can understand,
+          detect, and mitigate them, and so authorised testers can perform their work under written
+          scope.
         </p>
         <ul className="mt-4 space-y-2 text-sm text-foreground/90">
-          <li>• I will only apply these techniques to systems I own or that I have <em>explicit written authorisation</em> to test.</li>
-          <li>• I understand unauthorised use may violate the CFAA (US), Computer Misuse Act (UK), and equivalent laws worldwide.</li>
-          <li>• I will follow responsible disclosure for any vulnerability found outside a formal engagement.</li>
+          <li>
+            • I will only apply these techniques to systems I own or that I have{" "}
+            <em>explicit written authorisation</em> to test.
+          </li>
+          <li>
+            • I understand unauthorised use may violate the CFAA (US), Computer Misuse Act (UK), and
+            equivalent laws worldwide.
+          </li>
+          <li>
+            • I will follow responsible disclosure for any vulnerability found outside a formal
+            engagement.
+          </li>
           <li>• I will treat every finding as sensitive and store credentials or PII securely.</li>
         </ul>
         <label className="mt-5 flex items-start gap-2 text-sm">
@@ -54,14 +63,21 @@ export function AckGate({ children }: { children: ReactNode }) {
             checked={checked}
             onChange={(e) => setChecked(e.target.checked)}
           />
-          <span>I acknowledge the terms above and will only use this material for authorised, ethical purposes.</span>
+          <span>
+            I acknowledge the terms above and will only use this material for authorised, ethical
+            purposes.
+          </span>
         </label>
         <div className="mt-5 flex flex-wrap gap-2">
           <button
             type="button"
             disabled={!checked}
             onClick={() => {
-              try { window.localStorage.setItem(KEY, "yes"); } catch { /* ignore */ }
+              try {
+                window.localStorage.setItem(KEY, "yes");
+              } catch {
+                /* ignore */
+              }
               setOk(true);
             }}
             className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"

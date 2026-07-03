@@ -8,9 +8,17 @@ export const Route = createFileRoute("/kali/")({
   head: () => ({
     meta: [
       { title: `Kali Linux tools (${KALI_TOOLS.length}) — distro/ref` },
-      { name: "description", content: "Full catalog of Kali Linux security tools by category, with usage details for the most-used tools." },
+      {
+        name: "description",
+        content:
+          "Full catalog of Kali Linux security tools by category, with usage details for the most-used tools.",
+      },
       { property: "og:title", content: "Kali Linux tools — distro/ref" },
-      { property: "og:description", content: "Browse Kali's offensive-security toolkit. Every tool categorized, key tools deeply documented." },
+      {
+        property: "og:description",
+        content:
+          "Browse Kali's offensive-security toolkit. Every tool categorized, key tools deeply documented.",
+      },
     ],
   }),
   component: KaliIndex,
@@ -39,8 +47,12 @@ function KaliIndex() {
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Kali Linux tools</h1>
         <p className="mt-2 max-w-3xl text-muted-foreground">
-          {KALI_TOOLS.length} security tools bundled with Kali, grouped by the same menu categories Kali uses.
-          Tools marked <Badge variant="outline" className="mono ml-1">deep</Badge> include full command tables and error fixes.
+          {KALI_TOOLS.length} security tools bundled with Kali, grouped by the same menu categories
+          Kali uses. Tools marked{" "}
+          <Badge variant="outline" className="mono ml-1">
+            deep
+          </Badge>{" "}
+          include full command tables and error fixes.
         </p>
       </header>
 
@@ -58,18 +70,24 @@ function KaliIndex() {
           type="button"
           onClick={() => setCat("")}
           className={`rounded-full px-3 py-1 text-xs border ${cat === "" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
-        >All</button>
+        >
+          All
+        </button>
         {KALI_CATEGORIES.map((c) => (
           <button
             key={c}
             type="button"
             onClick={() => setCat(c)}
             className={`rounded-full px-3 py-1 text-xs border ${cat === c ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
-          >{c}</button>
+          >
+            {c}
+          </button>
         ))}
       </div>
 
-      <div className="mb-3 text-xs text-muted-foreground">{filtered.length} tool{filtered.length === 1 ? "" : "s"}</div>
+      <div className="mb-3 text-xs text-muted-foreground">
+        {filtered.length} tool{filtered.length === 1 ? "" : "s"}
+      </div>
 
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((tool) => (

@@ -1,5 +1,10 @@
 import type { KnownError } from "@/data/types";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export function ErrorList({ errors }: { errors: KnownError[] }) {
   if (errors.length === 0) {

@@ -35,9 +35,9 @@ export type Intent = {
   phrases: string[];
   domain: IntentDomain;
   playbooks: string[]; // playbook slugs
-  tools: string[];     // kali tool slugs
+  tools: string[]; // kali tool slugs
   commands?: string[]; // canonical starter commands
-  guidance: string;    // short ethical framing shown above results
+  guidance: string; // short ethical framing shown above results
 };
 
 const SCOPE = "Confirm the target is in your authorised scope before running any command below.";
@@ -47,9 +47,14 @@ export const INTENTS: Intent[] = [
   {
     id: "web-sqli",
     phrases: [
-      "sql injection", "sqli", "test for sql injection", "hack a database through a website",
-      "audit database query safety", "check parameterised queries",
-      "how do i test if a login is sqli", "test login form for sqli",
+      "sql injection",
+      "sqli",
+      "test for sql injection",
+      "hack a database through a website",
+      "audit database query safety",
+      "check parameterised queries",
+      "how do i test if a login is sqli",
+      "test login form for sqli",
     ],
     domain: "web",
     playbooks: ["sqli-sqlmap"],
@@ -60,8 +65,13 @@ export const INTENTS: Intent[] = [
   {
     id: "web-xss",
     phrases: [
-      "xss", "cross site scripting", "reflected xss", "stored xss", "dom xss",
-      "how do i test for xss", "audit output encoding",
+      "xss",
+      "cross site scripting",
+      "reflected xss",
+      "stored xss",
+      "dom xss",
+      "how do i test for xss",
+      "audit output encoding",
     ],
     domain: "web",
     playbooks: ["xss-reflected"],
@@ -71,11 +81,19 @@ export const INTENTS: Intent[] = [
   {
     id: "web-business-logic",
     phrases: [
-      "pricing logic", "test website pricing", "audit checkout logic",
-      "how do i test a website's pricing", "how can i test the security of a website's pricing logic",
-      "negative price test", "coupon abuse test", "test promo code security",
-      "cart tampering test", "audit shopping cart", "audit business logic",
-      "test coupon race condition", "check for parameter tampering",
+      "pricing logic",
+      "test website pricing",
+      "audit checkout logic",
+      "how do i test a website's pricing",
+      "how can i test the security of a website's pricing logic",
+      "negative price test",
+      "coupon abuse test",
+      "test promo code security",
+      "cart tampering test",
+      "audit shopping cart",
+      "audit business logic",
+      "test coupon race condition",
+      "check for parameter tampering",
     ],
     domain: "web",
     playbooks: ["business-logic-pricing", "idor"],
@@ -85,8 +103,11 @@ export const INTENTS: Intent[] = [
   {
     id: "web-idor",
     phrases: [
-      "idor", "insecure direct object reference", "test authorization",
-      "check if i can access another user's data", "horizontal privilege",
+      "idor",
+      "insecure direct object reference",
+      "test authorization",
+      "check if i can access another user's data",
+      "horizontal privilege",
       "vertical privilege escalation on api",
     ],
     domain: "web",
@@ -97,8 +118,13 @@ export const INTENTS: Intent[] = [
   {
     id: "web-ssrf",
     phrases: [
-      "ssrf", "server side request forgery", "test for ssrf", "cloud metadata theft",
-      "imds", "how do i test the pdf renderer for ssrf", "audit webhook target",
+      "ssrf",
+      "server side request forgery",
+      "test for ssrf",
+      "cloud metadata theft",
+      "imds",
+      "how do i test the pdf renderer for ssrf",
+      "audit webhook target",
     ],
     domain: "web",
     playbooks: ["ssrf-cloud"],
@@ -108,8 +134,12 @@ export const INTENTS: Intent[] = [
   {
     id: "web-xxe",
     phrases: [
-      "xxe", "xml external entity", "test xml parser", "audit soap endpoint",
-      "read files via xml", "billion laughs",
+      "xxe",
+      "xml external entity",
+      "test xml parser",
+      "audit soap endpoint",
+      "read files via xml",
+      "billion laughs",
     ],
     domain: "web",
     playbooks: ["xxe"],
@@ -119,8 +149,12 @@ export const INTENTS: Intent[] = [
   {
     id: "web-ssti",
     phrases: [
-      "ssti", "server side template injection", "template injection",
-      "test jinja for rce", "test twig", "test freemarker",
+      "ssti",
+      "server side template injection",
+      "template injection",
+      "test jinja for rce",
+      "test twig",
+      "test freemarker",
     ],
     domain: "web",
     playbooks: ["ssti"],
@@ -130,8 +164,12 @@ export const INTENTS: Intent[] = [
   {
     id: "web-deserialization",
     phrases: [
-      "deserialization", "insecure deserialization", "java serialization",
-      "python pickle rce", ".net binaryformatter", "audit serialization",
+      "deserialization",
+      "insecure deserialization",
+      "java serialization",
+      "python pickle rce",
+      ".net binaryformatter",
+      "audit serialization",
     ],
     domain: "web",
     playbooks: ["deserialization"],
@@ -141,7 +179,9 @@ export const INTENTS: Intent[] = [
   {
     id: "web-prototype-pollution",
     phrases: [
-      "prototype pollution", "js prototype pollution", "audit lodash merge",
+      "prototype pollution",
+      "js prototype pollution",
+      "audit lodash merge",
       "test node app for prototype pollution",
     ],
     domain: "web",
@@ -152,7 +192,10 @@ export const INTENTS: Intent[] = [
   {
     id: "web-request-smuggling",
     phrases: [
-      "http request smuggling", "smuggle", "cl.te", "te.cl",
+      "http request smuggling",
+      "smuggle",
+      "cl.te",
+      "te.cl",
       "audit reverse proxy behaviour",
     ],
     domain: "web",
@@ -163,8 +206,11 @@ export const INTENTS: Intent[] = [
   {
     id: "web-csrf",
     phrases: [
-      "csrf", "cross site request forgery", "test state changing endpoints",
-      "check csrf token protection", "audit samesite cookies",
+      "csrf",
+      "cross site request forgery",
+      "test state changing endpoints",
+      "check csrf token protection",
+      "audit samesite cookies",
     ],
     domain: "web",
     playbooks: ["csrf"],
@@ -173,9 +219,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "web-open-redirect",
-    phrases: [
-      "open redirect", "test for open redirect", "audit login redirect",
-    ],
+    phrases: ["open redirect", "test for open redirect", "audit login redirect"],
     domain: "web",
     playbooks: ["open-redirect"],
     tools: ["burpsuite", "ffuf"],
@@ -183,9 +227,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "web-cors",
-    phrases: [
-      "cors misconfiguration", "test cors", "wildcard origin", "credentials true origin",
-    ],
+    phrases: ["cors misconfiguration", "test cors", "wildcard origin", "credentials true origin"],
     domain: "web",
     playbooks: ["cors-misconfig"],
     tools: ["burpsuite", "corsy"],
@@ -194,8 +236,11 @@ export const INTENTS: Intent[] = [
   {
     id: "web-file-upload",
     phrases: [
-      "file upload bypass", "unrestricted file upload", "test avatar upload",
-      "audit file upload", "upload a shell",
+      "file upload bypass",
+      "unrestricted file upload",
+      "test avatar upload",
+      "audit file upload",
+      "upload a shell",
     ],
     domain: "web",
     playbooks: ["file-upload-rce"],
@@ -205,7 +250,10 @@ export const INTENTS: Intent[] = [
   {
     id: "web-graphql",
     phrases: [
-      "graphql", "graphql introspection", "audit graphql", "test graphql for idor",
+      "graphql",
+      "graphql introspection",
+      "audit graphql",
+      "test graphql for idor",
       "graphql batching attack",
     ],
     domain: "api",
@@ -216,8 +264,11 @@ export const INTENTS: Intent[] = [
   {
     id: "web-jwt",
     phrases: [
-      "jwt", "jwt vulnerabilities", "test jwt none algorithm",
-      "audit jwt signature", "jwt kid injection",
+      "jwt",
+      "jwt vulnerabilities",
+      "test jwt none algorithm",
+      "audit jwt signature",
+      "jwt kid injection",
     ],
     domain: "api",
     playbooks: ["jwt-flaws"],
@@ -227,7 +278,10 @@ export const INTENTS: Intent[] = [
   {
     id: "web-race-condition",
     phrases: [
-      "race condition", "toctou", "test double spend", "gift card race",
+      "race condition",
+      "toctou",
+      "test double spend",
+      "gift card race",
       "how do i test coupon race",
     ],
     domain: "web",
@@ -237,9 +291,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "web-log4shell",
-    phrases: [
-      "log4shell", "log4j", "cve-2021-44228", "jndi", "test for log4j",
-    ],
+    phrases: ["log4shell", "log4j", "cve-2021-44228", "jndi", "test for log4j"],
     domain: "web",
     playbooks: ["log4shell"],
     tools: ["burpsuite", "nuclei"],
@@ -248,19 +300,27 @@ export const INTENTS: Intent[] = [
   {
     id: "web-directory-brute",
     phrases: [
-      "directory brute", "content discovery", "hidden endpoints",
-      "find admin panel", "brute force paths",
+      "directory brute",
+      "content discovery",
+      "hidden endpoints",
+      "find admin panel",
+      "brute force paths",
     ],
     domain: "web",
     playbooks: ["content-discovery"],
     tools: ["ffuf", "gobuster", "feroxbuster", "dirb", "kiterunner"],
-    commands: ["ffuf -u https://target.tld/FUZZ -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -mc 200,301,302,401,403"],
+    commands: [
+      "ffuf -u https://target.tld/FUZZ -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -mc 200,301,302,401,403",
+    ],
     guidance: `${SCOPE} Rate-limit yourself; noisy fuzzing trips WAFs and can degrade shared infrastructure.`,
   },
   {
     id: "web-wordpress",
     phrases: [
-      "wordpress audit", "wpscan", "test wordpress site", "audit cms",
+      "wordpress audit",
+      "wpscan",
+      "test wordpress site",
+      "audit cms",
       "how do i test a wordpress site",
     ],
     domain: "web",
@@ -273,8 +333,12 @@ export const INTENTS: Intent[] = [
   {
     id: "net-port-scan",
     phrases: [
-      "port scan", "find open ports", "scan network", "map hosts",
-      "asset discovery", "network reconnaissance",
+      "port scan",
+      "find open ports",
+      "scan network",
+      "map hosts",
+      "asset discovery",
+      "network reconnaissance",
     ],
     domain: "network",
     playbooks: ["port-scanning"],
@@ -288,8 +352,11 @@ export const INTENTS: Intent[] = [
   {
     id: "net-smb",
     phrases: [
-      "smb enumeration", "audit file shares", "enumerate windows shares",
-      "test smb signing", "check for anonymous smb",
+      "smb enumeration",
+      "audit file shares",
+      "enumerate windows shares",
+      "test smb signing",
+      "check for anonymous smb",
     ],
     domain: "network",
     playbooks: ["smb-enum"],
@@ -298,9 +365,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "net-eternalblue",
-    phrases: [
-      "eternalblue", "ms17-010", "cve-2017-0144", "test smbv1",
-    ],
+    phrases: ["eternalblue", "ms17-010", "cve-2017-0144", "test smbv1"],
     domain: "network",
     playbooks: ["smb-eternalblue"],
     tools: ["nmap", "metasploit"],
@@ -308,9 +373,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "net-zerologon",
-    phrases: [
-      "zerologon", "cve-2020-1472", "netlogon vulnerability", "test domain controller",
-    ],
+    phrases: ["zerologon", "cve-2020-1472", "netlogon vulnerability", "test domain controller"],
     domain: "network",
     playbooks: ["zerologon"],
     tools: ["impacket", "nmap"],
@@ -318,9 +381,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "net-printnightmare",
-    phrases: [
-      "printnightmare", "cve-2021-34527", "print spooler exploit",
-    ],
+    phrases: ["printnightmare", "cve-2021-34527", "print spooler exploit"],
     domain: "network",
     playbooks: ["printnightmare"],
     tools: ["impacket", "metasploit"],
@@ -328,10 +389,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "net-llmnr-poison",
-    phrases: [
-      "llmnr poisoning", "nbt-ns spoofing", "mdns poisoning",
-      "capture ntlm hashes on lan",
-    ],
+    phrases: ["llmnr poisoning", "nbt-ns spoofing", "mdns poisoning", "capture ntlm hashes on lan"],
     domain: "network",
     playbooks: ["ntlm-relay"],
     tools: ["responder", "impacket", "mitm6"],
@@ -339,9 +397,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "net-mitm",
-    phrases: [
-      "mitm", "man in the middle", "arp spoof", "intercept traffic",
-    ],
+    phrases: ["mitm", "man in the middle", "arp spoof", "intercept traffic"],
     domain: "network",
     playbooks: ["arp-mitm"],
     tools: ["bettercap", "ettercap", "dsniff"],
@@ -351,9 +407,7 @@ export const INTENTS: Intent[] = [
   // ─────────────── Active Directory ───────────────
   {
     id: "ad-kerberoast",
-    phrases: [
-      "kerberoast", "asrep roast", "spn roasting", "crack service account",
-    ],
+    phrases: ["kerberoast", "asrep roast", "spn roasting", "crack service account"],
     domain: "active-directory",
     playbooks: ["kerberoast", "asrep-roast"],
     tools: ["impacket", "hashcat", "john", "kerbrute"],
@@ -361,9 +415,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "ad-bloodhound",
-    phrases: [
-      "bloodhound", "map ad attack paths", "audit active directory permissions",
-    ],
+    phrases: ["bloodhound", "map ad attack paths", "audit active directory permissions"],
     domain: "active-directory",
     playbooks: ["bloodhound-mapping"],
     tools: ["bloodhound", "sharphound"],
@@ -372,8 +424,11 @@ export const INTENTS: Intent[] = [
   {
     id: "ad-adcs-esc1",
     phrases: [
-      "adcs esc1", "certificate template abuse", "audit ad cs",
-      "test enrollee supplies subject", "certipy",
+      "adcs esc1",
+      "certificate template abuse",
+      "audit ad cs",
+      "test enrollee supplies subject",
+      "certipy",
     ],
     domain: "active-directory",
     playbooks: ["adcs-esc1"],
@@ -382,9 +437,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "ad-dcsync",
-    phrases: [
-      "dcsync", "dump ntds", "pull password hashes from dc",
-    ],
+    phrases: ["dcsync", "dump ntds", "pull password hashes from dc"],
     domain: "active-directory",
     playbooks: ["mimikatz-dcsync"],
     tools: ["impacket", "mimikatz-wine"],
@@ -392,9 +445,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "ad-relay",
-    phrases: [
-      "ntlm relay", "smb relay", "responder ntlmrelayx", "test smb signing enforcement",
-    ],
+    phrases: ["ntlm relay", "smb relay", "responder ntlmrelayx", "test smb signing enforcement"],
     domain: "active-directory",
     playbooks: ["ntlm-relay"],
     tools: ["responder", "impacket"],
@@ -405,20 +456,33 @@ export const INTENTS: Intent[] = [
   {
     id: "wifi-audit",
     phrases: [
-      "audit wifi", "audit wi-fi security", "audit wireless network",
-      "how do i audit a wi-fi network", "how can i audit the security of a wi-fi network",
-      "wireless assessment", "test wpa2", "test wpa3",
+      "audit wifi",
+      "audit wi-fi security",
+      "audit wireless network",
+      "how do i audit a wi-fi network",
+      "how can i audit the security of a wi-fi network",
+      "wireless assessment",
+      "test wpa2",
+      "test wpa3",
     ],
     domain: "wireless",
     playbooks: ["wpa2-handshake", "pmkid-attack", "wps-pixie-dust", "evil-twin"],
-    tools: ["aircrack-ng", "hcxdumptool", "hcxtools", "hashcat", "wifite", "reaver", "bully", "pixiewps", "kismet"],
+    tools: [
+      "aircrack-ng",
+      "hcxdumptool",
+      "hcxtools",
+      "hashcat",
+      "wifite",
+      "reaver",
+      "bully",
+      "pixiewps",
+      "kismet",
+    ],
     guidance: `${SCOPE} Wireless auditing requires you to own the AP or hold written authorisation from the network owner.`,
   },
   {
     id: "wifi-crack",
-    phrases: [
-      "crack wifi", "crack wpa2 password", "wifi password", "capture handshake",
-    ],
+    phrases: ["crack wifi", "crack wpa2 password", "wifi password", "capture handshake"],
     domain: "wireless",
     playbooks: ["wpa2-handshake"],
     tools: ["aircrack-ng", "hcxtools", "hashcat"],
@@ -426,9 +490,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "wifi-pmkid",
-    phrases: [
-      "pmkid attack", "clientless wpa2 attack", "capture pmkid",
-    ],
+    phrases: ["pmkid attack", "clientless wpa2 attack", "capture pmkid"],
     domain: "wireless",
     playbooks: ["pmkid-attack"],
     tools: ["hcxdumptool", "hcxtools", "hashcat"],
@@ -436,9 +498,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "wifi-wps",
-    phrases: [
-      "wps attack", "reaver", "pixie dust", "test wps",
-    ],
+    phrases: ["wps attack", "reaver", "pixie dust", "test wps"],
     domain: "wireless",
     playbooks: ["wps-pixie-dust"],
     tools: ["reaver", "bully", "pixiewps", "wifite"],
@@ -446,9 +506,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "wifi-eviltwin",
-    phrases: [
-      "evil twin", "rogue ap", "captive portal test", "wifiphisher",
-    ],
+    phrases: ["evil twin", "rogue ap", "captive portal test", "wifiphisher"],
     domain: "wireless",
     playbooks: ["evil-twin"],
     tools: ["wifiphisher", "airgeddon", "hostapd-wpe"],
@@ -456,9 +514,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "bluetooth",
-    phrases: [
-      "bluetooth audit", "ble scan", "test bluetooth pairing",
-    ],
+    phrases: ["bluetooth audit", "ble scan", "test bluetooth pairing"],
     domain: "bluetooth",
     playbooks: ["ble-recon"],
     tools: ["bluez-tools", "btscanner"],
@@ -469,8 +525,11 @@ export const INTENTS: Intent[] = [
   {
     id: "cloud-aws-iam",
     phrases: [
-      "aws iam audit", "audit iam permissions", "test aws privilege escalation",
-      "s3 bucket audit", "find public buckets you own",
+      "aws iam audit",
+      "audit iam permissions",
+      "test aws privilege escalation",
+      "s3 bucket audit",
+      "find public buckets you own",
     ],
     domain: "cloud",
     playbooks: ["aws-iam-audit", "s3-exposure"],
@@ -479,9 +538,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "cloud-gcp",
-    phrases: [
-      "gcp audit", "audit gcp iam", "google cloud security review",
-    ],
+    phrases: ["gcp audit", "audit gcp iam", "google cloud security review"],
     domain: "cloud",
     playbooks: ["gcp-iam-audit"],
     tools: ["scoutsuite", "prowler"],
@@ -489,9 +546,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "cloud-azure",
-    phrases: [
-      "azure ad", "aad device code phishing", "audit entra id",
-    ],
+    phrases: ["azure ad", "aad device code phishing", "audit entra id"],
     domain: "cloud",
     playbooks: ["aad-device-code"],
     tools: ["roadtx", "aadinternals"],
@@ -500,8 +555,12 @@ export const INTENTS: Intent[] = [
   {
     id: "k8s",
     phrases: [
-      "kubernetes audit", "k8s pentest", "audit rbac", "test container escape",
-      "exposed kubelet", "audit cluster",
+      "kubernetes audit",
+      "k8s pentest",
+      "audit rbac",
+      "test container escape",
+      "exposed kubelet",
+      "audit cluster",
     ],
     domain: "container",
     playbooks: ["k8s-rbac-audit", "container-escape"],
@@ -510,9 +569,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "docker",
-    phrases: [
-      "docker socket abuse", "audit docker daemon", "container breakout",
-    ],
+    phrases: ["docker socket abuse", "audit docker daemon", "container breakout"],
     domain: "container",
     playbooks: ["docker-socket-abuse"],
     tools: ["docker-bench-security"],
@@ -523,8 +580,11 @@ export const INTENTS: Intent[] = [
   {
     id: "mobile-android",
     phrases: [
-      "android apk analysis", "audit android app", "test mobile app",
-      "reverse engineer apk", "check ssl pinning",
+      "android apk analysis",
+      "audit android app",
+      "test mobile app",
+      "reverse engineer apk",
+      "check ssl pinning",
     ],
     domain: "mobile",
     playbooks: ["android-static", "android-dynamic"],
@@ -533,9 +593,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "mobile-ios",
-    phrases: [
-      "ios ipa analysis", "audit ios app", "reverse engineer ipa",
-    ],
+    phrases: ["ios ipa analysis", "audit ios app", "reverse engineer ipa"],
     domain: "mobile",
     playbooks: ["ios-static"],
     tools: ["frida", "objection"],
@@ -546,8 +604,11 @@ export const INTENTS: Intent[] = [
   {
     id: "iot-firmware",
     phrases: [
-      "firmware analysis", "extract firmware", "audit iot firmware",
-      "binwalk", "reverse engineer router firmware",
+      "firmware analysis",
+      "extract firmware",
+      "audit iot firmware",
+      "binwalk",
+      "reverse engineer router firmware",
     ],
     domain: "iot",
     playbooks: ["firmware-extraction"],
@@ -556,9 +617,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "iot-mqtt",
-    phrases: [
-      "mqtt audit", "test mqtt broker", "iot messaging security",
-    ],
+    phrases: ["mqtt audit", "test mqtt broker", "iot messaging security"],
     domain: "iot",
     playbooks: ["mqtt-audit"],
     tools: ["mosquitto-clients"],
@@ -566,9 +625,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "ics-modbus",
-    phrases: [
-      "ics scada", "modbus", "audit plc lab", "industrial protocol test",
-    ],
+    phrases: ["ics scada", "modbus", "audit plc lab", "industrial protocol test"],
     domain: "ics",
     playbooks: ["modbus-enum"],
     tools: ["modbus-cli", "nmap"],
@@ -579,8 +636,10 @@ export const INTENTS: Intent[] = [
   {
     id: "pw-spray",
     phrases: [
-      "password spray", "test common passwords across users",
-      "audit password policy", "spray o365",
+      "password spray",
+      "test common passwords across users",
+      "audit password policy",
+      "spray o365",
     ],
     domain: "password",
     playbooks: ["password-spray"],
@@ -589,9 +648,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "pw-brute-ssh",
-    phrases: [
-      "brute force ssh", "spray ssh credentials", "test ssh password auth",
-    ],
+    phrases: ["brute force ssh", "spray ssh credentials", "test ssh password auth"],
     domain: "password",
     playbooks: ["ssh-brute"],
     tools: ["hydra", "ncrack", "medusa"],
@@ -599,9 +656,7 @@ export const INTENTS: Intent[] = [
   },
   {
     id: "pw-hashcat",
-    phrases: [
-      "crack hash", "hashcat", "john the ripper", "identify a hash format",
-    ],
+    phrases: ["crack hash", "hashcat", "john the ripper", "identify a hash format"],
     domain: "password",
     playbooks: ["hashcat-workflow"],
     tools: ["hashcat", "john", "hash-identifier"],
@@ -612,8 +667,11 @@ export const INTENTS: Intent[] = [
   {
     id: "linux-privesc",
     phrases: [
-      "linux privilege escalation", "root linux", "audit linux privesc paths",
-      "test suid binaries", "audit sudoers",
+      "linux privilege escalation",
+      "root linux",
+      "audit linux privesc paths",
+      "test suid binaries",
+      "audit sudoers",
     ],
     domain: "os-privesc",
     playbooks: ["linux-privesc", "dirtypipe", "pwnkit"],
@@ -623,8 +681,11 @@ export const INTENTS: Intent[] = [
   {
     id: "windows-privesc",
     phrases: [
-      "windows privilege escalation", "audit windows privesc",
-      "unquoted service path", "always install elevated", "test uac bypass",
+      "windows privilege escalation",
+      "audit windows privesc",
+      "unquoted service path",
+      "always install elevated",
+      "test uac bypass",
     ],
     domain: "os-privesc",
     playbooks: ["windows-privesc", "always-install-elevated"],
@@ -635,9 +696,7 @@ export const INTENTS: Intent[] = [
   // ─────────────── Post-exploit / pivoting ───────────────
   {
     id: "pivot",
-    phrases: [
-      "pivoting", "tunneling", "proxy through host", "chisel", "sshuttle",
-    ],
+    phrases: ["pivoting", "tunneling", "proxy through host", "chisel", "sshuttle"],
     domain: "post-exploit",
     playbooks: ["pivoting-tunneling"],
     tools: ["chisel", "sshuttle", "proxychains-ng", "ligolo-ng"],
@@ -647,31 +706,32 @@ export const INTENTS: Intent[] = [
   // ─────────────── Forensics / reversing (defensive) ───────────────
   {
     id: "forensics-memory",
-    phrases: [
-      "memory forensics", "volatility", "analyse memory dump", "ram capture analysis",
-    ],
+    phrases: ["memory forensics", "volatility", "analyse memory dump", "ram capture analysis"],
     domain: "forensics",
     playbooks: ["memory-forensics"],
     tools: ["volatility", "bulk_extractor"],
-    guidance: "Forensic analysis of your own or authorised systems is always legal — protect chain of custody with hashes.",
+    guidance:
+      "Forensic analysis of your own or authorised systems is always legal — protect chain of custody with hashes.",
   },
   {
     id: "reverse-binary",
-    phrases: [
-      "reverse engineer binary", "analyse malware sample", "debug a binary",
-    ],
+    phrases: ["reverse engineer binary", "analyse malware sample", "debug a binary"],
     domain: "reversing",
     playbooks: ["reverse-binary"],
     tools: ["ghidra", "radare2-cutter", "gdb", "gdb-peda", "strace", "ltrace"],
-    guidance: "Run unknown binaries only in an isolated VM with no network path to production or personal data.",
+    guidance:
+      "Run unknown binaries only in an isolated VM with no network path to production or personal data.",
   },
 
   // ─────────────── Social (authorised phishing) ───────────────
   {
     id: "phishing-authorised",
     phrases: [
-      "phishing simulation", "authorised phishing", "gophish campaign",
-      "mfa bypass phishing test", "evilginx",
+      "phishing simulation",
+      "authorised phishing",
+      "gophish campaign",
+      "mfa bypass phishing test",
+      "evilginx",
     ],
     domain: "social",
     playbooks: ["phishing-evilginx", "gophish-campaign"],
@@ -683,13 +743,16 @@ export const INTENTS: Intent[] = [
   {
     id: "defensive-detect",
     phrases: [
-      "detect kerberoasting", "detect llmnr poisoning", "sigma rules for lateral movement",
+      "detect kerberoasting",
+      "detect llmnr poisoning",
+      "sigma rules for lateral movement",
       "how do i defend against this",
     ],
     domain: "defensive",
     playbooks: [],
     tools: [],
-    guidance: "Every offensive playbook on this site has detection and mitigation sections — open a playbook and scroll to the bottom.",
+    guidance:
+      "Every offensive playbook on this site has detection and mitigation sections — open a playbook and scroll to the bottom.",
   },
 ];
 
@@ -705,21 +768,59 @@ export const SYNONYMS: Record<string, string[]> = (() => {
   }
   // Preserve a few legacy shorthands that people type verbatim.
   Object.assign(out, {
-    "rockyou": ["wordlists", "rockyou"],
+    rockyou: ["wordlists", "rockyou"],
     "listening ports": ["ss", "netstat", "lsof"],
     "install package": ["apt", "dnf", "pacman", "zypper", "apk"],
-    "firewall": ["iptables", "nftables", "ufw", "firewalld"],
+    firewall: ["iptables", "nftables", "ufw", "firewalld"],
     "disk full": ["df", "du", "ncdu"],
   });
   return out;
 })();
 
 const QUESTION_STOP = new Set([
-  "how", "what", "when", "where", "why", "which", "can", "do", "does", "did",
-  "is", "are", "should", "could", "would", "the", "a", "an", "to", "for",
-  "of", "on", "in", "with", "into", "at", "my", "our", "your", "their",
-  "i", "we", "you", "they", "please", "help", "me", "us", "test", "check",
-  "audit", "assess", "verify",
+  "how",
+  "what",
+  "when",
+  "where",
+  "why",
+  "which",
+  "can",
+  "do",
+  "does",
+  "did",
+  "is",
+  "are",
+  "should",
+  "could",
+  "would",
+  "the",
+  "a",
+  "an",
+  "to",
+  "for",
+  "of",
+  "on",
+  "in",
+  "with",
+  "into",
+  "at",
+  "my",
+  "our",
+  "your",
+  "their",
+  "i",
+  "we",
+  "you",
+  "they",
+  "please",
+  "help",
+  "me",
+  "us",
+  "test",
+  "check",
+  "audit",
+  "assess",
+  "verify",
 ]);
 
 /** Normalise a free-text query into tokens for scoring. */

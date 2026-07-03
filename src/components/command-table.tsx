@@ -38,24 +38,32 @@ export function CommandTable({ commands }: { commands: Command[] }) {
             type="button"
             onClick={() => setCategory("")}
             className={`rounded-full px-3 py-1 text-xs border ${category === "" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
-          >All</button>
+          >
+            All
+          </button>
           {categories.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setCategory(cat)}
               className={`rounded-full px-3 py-1 text-xs border ${category === cat ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
-            >{cat}</button>
+            >
+              {cat}
+            </button>
           ))}
         </div>
       </div>
-      <div className="text-xs text-muted-foreground">{filtered.length} result{filtered.length === 1 ? "" : "s"}</div>
+      <div className="text-xs text-muted-foreground">
+        {filtered.length} result{filtered.length === 1 ? "" : "s"}
+      </div>
       <ul className="space-y-4">
         {filtered.map((c) => (
           <li key={c.name} className="rounded-lg border border-border bg-card p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className="mono text-base font-semibold text-primary">{c.name}</h3>
-              <Badge variant="outline" className="text-xs">{c.category}</Badge>
+              <Badge variant="outline" className="text-xs">
+                {c.category}
+              </Badge>
             </div>
             <p className="mt-2 text-sm text-foreground/90">{c.description}</p>
             <div className="mt-3">
@@ -63,7 +71,9 @@ export function CommandTable({ commands }: { commands: Command[] }) {
             </div>
             {c.examples.length > 0 && (
               <div className="mt-3 space-y-2">
-                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Examples</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Examples
+                </div>
                 {c.examples.map((ex, i) => (
                   <div key={i}>
                     <CodeBlock code={ex.code} />

