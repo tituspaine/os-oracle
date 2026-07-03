@@ -1,0 +1,326 @@
+// Additional Kali tools — supplementary catalog that extends
+// kali-shallow.ts. Split out so files stay maintainable.
+//
+// All entries use the same generator pattern (category → helpers +
+// concrete commands) so every tool gets its own command box and error
+// list on the tool detail page.
+//
+// Every command shown below assumes the user is operating within an
+// authorised scope. See /ethics for the site-wide rules.
+
+import type { KaliTool, KaliCategory, Command, KnownError } from "./types";
+
+const help = (inv: string): Command[] => [
+  { name: `${inv} --help`, syntax: `${inv} --help`, description: "Print built-in usage.", examples: [{ code: `${inv} --help | less`, note: "Page through the full help." }], bestScenario: "Fast flag lookup.", category: "Reference" },
+  { name: `man ${inv.split(" ")[0]}`, syntax: `man ${inv.split(" ")[0]}`, description: "Read the packaged man page.", examples: [{ code: `man ${inv.split(" ")[0]}`, note: "Authoritative reference." }], bestScenario: "When --help omits protocol details.", category: "Reference" },
+];
+
+const notFound = (inv: string): KnownError[] => [
+  { message: `${inv}: command not found`, cause: "Package not installed on this host, or PATH missing /usr/sbin.", fix: `Install via 'sudo apt install <package>' (see the Package field above), or add /usr/sbin/ to PATH.` },
+];
+
+type Pat = { commands: (inv: string, name: string) => Command[]; errors: (inv: string) => KnownError[] };
+
+const P: Record<KaliCategory, Pat> = {
+  "Information Gathering": {
+    commands: (inv, name) => [
+      { name: `Recon with ${name}`, syntax: `${inv} <target>`, description: `Run ${name} against one target.`, examples: [{ code: `${inv} example.com`, note: "Single target." }], bestScenario: "External footprinting.", category: "Recon" },
+      { name: `Bulk`, syntax: `xargs -P4 -I{} ${inv} {} < targets.txt`, description: "Parallelise across a target list.", examples: [{ code: `xargs -P4 -I{} ${inv} {} < scope.txt`, note: "4-way parallel." }], bestScenario: "Larger scopes.", category: "Workflow" },
+    ],
+    errors: (inv) => [{ message: `could not resolve host`, cause: "DNS or VPN issue.", fix: "Verify with dig; set --resolvers or fix /etc/resolv.conf." }, ...notFound(inv)],
+  },
+  "Vulnerability Analysis": {
+    commands: (inv, name) => [
+      { name: `Baseline vuln scan with ${name}`, syntax: `${inv} <target>`, description: `Run a default vulnerability sweep.`, examples: [{ code: `${inv} 10.10.10.5`, note: "Default profile." }], bestScenario: "First-pass audit.", category: "Scan" },
+      { name: `Refresh signatures`, syntax: `sudo ${inv} --update`, description: "Update signature/plugin database.", examples: [{ code: `sudo ${inv} --update`, note: "Root because signatures often live in /var." }], bestScenario: "Weekly cadence.", category: "Maintenance" },
+    ],
+    errors: (inv) => notFound(inv),
+  },
+  "Web Application Analysis": {
+    commands: (inv, name) => [
+      { name: `Test URL with ${name}`, syntax: `${inv} -u https://target.tld`, description: `Run against a URL.`, examples: [{ code: `${inv} -u https://target.tld`, note: "One URL." }], bestScenario: "Quick web audit.", category: "Scan" },
+      { name: `Through Burp/ZAP proxy`, syntax: `${inv} --proxy http://127.0.0.1:8080 -u https://target.tld`, description: "Route through a review proxy.", examples: [{ code: `${inv} --proxy http://127.0.0.1:8080 -u https://target.tld`, note: "Visible in Burp." }], bestScenario: "Human-in-the-loop testing.", category: "Workflow" },
+    ],
+    errors: (inv) => [
+      { message: `SSL: CERTIFICATE_VERIFY_FAILED`, cause: "Self-signed/expired cert.", fix: "Add -k / --insecure or import cert into trust store." },
+      ...notFound(inv),
+    ],
+  },
+  "Database Assessment": {
+    commands: (inv, name) => [
+      { name: `Enum DBs with ${name}`, syntax: `${inv} -u <target> --dbs`, description: `Enumerate reachable databases.`, examples: [{ code: `${inv} -u "http://target/vuln.php?id=1" --dbs`, note: "Typical SQLi entrypoint." }], bestScenario: "Post-injection enumeration.", category: "Enum" },
+    ],
+    errors: notFound,
+  },
+  "Password Attacks": {
+    commands: (inv, name) => [
+      { name: `${name} single-user`, syntax: `${inv} -l <user> -P wordlist.txt <target>`, description: "Wordlist against one username.", examples: [{ code: `${inv} -l admin -P rockyou.txt 10.0.0.5`, note: "One user." }], bestScenario: "Known valid username.", category: "Attack" },
+      { name: `Throttle`, syntax: `${inv} -t 1 -W 30 …`, description: "Avoid lockout.", examples: [{ code: `${inv} -t 1 -W 30 -l admin -P short.txt 10.0.0.5`, note: "Slow spray." }], bestScenario: "AD lockout policies.", category: "Attack" },
+    ],
+    errors: notFound,
+  },
+  "Wireless Attacks": {
+    commands: (inv, name) => [
+      { name: `Monitor mode`, syntax: `sudo airmon-ng start wlan0`, description: `Prep interface for ${name}.`, examples: [{ code: "sudo airmon-ng start wlan0", note: "Creates wlan0mon." }], bestScenario: "Always first for 802.11.", category: "Setup" },
+      { name: `Run ${name}`, syntax: `sudo ${inv} -i wlan0mon`, description: "Run on monitor interface.", examples: [{ code: `sudo ${inv} -i wlan0mon`, note: "" }], bestScenario: "Wireless recon/attack.", category: "Attack" },
+    ],
+    errors: (inv) => [
+      { message: `monitor mode not supported`, cause: "Chipset/driver limitation.", fix: "Use Atheros AR9271, RTL8812AU or similar with mac80211 drivers." },
+      ...notFound(inv),
+    ],
+  },
+  "Reverse Engineering": {
+    commands: (inv, name) => [
+      { name: `Open in ${name}`, syntax: `${inv} <binary>`, description: `Open a binary for analysis.`, examples: [{ code: `${inv} ./chall`, note: "" }], bestScenario: "Static/dynamic analysis.", category: "Analysis" },
+    ],
+    errors: notFound,
+  },
+  "Exploitation Tools": {
+    commands: (inv, name) => [
+      { name: `Launch ${name}`, syntax: `${inv}`, description: `Start ${name}.`, examples: [{ code: `${inv}`, note: "Interactive." }], bestScenario: "Framework entry.", category: "Launch" },
+    ],
+    errors: notFound,
+  },
+  "Sniffing & Spoofing": {
+    commands: (inv, name) => [
+      { name: `Sniff with ${name}`, syntax: `sudo ${inv} -i eth0`, description: `Start ${name} on eth0.`, examples: [{ code: `sudo ${inv} -i eth0`, note: "" }], bestScenario: "Local link or tap.", category: "Capture" },
+      { name: `BPF filter`, syntax: `sudo ${inv} -i eth0 'tcp port 80'`, description: "Filter noise.", examples: [{ code: `sudo ${inv} -i eth0 'host 10.0.0.5'`, note: "" }], bestScenario: "Noisy links.", category: "Capture" },
+    ],
+    errors: (inv) => [{ message: `permission denied`, cause: "No CAP_NET_RAW.", fix: "Run with sudo or setcap." }, ...notFound(inv)],
+  },
+  "Post Exploitation": {
+    commands: (inv, name) => [
+      { name: `Run ${name}`, syntax: `${inv}`, description: `Launch on foothold.`, examples: [{ code: `${inv}`, note: "" }], bestScenario: "After code exec on target.", category: "Enum" },
+    ],
+    errors: notFound,
+  },
+  "Forensics": {
+    commands: (inv, name) => [
+      { name: `Analyse image with ${name}`, syntax: `${inv} <image>`, description: `Analyse a forensic image.`, examples: [{ code: `${inv} evidence.dd`, note: "" }], bestScenario: "DFIR analysis.", category: "Analysis" },
+      { name: `Preserve integrity`, syntax: `sha256sum evidence.dd | tee evidence.dd.sha256`, description: "Hash before and after.", examples: [{ code: "sha256sum evidence.dd | tee evidence.dd.sha256", note: "" }], bestScenario: "Court-admissible workflows.", category: "Handling" },
+    ],
+    errors: notFound,
+  },
+  "Reporting Tools": {
+    commands: (inv, name) => [
+      { name: `Open ${name}`, syntax: `${inv}`, description: `Start ${name}.`, examples: [{ code: `${inv} &`, note: "" }], bestScenario: "Capture as you go.", category: "Launch" },
+    ],
+    errors: notFound,
+  },
+  "Social Engineering Tools": {
+    commands: (inv, name) => [
+      { name: `Launch ${name}`, syntax: `sudo ${inv}`, description: `Start ${name}.`, examples: [{ code: `sudo ${inv}`, note: "" }], bestScenario: "Authorised phishing engagement.", category: "Launch" },
+    ],
+    errors: notFound,
+  },
+};
+
+const t = (
+  slug: string, name: string, category: KaliCategory, pkg: string, invocation: string, summary: string, homepage?: string,
+): KaliTool => {
+  const p = P[category];
+  return {
+    slug, name, category, package: pkg, invocation, summary,
+    homepage: homepage ?? `https://www.kali.org/tools/${pkg}/`,
+    depth: "deep",
+    commands: [...p.commands(invocation, name), ...help(invocation)],
+    errors: p.errors(invocation),
+  };
+};
+
+export const KALI_EXTRA_TOOLS: KaliTool[] = [
+  // ============= Information Gathering (extended) =============
+  t("theharvester", "theHarvester", "Information Gathering", "theharvester", "theHarvester", "OSINT gathering from search engines, PGP servers, Shodan."),
+  t("recon-ng", "recon-ng", "Information Gathering", "recon-ng", "recon-ng", "Modular OSINT reconnaissance framework."),
+  t("amass", "OWASP Amass", "Information Gathering", "amass", "amass", "In-depth attack-surface mapping and asset discovery.", "https://owasp.org/www-project-amass/"),
+  t("shodan-cli", "Shodan CLI", "Information Gathering", "shodan", "shodan", "Query Shodan from the command line."),
+  t("censys-cli", "Censys CLI", "Information Gathering", "censys", "censys", "Query the Censys internet dataset."),
+  t("ike-scan", "ike-scan", "Information Gathering", "ike-scan", "ike-scan", "Discover, fingerprint and test IPsec VPN gateways."),
+  t("sslscan", "sslscan", "Information Gathering", "sslscan", "sslscan", "Test SSL/TLS enabled services for ciphers and protocol support."),
+  t("sslyze", "SSLyze", "Information Gathering", "sslyze", "sslyze", "Fast, deep TLS configuration scanner."),
+  t("testssl", "testssl.sh", "Information Gathering", "testssl.sh", "testssl.sh", "Check a server's TLS/SSL configuration."),
+  t("windapsearch", "windapsearch", "Information Gathering", "windapsearch", "windapsearch", "Enumerate users, groups, computers via LDAP against AD."),
+  t("ldapdomaindump", "ldapdomaindump", "Information Gathering", "ldapdomaindump", "ldapdomaindump", "Grab domain info via LDAP and produce HTML/JSON reports."),
+  t("bloodhound", "BloodHound", "Information Gathering", "bloodhound", "bloodhound", "AD attack-path analysis GUI (with SharpHound/BloodHound.py)."),
+  t("sharphound", "SharpHound", "Information Gathering", "bloodhound", "SharpHound.exe", "AD collector for BloodHound (runs on Windows)."),
+  t("bloodhound-py", "bloodhound.py", "Information Gathering", "bloodhound.py", "bloodhound-python", "Linux collector for BloodHound."),
+  t("dnschef", "DNSChef", "Information Gathering", "dnschef", "dnschef", "DNS proxy for pentesters — spoof selected answers."),
+  t("wig", "wig", "Information Gathering", "wig", "wig", "WebApp Information Gatherer — CMS/framework fingerprinting."),
+  t("crackmapexec", "CrackMapExec (legacy)", "Information Gathering", "crackmapexec", "cme", "Legacy swiss-army tool for AD (superseded by netexec/nxc)."),
+  t("nuclei", "Nuclei", "Vulnerability Analysis", "nuclei", "nuclei", "Fast template-driven vulnerability scanner.", "https://github.com/projectdiscovery/nuclei"),
+  t("katana", "Katana", "Information Gathering", "katana", "katana", "Fast crawler for web attack surface enumeration."),
+  t("gowitness", "gowitness", "Information Gathering", "gowitness", "gowitness", "Web screenshot tool for large scopes."),
+  t("eyewitness", "EyeWitness", "Information Gathering", "eyewitness", "eyewitness", "Screenshot websites, RDP, and VNC services."),
+  t("aquatone", "Aquatone", "Information Gathering", "aquatone", "aquatone", "Visual inspection of subdomains for pentesters."),
+  t("naabu", "naabu", "Information Gathering", "naabu", "naabu", "Fast port scanner from ProjectDiscovery."),
+  t("dnsx", "dnsx", "Information Gathering", "dnsx", "dnsx", "Fast multi-purpose DNS toolkit."),
+  t("chaos", "Chaos", "Information Gathering", "chaos", "chaos", "Query ProjectDiscovery's Chaos subdomain dataset."),
+
+  // ============= Vulnerability Analysis (extended) =============
+  t("openvas", "OpenVAS / GVM", "Vulnerability Analysis", "gvm", "gvm-cli", "Full-featured open vulnerability scanner (GVM stack)."),
+  t("nikto-plus", "nikto (extended)", "Vulnerability Analysis", "nikto", "nikto -h https://target.tld", "Web server vulnerability scanner with 6800+ tests."),
+  t("wpscan-vuln", "wpscan (vuln)", "Vulnerability Analysis", "wpscan", "wpscan", "WordPress vulnerability scanner (also under Web Application)."),
+  t("vulners-nse", "vulners NSE", "Vulnerability Analysis", "nmap", "nmap --script vulners", "Map service banners to CVE via vulners.com database."),
+  t("clair", "clair (container)", "Vulnerability Analysis", "clair", "clairctl", "Static analysis of container image vulnerabilities."),
+  t("trivy", "Trivy", "Vulnerability Analysis", "trivy", "trivy", "Comprehensive scanner for images, filesystems, and IaC.", "https://trivy.dev"),
+  t("grype", "Grype", "Vulnerability Analysis", "grype", "grype", "Container/filesystem vulnerability scanner from Anchore."),
+  t("kube-hunter", "kube-hunter", "Vulnerability Analysis", "kube-hunter", "kube-hunter", "Hunt for vulnerabilities in Kubernetes clusters."),
+  t("kubescape", "Kubescape", "Vulnerability Analysis", "kubescape", "kubescape", "Kubernetes security posture management CLI."),
+  t("prowler", "Prowler", "Vulnerability Analysis", "prowler", "prowler", "AWS/GCP/Azure security assessment tool."),
+  t("scoutsuite", "ScoutSuite", "Vulnerability Analysis", "scoutsuite", "scout", "Multi-cloud security auditing tool."),
+  t("pacu", "Pacu", "Exploitation Tools", "pacu", "pacu", "AWS exploitation framework from Rhino Security Labs."),
+  t("docker-bench-security", "docker-bench-security", "Vulnerability Analysis", "docker-bench-security", "docker-bench-security", "Audit Docker installations against CIS benchmarks."),
+
+  // ============= Web Application Analysis (extended) =============
+  t("burpsuite-community", "Burp Suite (Community)", "Web Application Analysis", "burpsuite", "burpsuite", "Intercepting HTTP proxy (community edition).", "https://portswigger.net/burp"),
+  t("burpsuite-pro", "Burp Suite Pro (reference)", "Web Application Analysis", "burpsuite", "burpsuite", "Reference to commercial Burp — CLI/headless via BApps."),
+  t("ffuf", "ffuf", "Web Application Analysis", "ffuf", "ffuf", "Fast web fuzzer written in Go."),
+  t("gobuster", "gobuster", "Web Application Analysis", "gobuster", "gobuster", "URI/DNS/VHost brute-forcer in Go."),
+  t("feroxbuster", "feroxbuster", "Web Application Analysis", "feroxbuster", "feroxbuster", "Recursive content discovery in Rust."),
+  t("dirb", "dirb", "Web Application Analysis", "dirb", "dirb", "Classic web content scanner."),
+  t("dirbuster", "DirBuster", "Web Application Analysis", "dirbuster", "dirbuster", "GUI directory/file brute-forcer."),
+  t("tplmap", "tplmap", "Web Application Analysis", "tplmap", "tplmap", "Automated Server-Side Template Injection detection/exploitation."),
+  t("xsstrike", "XSStrike", "Web Application Analysis", "xsstrike", "xsstrike", "Advanced XSS detection with intelligent payload generation."),
+  t("corsy", "Corsy", "Web Application Analysis", "corsy", "corsy", "CORS misconfiguration scanner."),
+  t("graphql-cop", "GraphQL Cop", "Web Application Analysis", "graphql-cop", "graphql-cop", "Audit GraphQL endpoints for common issues."),
+  t("inql", "InQL", "Web Application Analysis", "inql", "inql", "GraphQL security auditing Burp plugin/CLI."),
+  t("autorize", "Autorize", "Web Application Analysis", "autorize", "autorize", "Burp extension that automates authorization testing."),
+  t("smuggler", "smuggler", "Web Application Analysis", "smuggler", "smuggler.py", "HTTP request smuggling detector."),
+  t("s3scanner", "S3Scanner", "Web Application Analysis", "s3scanner", "s3scanner", "Scan for open S3 buckets (audit your own domains)."),
+  t("nosqli", "NoSQLMap", "Web Application Analysis", "nosqlmap", "nosqlmap", "MongoDB / NoSQL injection testing."),
+  t("wafninja", "wafninja", "Web Application Analysis", "wafninja", "wafninja", "Interact with WAFs to test filter bypasses."),
+  t("subzy", "subzy", "Web Application Analysis", "subzy", "subzy", "Subdomain takeover checker."),
+  t("nuclei-templates", "nuclei-templates (ref)", "Web Application Analysis", "nuclei-templates", "nuclei -t /path/to/templates", "Community templates powering nuclei."),
+
+  // ============= Database Assessment (extended) =============
+  t("mongo-audit", "mongoaudit", "Database Assessment", "mongoaudit", "mongoaudit", "Configuration/vulnerability auditor for MongoDB."),
+  t("postgres-audit", "psql-audit", "Database Assessment", "postgresql-client", "psql", "Audit PostgreSQL with the native client."),
+  t("mysql-audit", "mysql-audit", "Database Assessment", "default-mysql-client", "mysql", "Audit MySQL via the native client."),
+  t("redis-cli", "redis-cli", "Database Assessment", "redis-tools", "redis-cli", "Test Redis instances for unauthenticated access."),
+  t("cassandra-cli", "cqlsh", "Database Assessment", "cassandra", "cqlsh", "Cassandra CQL shell for authorised assessment."),
+
+  // ============= Password Attacks (extended) =============
+  t("hydra-plus", "hydra (full)", "Password Attacks", "hydra", "hydra", "Popular parallel network login cracker (50+ protocols)."),
+  t("ophcrack", "ophcrack", "Password Attacks", "ophcrack", "ophcrack", "Windows LM/NTLM rainbow-table cracker."),
+  t("john-jumbo", "John the Ripper (jumbo)", "Password Attacks", "john", "john", "Feature-rich fork of John with hundreds of hash formats."),
+  t("hashid", "hashID", "Password Attacks", "hashid", "hashid", "Identify hash types."),
+  t("rsmangler", "rsmangler", "Password Attacks", "rsmangler", "rsmangler", "Wordlist mangling — case swaps, leet, appends."),
+  t("kwprocessor", "kwprocessor", "Password Attacks", "kwprocessor", "kwp", "Keywalk generator for keyboard-pattern passwords."),
+  t("truecrack", "truecrack", "Password Attacks", "truecrack", "truecrack", "TrueCrypt password cracker."),
+  t("pdfcrack", "pdfcrack", "Password Attacks", "pdfcrack", "pdfcrack", "PDF password recovery."),
+  t("fcrackzip", "fcrackzip", "Password Attacks", "fcrackzip", "fcrackzip", "ZIP password cracker."),
+  t("rarcrack", "rarcrack", "Password Attacks", "rarcrack", "rarcrack", "RAR/ZIP/7z password cracker."),
+  t("pwdump", "pwdump / samdump2", "Password Attacks", "samdump2", "samdump2", "Extract NTLM hashes from Windows SAM."),
+  t("thc-pptp-bruter", "thc-pptp-bruter", "Password Attacks", "thc-pptp-bruter", "thc-pptp-bruter", "PPTP VPN brute-forcer."),
+
+  // ============= Wireless Attacks (extended) =============
+  t("hostapd-wpe", "hostapd-wpe", "Wireless Attacks", "hostapd-wpe", "hostapd-wpe", "Rogue AP / EAP capture for WPA2-Enterprise testing."),
+  t("freeradius-wpe", "freeradius-wpe", "Wireless Attacks", "freeradius-wpe", "freeradius", "Modified FreeRADIUS to log EAP creds during WPA2-Enterprise tests."),
+  t("eaphammer", "EAPHammer", "Wireless Attacks", "eaphammer", "eaphammer", "Rogue AP framework for evil-twin WPA2-Enterprise attacks."),
+  t("mana-toolkit", "mana-toolkit", "Wireless Attacks", "mana-toolkit", "mana-toolkit", "Rogue AP toolkit for MITM against mobile clients."),
+  t("wpa-sec-list", "PSKracker / wordlists", "Wireless Attacks", "wordlists", "pskracker", "Wordlists tuned for WPA-PSK cracking."),
+  t("kismon", "Kismon", "Wireless Attacks", "kismon", "kismon", "GUI client for Kismet data visualisation."),
+  t("wavemon", "wavemon", "Wireless Attacks", "wavemon", "wavemon", "Ncurses wireless monitor."),
+  t("cowpatty-alias", "cowpatty (extended)", "Wireless Attacks", "cowpatty", "cowpatty", "Offline WPA-PSK dictionary attack."),
+  t("giskismet", "giskismet", "Wireless Attacks", "giskismet", "giskismet", "Wireless recon visualisation on top of Kismet."),
+  t("hcxlabtool", "hcxlabtool", "Wireless Attacks", "hcxtools", "hcxlabtool", "Fully automated PMKID/EAPOL capture."),
+
+  // ============= Bluetooth / SDR / Hardware =============
+  t("bluez-tools", "bluez-tools", "Wireless Attacks", "bluez-tools", "bluetoothctl", "Standard Linux Bluetooth utilities."),
+  t("btscanner", "btscanner", "Wireless Attacks", "btscanner", "btscanner", "GUI Bluetooth device scanner."),
+  t("bluesnarfer", "bluesnarfer", "Wireless Attacks", "bluesnarfer", "bluesnarfer", "Read phonebook from vulnerable Bluetooth devices (legacy)."),
+  t("redfang", "redfang", "Wireless Attacks", "redfang", "fang", "Find hidden Bluetooth devices."),
+  t("spooftooph", "spooftooph", "Wireless Attacks", "spooftooph", "spooftooph", "Automate spoofing Bluetooth device profile."),
+  t("blueranger", "BlueRanger", "Wireless Attacks", "blueranger", "blueranger.sh", "Locate Bluetooth devices via L2CAP pings."),
+  t("gqrx", "gqrx", "Wireless Attacks", "gqrx-sdr", "gqrx", "SDR receiver with a Qt GUI."),
+  t("rtl-sdr", "rtl-sdr", "Wireless Attacks", "rtl-sdr", "rtl_sdr", "Command-line tools for RTL-SDR devices."),
+  t("gnuradio", "GNU Radio", "Wireless Attacks", "gnuradio", "gnuradio-companion", "Signal-processing SDK for SDR."),
+  t("hackrf-tools", "hackrf-tools", "Wireless Attacks", "hackrf", "hackrf_transfer", "Command-line tools for HackRF One."),
+  t("multimon-ng", "multimon-ng", "Wireless Attacks", "multimon-ng", "multimon-ng", "Digital voice/data decoder for radio signals."),
+
+  // ============= Reverse Engineering (extended) =============
+  t("ghidra", "Ghidra", "Reverse Engineering", "ghidra", "ghidra", "NSA-open-sourced reverse-engineering suite.", "https://ghidra-sre.org/"),
+  t("radare2", "radare2", "Reverse Engineering", "radare2", "r2", "Reverse engineering framework — CLI powerhouse."),
+  t("rizin", "Rizin", "Reverse Engineering", "rizin", "rizin", "Community fork of radare2."),
+  t("binaryninja-ref", "Binary Ninja (commercial ref)", "Reverse Engineering", "binaryninja", "binaryninja", "Commercial RE platform — reference entry."),
+  t("angr", "angr", "Reverse Engineering", "angr", "angr", "Python framework for symbolic execution & binary analysis."),
+  t("ropper", "ropper", "Reverse Engineering", "ropper", "ropper", "Find ROP gadgets in binaries."),
+  t("one-gadget", "one_gadget", "Reverse Engineering", "one-gadget", "one_gadget", "Find one-shot RCE gadgets in libc."),
+  t("pwndbg", "pwndbg", "Reverse Engineering", "pwndbg", "gdb", "GDB plugin oriented at CTF/exploitdev."),
+  t("gef", "GEF", "Reverse Engineering", "gef", "gdb", "GDB Enhanced Features."),
+  t("frida", "Frida", "Reverse Engineering", "frida", "frida", "Dynamic instrumentation toolkit for apps.", "https://frida.re"),
+  t("objection", "Objection", "Reverse Engineering", "objection", "objection", "Runtime mobile exploration with Frida under the hood."),
+  t("mobsf", "MobSF", "Reverse Engineering", "mobsf", "mobsf", "Automated mobile app security testing framework."),
+  t("apkleaks", "APKLeaks", "Reverse Engineering", "apkleaks", "apkleaks", "Scan APK for URIs, endpoints, secrets."),
+  t("floss", "FLOSS", "Reverse Engineering", "floss", "floss", "Decode obfuscated strings in malware binaries."),
+  t("die", "Detect It Easy (DIE)", "Reverse Engineering", "die", "die", "Program for determining file types."),
+  t("upx", "UPX", "Reverse Engineering", "upx-ucl", "upx", "Ultimate Packer for eXecutables — pack/unpack binaries."),
+  t("volatility3", "Volatility 3", "Forensics", "volatility3", "vol", "Memory forensics framework (successor to Volatility 2)."),
+  t("bulk-extractor2", "bulk_extractor (ref)", "Forensics", "bulk-extractor", "bulk_extractor", "Feature extraction from disk images."),
+  t("yara", "YARA", "Reverse Engineering", "yara", "yara", "Pattern-matching for malware researchers."),
+  t("capa", "capa", "Reverse Engineering", "capa", "capa", "Identify capabilities in executables."),
+
+  // ============= Exploitation Tools (extended) =============
+  t("metasploit", "Metasploit Framework", "Exploitation Tools", "metasploit-framework", "msfconsole", "The Metasploit exploitation framework."),
+  t("msfvenom", "msfvenom", "Exploitation Tools", "metasploit-framework", "msfvenom", "Payload generator/encoder (Metasploit)."),
+  t("sliver", "Sliver", "Exploitation Tools", "sliver", "sliver-server", "Open-source cross-platform C2 framework."),
+  t("covenant-ref", "Covenant (C2 ref)", "Exploitation Tools", "covenant", "covenant", ".NET-focused C2 framework — reference entry."),
+  t("ysoserial", "ysoserial", "Exploitation Tools", "ysoserial", "ysoserial", "Java deserialization payload generator."),
+  t("padre", "padre", "Exploitation Tools", "padre", "padre", "Padding oracle attack tool."),
+  t("beef-xss", "BeEF", "Exploitation Tools", "beef-xss", "beef-xss", "Browser Exploitation Framework."),
+  t("empire-py3", "Empire (BC-SECURITY fork)", "Exploitation Tools", "powershell-empire", "empire", "Modern Python 3 fork of PowerShell Empire."),
+  t("adcs-certipy", "Certipy", "Exploitation Tools", "certipy", "certipy", "Certificate services abuse (ADCS ESC1-15)."),
+  t("evil-winrm", "evil-winrm", "Exploitation Tools", "evil-winrm", "evil-winrm", "WinRM shell for Windows post-exploitation."),
+  t("impacket-suite", "Impacket suite", "Exploitation Tools", "impacket-scripts", "impacket-secretsdump", "Python classes for Windows network protocols (many scripts).", "https://github.com/fortra/impacket"),
+
+  // ============= Sniffing & Spoofing (extended) =============
+  t("wireshark", "Wireshark", "Sniffing & Spoofing", "wireshark", "wireshark", "GUI protocol analyzer.", "https://www.wireshark.org"),
+  t("tshark", "tshark", "Sniffing & Spoofing", "tshark", "tshark", "Terminal Wireshark."),
+  t("tcpdump", "tcpdump", "Sniffing & Spoofing", "tcpdump", "tcpdump", "Classic packet analyzer."),
+  t("tcpxtract", "tcpxtract", "Sniffing & Spoofing", "tcpxtract", "tcpxtract", "Carve files out of network traffic."),
+  t("sslsplit", "sslsplit", "Sniffing & Spoofing", "sslsplit", "sslsplit", "Transparent SSL/TLS interception."),
+  t("responder", "Responder", "Sniffing & Spoofing", "responder", "responder", "LLMNR, NBT-NS, MDNS poisoner."),
+
+  // ============= Post Exploitation (extended) =============
+  t("nishang", "Nishang", "Post Exploitation", "nishang", "nishang", "PowerShell scripts for post-exploitation."),
+  t("kerbeus", "Rubeus (ref)", "Post Exploitation", "rubeus", "Rubeus.exe", "Windows Kerberos abuse toolkit — reference entry."),
+  t("seatbelt", "Seatbelt (ref)", "Post Exploitation", "seatbelt", "Seatbelt.exe", "Situational awareness for Windows — reference entry."),
+  t("sharpview", "SharpView (ref)", "Post Exploitation", "sharpview", "SharpView.exe", "PowerView port to C# — reference entry."),
+  t("pypykatz", "pypykatz", "Post Exploitation", "pypykatz", "pypykatz", "Mimikatz in pure Python."),
+  t("adalanche", "Adalanche", "Post Exploitation", "adalanche", "adalanche", "Active Directory ACL analyzer."),
+  t("ntlmrelayx", "ntlmrelayx", "Post Exploitation", "impacket-scripts", "impacket-ntlmrelayx", "NTLM relay from the Impacket suite."),
+  t("neo4j", "Neo4j (for BloodHound)", "Post Exploitation", "neo4j", "neo4j", "Graph database — the backend for BloodHound."),
+
+  // ============= Forensics (extended) =============
+  t("autopsy", "Autopsy", "Forensics", "autopsy", "autopsy", "GUI DFIR platform on top of The Sleuth Kit."),
+  t("plaso", "Plaso / log2timeline", "Forensics", "plaso", "log2timeline.py", "Super-timeline forensics tool."),
+  t("timesketch", "Timesketch", "Forensics", "timesketch", "timesketch", "Collaborative forensic timeline analysis."),
+  t("velociraptor", "Velociraptor", "Forensics", "velociraptor", "velociraptor", "Endpoint monitoring, forensics, and response."),
+  t("bulk-extractor-ext", "bulk_extractor (feature)", "Forensics", "bulk-extractor", "bulk_extractor", "Extract features from disk/memory dumps."),
+  t("photorec", "PhotoRec", "Forensics", "testdisk", "photorec", "File recovery software."),
+  t("testdisk", "TestDisk", "Forensics", "testdisk", "testdisk", "Recover lost partitions and boot sectors."),
+  t("dc3dd", "dc3dd", "Forensics", "dc3dd", "dc3dd", "Enhanced dd for forensic imaging."),
+  t("ddrescue-gnu", "GNU ddrescue", "Forensics", "gddrescue", "ddrescue", "Robust data recovery for failing devices."),
+  t("aff4", "AFF4 tools", "Forensics", "aff4", "aff4", "Advanced Forensic Format v4 utilities."),
+  t("stegoveritas", "StegoVeritas", "Forensics", "stegoveritas", "stegoveritas", "Automated steganography analysis."),
+  t("stegseek", "stegseek", "Forensics", "stegseek", "stegseek", "Blazing-fast steghide cracker."),
+  t("steghide", "steghide", "Forensics", "steghide", "steghide", "Hide/extract data in image and audio files."),
+  t("outguess", "outguess", "Forensics", "outguess", "outguess", "Universal steganography tool."),
+
+  // ============= System hardening / defensive (categorised under Vuln Analysis) =============
+  t("lynis-audit", "Lynis (audit)", "Vulnerability Analysis", "lynis", "sudo lynis audit system", "Security auditing/hardening for Unix systems."),
+  t("chkrootkit-audit", "chkrootkit", "Vulnerability Analysis", "chkrootkit", "sudo chkrootkit", "Look for signs of rootkits."),
+  t("rkhunter-audit", "rkhunter", "Vulnerability Analysis", "rkhunter", "sudo rkhunter --check", "Rootkit / local exploit scanner."),
+  t("aide-audit", "AIDE", "Vulnerability Analysis", "aide", "aide --check", "File integrity monitoring."),
+  t("tiger-audit", "Tiger", "Vulnerability Analysis", "tiger", "sudo tiger", "Security auditing toolkit for Unix."),
+  t("unhide", "unhide", "Vulnerability Analysis", "unhide", "unhide brute", "Find hidden processes and TCP/UDP ports."),
+
+  // ============= IoT / firmware / ICS =============
+  t("binwalk", "binwalk", "Reverse Engineering", "binwalk", "binwalk", "Firmware analysis and extraction."),
+  t("firmwalker", "firmwalker", "Reverse Engineering", "firmwalker", "firmwalker", "Search extracted firmware for interesting files."),
+  t("fwanalyzer", "FwAnalyzer", "Reverse Engineering", "fwanalyzer", "fwanalyzer", "Firmware filesystem analyzer."),
+  t("modbus-cli", "modbus-cli", "Information Gathering", "modbus-cli", "modbus", "CLI to talk Modbus for authorised ICS labs."),
+  t("mosquitto-clients", "mosquitto clients", "Information Gathering", "mosquitto-clients", "mosquitto_sub", "MQTT command-line clients (mosquitto_pub/sub)."),
+];
+
+/** kaliToolBySlug will find these once they're merged in index.ts. */
