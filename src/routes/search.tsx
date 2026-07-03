@@ -160,20 +160,24 @@ function SearchPage() {
     function hitKey(h: Hit): string {
       switch (h.kind) {
         case "playbook": return "p:" + h.slug;
+        case "walkthrough": return "w:" + h.slug;
         case "tool": return "t:" + h.slug;
         case "distro": return "d:" + h.slug;
         case "toolcommand": return "tc:" + h.toolSlug + ":" + h.name;
         case "command": return "dc:" + h.distroSlug + ":" + h.name;
+        case "toolerror": return "te:" + h.toolSlug + ":" + h.message;
         case "error": return "e:" + h.distroSlug + ":" + h.message;
       }
     }
 
     return {
       playbooks: collect(indexes.playbooks, (x, s) => ({ kind: "playbook", slug: x.slug, name: x.name, snippet: x.snippet, category: x.category, severity: x.severity, score: s })),
+      walkthroughs: collect(indexes.walkthroughs, (x, s) => ({ kind: "walkthrough", slug: x.slug, name: x.name, snippet: x.snippet, difficulty: x.difficulty, score: s })),
       tools: collect(indexes.tools, (x, s) => ({ kind: "tool", slug: x.slug, name: x.name, snippet: x.snippet, category: x.category, score: s })),
       distros: collect(indexes.distros, (x, s) => ({ kind: "distro", slug: x.slug, name: x.name, snippet: x.snippet, score: s })),
       toolCommands: collect(indexes.toolCommands, (x, s) => ({ kind: "toolcommand", toolSlug: x.toolSlug, toolName: x.toolName, name: x.name, syntax: x.syntax, description: x.description, score: s })),
       distroCommands: collect(indexes.distroCommands, (x, s) => ({ kind: "command", distroSlug: x.distroSlug, distroName: x.distroName, name: x.name, syntax: x.syntax, description: x.description, score: s })),
+      toolErrors: collect(indexes.toolErrors, (x, s) => ({ kind: "toolerror", toolSlug: x.toolSlug, toolName: x.toolName, message: x.message, fix: x.fix, score: s })),
       errors: collect(indexes.errors, (x, s) => ({ kind: "error", distroSlug: x.distroSlug, distroName: x.distroName, message: x.message, fix: x.fix, score: s })),
     };
   }, [q, indexes]);
