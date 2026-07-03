@@ -81,7 +81,7 @@ function PlaybookPage() {
         <section className="mb-6">
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tools used</h2>
           <div className="flex flex-wrap gap-2">
-            {tools.map((t) => t && (
+            {tools.map((t) => t ? (
               <Link
                 key={t.slug}
                 to="/kali/$slug"
@@ -91,7 +91,7 @@ function PlaybookPage() {
                 <span className="mono text-primary">{t.name}</span>
                 <span className="ml-2 text-xs text-muted-foreground">{t.category}</span>
               </Link>
-            ))}
+            ) : null)}
           </div>
         </section>
       )}
