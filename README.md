@@ -1,6 +1,6 @@
 # OS Oracle
 
-**Global Ethical Hacking Knowledge Platform - Terminal Edition**
+**Global Ethical Hacking Knowledge Platform - Interactive Terminal + Web Edition**
 
 🔌 **Completely Offline** | ⚡ **Lightning Fast** | 💰 **100% Free** | 🔓 **Open Source**
 
@@ -35,7 +35,13 @@ npm start
 ## Quick Start
 
 ```bash
-# Search everything
+# Launch beginner-friendly in-terminal GUI (recommended)
+os-oracle
+
+# Or launch explicitly
+os-oracle tui
+
+# Search everything from classic CLI mode
 os-oracle search "privilege escalation"
 
 # Browse Kali tools
@@ -82,6 +88,7 @@ os-oracle history
 
 ## Features
 
+✅ **Interactive TUI** - Arrow-key navigation, breadcrumbs, live fuzzy search
 ✅ **Completely Offline** - All data embedded, works without internet
 ✅ **1M+ Commands** - Every Kali tool, every Linux distro
 ✅ **Fast Search** - Local indexing, instant results
@@ -101,7 +108,7 @@ os-oracle history
 
 ## Technology
 
-- **Pure CLI** - No GUI, works in any terminal
+- **Interactive TUI + CLI fallback** - Keyboard-first terminal UX
 - **Zero Dependencies** - Standalone binary with no external dependencies
 - **Embedded Data** - All 1M+ commands compressed and bundled
 - **Open Source** - MIT Licensed, full source code available
@@ -120,6 +127,13 @@ os-oracle history
 - Windows (via WSL)
 - Docker containers
 - All cloud platforms
+
+## Docker
+
+```bash
+docker build -f docker/Dockerfile -t tituspaine/os-oracle .
+docker run -it --rm tituspaine/os-oracle
+```
 
 ## Use Cases
 

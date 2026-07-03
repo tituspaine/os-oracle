@@ -16,21 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Install
-        run: bun install --frozen-lockfile
-
-      - name: Lint
-        run: bun run lint
+        run: npm install
 
       - name: Build
-        run: bun run build
+        run: npm run build
+
+      - name: Smoke test
+        run: node src/cli/index.js version
