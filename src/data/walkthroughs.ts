@@ -47,6 +47,8 @@ export type Walkthrough = {
   difficulty: "beginner" | "intermediate" | "advanced";
   /** Legal preamble specific to this walkthrough. */
   legalNote: string;
+  /** Related Kali tool slugs shown as chips. */
+  toolSlugs?: string[];
   /** Ordered steps. */
   steps: WalkthroughStep[];
   /** What "success" looks like in the lab. */
